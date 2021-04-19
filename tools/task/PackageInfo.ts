@@ -1,12 +1,3 @@
-/*
- * @Author: wenjie02
- * @Date: 2021-01-11 14:48:02
- * @LastEditTime: 2021-01-22 20:57:31
- * @LastEditors: wenjie02
- * @Description: 
- * @FilePath: /mizar-ssrframe-tool/tools/task/PackageInfo.ts
- * @Copyright 2021
- */
 import * as fs from "fs-extra";
 import * as Path from "path";
 import { ConfigHelper } from "../libs/ConfigHelper";
@@ -14,7 +5,17 @@ import { ObjectUtil } from "../libs/ObjectUtil";
 import { HelperTask } from "./HelperTask";
 import Logger from "../libs/Logger";
 
-const console = Logger();
+import * as yargs  from "yargs";
+import { hideBin } from "yargs/helpers";
+const argv:any = yargs(hideBin(process.argv)).argv;
+
+let logCtg;
+if (argv.verbose) {
+    logCtg = "all";
+} else if (argv.debug) {
+    logCtg = "debug";
+}
+const log = Logger(logCtg);
 
 export class PackageInfo {
     private rootPath: string = Path.resolve("./");
@@ -28,7 +29,7 @@ export class PackageInfo {
     }
 
     public async run() {
-        console.log("->", "PackageInfo", HelperTask.taking());
+        log.info("->", "PackageInfo", HelperTask.taking());
         this.mkdir();
         this.packageJson = this.replacePackage();
         this.setVersion();
@@ -64,13 +65,13 @@ export class PackageInfo {
     public setVersion() {
         const version = ConfigHelper.getPackageVersion();
         this.packageJson.version = version;
-        console.info("PackageInfo.setVersion.version", this.packageJson.version);
+        log.info("PackageInfo.setVersion.version", this.packageJson.version);
     }
     private mkdir() {
         try {
             fs.mkdirpSync(this.buildPath);
         } catch (error) {
-            console.error("PackageInfo.mkdir.CAN_NOT_MKDIR", this.buildPath);
+            log.error("PackageInfo.mkdir.CAN_NOT_MKDIR", this.buildPath);
         }
     }
 }

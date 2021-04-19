@@ -14,7 +14,17 @@ import Logger from "../libs/Logger";
 import { HelperTask } from "./HelperTask";
 import getGlobalConfig from "../getGlobalConfig";
 
-const console = Logger();
+import * as yargs  from "yargs";
+import { hideBin } from "yargs/helpers";
+const argv:any = yargs(hideBin(process.argv)).argv;
+
+let logCtg;
+if (argv.verbose) {
+    logCtg = "all";
+} else if (argv.debug) {
+    logCtg = "debug";
+}
+const log = Logger(logCtg);
 
 export class StylePack {
     public watchModel: boolean = false;
@@ -35,8 +45,8 @@ export class StylePack {
         let source = gulp.src(sourcePaths);
         source = source.pipe(plumber({
             errorHandler: e => {
-                console.warn(`${this.taskName} less compile cause an error :`);
-                console.warn(e);
+                log.warn(`${this.taskName} less compile cause an error :`);
+                log.warn(e);
                 if (this.watchModel === false) {
                     throw e;
                 }
@@ -56,7 +66,7 @@ export class StylePack {
             less["ieCompat"] = ieCompat;
             less.plugins.push(inlineURLSPlugin);
         }
-        console.info("lessOption", JSON.stringify(less));
+        log.info("lessOption", JSON.stringify(less));
         source = source.pipe(gulpless(less));
         source = source.pipe(
             postcss([
@@ -73,7 +83,7 @@ export class StylePack {
         // source = source.pipe(gulp.dest(getGlobalConfig().clientOutput));
 
         source.on("end", (event) => {
-            console.log(this.taskName + " > done", this.count++);
+            log.info(this.taskName + " > done", this.count++);
         });
         return source;
     }
@@ -85,7 +95,7 @@ export class StylePack {
 
     public async run() {
         return new Promise((resolve, reject) => {
-            console.log("->", this.taskName, HelperTask.taking());
+            log.info("->", this.taskName, HelperTask.taking());
 
             this.lessCompile().on("end", e => {
                 if (e) {
@@ -95,13 +105,13 @@ export class StylePack {
                 if (this.watchModel) {
                     const watcher = gulp.watch(this.src, this.lessCompile);
                     watcher.on("change", (eventType: string, filename: string) => {
-                        console.info("开始编译less:", "file " + filename + " was " + eventType + ", running tasks...");
+                        log.info("开始编译less:", "file " + filename + " was " + eventType + ", running tasks...");
                     });
                 }
-                console.info(this.taskName, "done", this.count++);
+                log.info(this.taskName, "done", this.count++);
                 resolve("done");
             }).on("error", e => {
-                console.info("StylePack.error", e);
+                log.info("StylePack.error", e);
                 reject(e);
             });
         });

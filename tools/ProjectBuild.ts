@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import * as ora from "ora";
 import * as yargs  from "yargs";
 import { hideBin } from "yargs/helpers";
 import { HelperTask } from "./task/HelperTask";
@@ -10,9 +11,7 @@ import { ServerPack } from "./task/ServerPack";
 import { StylePack } from "./task/StylePack";
 import Logger from "./libs/Logger";
 
-const console = Logger();
-
-const argv = yargs(hideBin(process.argv)).argv;
+const log = Logger();
 
 export class ProjectBuild {
     private watchModel = false;
@@ -25,7 +24,7 @@ export class ProjectBuild {
                 await this.publish();
             }
         } catch (e) {
-            console.error("ProjectBuild", e);
+            log.error("ProjectBuild", e);
         }
     }
     public setWatchModel(watchModel) {
@@ -41,44 +40,61 @@ export class ProjectBuild {
         await new PublishTask().start();
     }
     private async build() {
+        let spinner;
+        spinner = ora("prepare the task environment...").start();
+        log.log();
         // 环境准备
         const task = new HelperTask();
         task.setWatchModel(this.watchModel);
         task.init();
         task.start();
+        spinner.succeed();
         try {
+            spinner = ora("process build target directory & packageInfo...").start();
+            log.log();
             // 1 clean
             await task.cleanAsync();
             await new PackageInfo().setWatchModel(true).run();
+            spinner.succeed();
             // await new PublicAsset().run();
             // 2. 生成样式
+            spinner = ora("style pack...").start();
+            log.log();
             await new StylePack()
                 .setWatchModel(this.watchModel)
                 .run();
+                spinner.succeed();
             // 3. 生成ClientPack
             // const vendor = await new VendorPack()
             //     .setWatchModel(this.watchModel)
             //     .run();
             // 4. 生成同构下的ClientPack
+            spinner = ora("client assets pack...").start();
+            log.log();
             const isomorphicClientPack = new IsomorphicPack();
             isomorphicClientPack.setWatchModel(this.watchModel);
             // isomorphicClientPack.setVendorModel(vendor);
             await isomorphicClientPack.run();
+            spinner.succeed();
+            spinner = ora("server assets pack...").start();
+            log.log();
             // 5. 生成ServerPack
             const serverPack = new ServerPack();
             serverPack.setAutoRun(this.runServerModel);
             serverPack.setWatchModel(this.watchModel);
             await serverPack.run();
-            task.end();
+            spinner.succeed();
         } catch (e) {
-            console.error("ProjectBuild raised an error: ", e);
+            spinner.fail();
+            log.error("ProjectBuild raised an error: ", e);
         }
+        task.end();
     }
-
 }
 
 (async () => {
     const projectBuild = new ProjectBuild();
+    const argv = yargs(hideBin(process.argv)).argv;
     if (argv.watch) {
         projectBuild.setWatchModel(true);
     }

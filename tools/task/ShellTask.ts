@@ -3,8 +3,17 @@ import * as Path from "path";
 import { HelperTask } from "./HelperTask";
 import Logger from "../libs/Logger";
 
-const console = Logger();
+import * as yargs  from "yargs";
+import { hideBin } from "yargs/helpers";
+const argv:any = yargs(hideBin(process.argv)).argv;
 
+let logCtg;
+if (argv.verbose) {
+    logCtg = "all";
+} else if (argv.debug) {
+    logCtg = "debug";
+}
+const log = Logger(logCtg);
 export class ShellTask {
     public name = "ShellTask";
     public rootPath = Path.resolve("./");
@@ -13,30 +22,30 @@ export class ShellTask {
      * @param cli
      */
     public async run(cli: string) {
-        console.log("->", this.name, HelperTask.taking());
-        console.info(this.name, "start", "cwd:", this.rootPath, "cli:", cli);
+        log.info("->", this.name, HelperTask.taking());
+        log.info(this.name, "start", "cwd:", this.rootPath, "cli:", cli);
         try {
             const output = execSync(cli, {
                 cwd: this.rootPath,
             });
-            console.info(this.name, "output", output.toString());
+            log.info(this.name, "output", output.toString());
         } catch (error) {
-            console.error(this.name, "stdout", error.stdout.toString());
-            console.error(this.name, "stderr", error.stderr.toString());
+            log.error(this.name, "stdout", error.stdout.toString());
+            log.error(this.name, "stderr", error.stderr.toString());
             const msg = this.name + " 执行失败,请检查代码或命令:" + cli;
             throw new Error(msg);
         }
     }
     public async exec(cli: string) {
-        console.info(this.name, "start", "cwd:", this.rootPath, "cli:", cli);
+        log.info(this.name, "start", "cwd:", this.rootPath, "cli:", cli);
         try {
             const output = exec(cli, {
                 cwd: this.rootPath,
             });
-            console.log(this.name, "output", output.toString());
+            log.info(this.name, "output", output.toString());
         } catch (error) {
-            console.error(this.name, "stdout", error.stdout.toString());
-            console.error(this.name, "stderr", error.stderr.toString());
+            log.error(this.name, "stdout", error.stdout.toString());
+            log.error(this.name, "stderr", error.stderr.toString());
             const msg = this.name + " 执行失败,请检查代码或命令:" + cli;
             throw new Error(msg);
         }

@@ -1,13 +1,25 @@
 import { execSync } from "child_process";
 import * as Notifier from "node-notifier";
+import * as ora from "ora";
 import * as yargs  from "yargs";
 import { hideBin } from "yargs/helpers";
 import { CleanTask } from "./CleanTask";
 import Logger from "../libs/Logger";
 
-const console = Logger();
+const argv:any = yargs(hideBin(process.argv)).argv;
+
+let logCtg;
+if (argv.verbose) {
+    logCtg = "all";
+} else if (argv.debug) {
+    logCtg = "debug";
+}
+const log = Logger(logCtg);
 
 export class HelperTask {
+    constructor() {
+        this.spinner = ora("running task...");
+    }
     public static taking() {
         const now = new Date();
         const taking = now.getTime() - HelperTask.prevDateTime.getTime();
@@ -15,13 +27,14 @@ export class HelperTask {
         return `${taking / 1000} s`;
     }
     private static prevDateTime = new Date();
+    private watchModel = false;
+    private spinner;
     public startDateTime;
     public endDateTime;
-    private watchModel = false;
     public init() {
         this.showVersion();
         process.once("SIGINT", () => {
-            console.log("安全退出");
+            log.info("安全退出");
             process.exit();
         });
     }
@@ -30,7 +43,7 @@ export class HelperTask {
         return this;
     }
     public showVersion() {
-        console.log("->", "showVersion",
+        log.info("->", "showVersion",
             "node@" + execSync("node -v").toString().replace(/\r|\n/g, ""),
             "npm@v" + execSync("npm -v").toString().replace(/\r|\n/g, ""),
             "typescipt@" + execSync("tsc -v").toString().replace(/\r|\n/g, ""),
@@ -41,7 +54,7 @@ export class HelperTask {
         if (argv["no-notify"]) {
             return;
         }
-        console.info("sendMessage", titleStr, messageStr);
+        log.info("sendMessage", titleStr, messageStr);
         const msg = {
             message: messageStr.substr(0, 100),
             title: titleStr,
@@ -51,16 +64,19 @@ export class HelperTask {
     }
     public start() {
         this.startDateTime = new Date();
-        console.log();
-        console.log("-------------------------------编译详细信息-------------------------------------");
+        this.spinner.start();
+        log.log();
+        log.info("-------------------------------编译详细信息-------------------------------------");
     }
     public end() {
         this.endDateTime = new Date();
-        console.log("-------------------------------编译信息结束-------------------------------------");
-        console.log("编译总耗时", (this.endDateTime.getTime() - this.startDateTime.getTime()) / 1000, "s");
-        console.log();
+        this.spinner.stop();
+        log.info("-------------------------------编译信息结束-------------------------------------");
+        log.info("编译总耗时", (this.endDateTime.getTime() - this.startDateTime.getTime()) / 1000, "s");
+        log.log();
         this.sendMessage("首次编译结束", "编译总耗时 " +
             ((this.endDateTime.getTime() - this.startDateTime.getTime()) / 1000) + " s");
+        this.spinner = null;
     }
 
     public async cleanAsync() {

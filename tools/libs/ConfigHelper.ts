@@ -5,7 +5,15 @@ import * as yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 import Logger from "../libs/Logger";
 
-const console = Logger();
+const argv:any = yargs(hideBin(process.argv)).argv;
+
+let logCtg;
+if (argv.verbose) {
+    logCtg = "all";
+} else if (argv.debug) {
+    logCtg = "debug";
+}
+const log = Logger(logCtg);
 
 const configName = "package.json";
 const cuzConf = "customConfig";
@@ -42,22 +50,22 @@ export class ConfigHelper {
     private static privateGet(node: string, defaultValue = null) {
         let result = defaultValue;
         const key = `${configName}->${node}`;
-        console.info("ConfigHelper privateGet key: ", key);
+        log.info("ConfigHelper privateGet key: ", key);
         if (ConfigHelper.store[`${configName}-${node}`]) {
-            console.info("read in store", key + "->" + JSON.stringify(ConfigHelper.store[`${configName}-${node}`]));
+            log.info("read in store", key + "->" + JSON.stringify(ConfigHelper.store[`${configName}-${node}`]));
             return ConfigHelper.store[`${configName}-${node}`];
         }
         const configPath = Path.resolve(`./build/${configName}`);
-        console.info("confighelper privateGet configPath: ", configPath);
+        log.info("confighelper privateGet configPath: ", configPath);
         try {
             const content = fs.readFileSync(configPath, "utf8");
             let store = JSONCParser.parse(content);
             const info = node.split(".");
-            console.info("ConfigHelper.get.info", info);
+            log.info("ConfigHelper.get.info", info);
             for (let item of info) {
-                console.info("item", item);
-                console.info("store !== null", store !== null);
-                console.info("store[item]", store[item]);
+                log.info("item", item);
+                log.info("store !== null", store !== null);
+                log.info("store[item]", store[item]);
                 if (store !== null && typeof store[item] !== "undefined") {
                     store = store[item];
                 } else {
@@ -66,19 +74,19 @@ export class ConfigHelper {
                 }
             }
             if (store !== null) {
-                console.info("ConfigHelper.get.store", store);
+                log.info("ConfigHelper.get.store", store);
                 result = store;
             } else {
-                console.info("ConfigHelper.get.store get empty value");
+                log.info("ConfigHelper.get.store get empty value");
             }
         } catch (error) {
-            console.info("ConfigHelper.get raise an error: ", key + " -> " + error.message);
+            log.info("ConfigHelper.get raise an error: ", key + " -> " + error.message);
         }
         if (result === null) {
             const msg = `ConfigHelper > 未能获取到缺省和默认配置,${configName},${node}。`;
             throw new Error(msg);
         }
-        console.info("ConfigHelper.get", key + "->" + JSON.stringify(result));
+        log.info("ConfigHelper.get", key + "->" + JSON.stringify(result));
         ConfigHelper.store[`${configName}-${node}`] = result;
         return result;
     }
@@ -92,8 +100,7 @@ export class ConfigHelper {
     }
     public static getPackageVersion() {
         let patchVer = 0;
-        const argv:any = yargs(hideBin(process.argv)).argv;
-        // console.log(argv);
+        // log.log(argv);
         if (argv.patchVer && argv.patchVer !== true) {
             patchVer = argv.patchVer;
         }

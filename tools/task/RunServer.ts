@@ -11,7 +11,17 @@
 import * as  cp from "child_process";
 import Logger from "../libs/Logger";
 
-const console = Logger();
+import * as yargs  from "yargs";
+import { hideBin } from "yargs/helpers";
+const argv:any = yargs(hideBin(process.argv)).argv;
+
+let logCtg;
+if (argv.verbose) {
+    logCtg = "all";
+} else if (argv.debug) {
+    logCtg = "debug";
+}
+const log = Logger(logCtg);
 
 // Should match the text string used in `src/server.js/server.listen(...)`
 const RUNNING_REGEXP = /The server is running at http:\/\/(.*?)\//;
@@ -26,7 +36,7 @@ export function RunServer(serverPath, debug, cb: any = false) {
         const time = new Date().toTimeString();
         const match = data.toString("utf8").match(RUNNING_REGEXP);
         // process.stdout.write(time.replace(/.*(\d{2}:\d{2}:\d{2}).*/, "[$1]") + " [INFO] server  - ");
-        // console.info(time.replace(/.*(\d{2}:\d{2}:\d{2}).*/, "[$1] "))
+        // log.info(time.replace(/.*(\d{2}:\d{2}:\d{2}).*/, "[$1] "))
         process.stdout.write(data);
 
         if (match) {
@@ -40,7 +50,7 @@ export function RunServer(serverPath, debug, cb: any = false) {
     }
 
     if (server) {
-        console.warn("进程退出");
+        log.warn("进程退出");
         server.kill("SIGTERM");
     }
     // server = cp.spawn("node", ["--inspect=9060", serverPath], {
@@ -49,7 +59,7 @@ export function RunServer(serverPath, debug, cb: any = false) {
         params.push("--inspect=" + debug);
     }
     params.push(serverPath);
-    console.info("启动debug模式的服务", params);
+    log.info("启动debug模式的服务", params);
     server = cp.spawn("node", params, {
         env: Object.assign(process.env, { NODE_ENV: "development" }),
         cwd: "build",
@@ -60,7 +70,7 @@ export function RunServer(serverPath, debug, cb: any = false) {
             if (cbIsPending) {
                 throw new Error(`Server terminated unexpectedly with code: ${code} signal: ${signal}`);
             } else {
-                console.warn("进程重启");
+                log.warn("进程重启");
             }
         });
     }
@@ -72,7 +82,7 @@ export function RunServer(serverPath, debug, cb: any = false) {
 
 process.on("exit", () => {
     if (server) {
-        console.warn("进程退出");
+        log.warn("进程退出");
         server.kill("SIGTERM");
     }
 });

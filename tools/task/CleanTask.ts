@@ -1,16 +1,26 @@
 import * as fs from "fs-extra";
+import * as yargs  from "yargs";
+import { hideBin } from "yargs/helpers";
 import { HelperTask } from "./HelperTask";
 import Logger from "../libs/Logger";
 
-const console = Logger();
+const argv:any = yargs(hideBin(process.argv)).argv;
+
+let logCtg;
+if (argv.verbose) {
+    logCtg = "all";
+} else if (argv.debug) {
+    logCtg = "debug";
+}
+const log = Logger(logCtg);
 export class CleanTask {
     public start() {
-        console.log("->", "CleanTask", HelperTask.taking());
+        log.info("->", "CleanTask", HelperTask.taking());
         try {
             fs.removeSync("build");
-            console.info("CleanTask.remove.build");
+            log.info("CleanTask.remove.build");
         } catch (error) {
-            console.error("CleanTask.build.error", error.message);
+            log.error("CleanTask.build.error", error.message);
         }
     }
 }

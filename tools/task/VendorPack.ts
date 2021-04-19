@@ -4,8 +4,17 @@ import ConfigHelper from "../libs/ConfigHelper";
 import { HelperTask } from "./HelperTask";
 import Logger from "../libs/Logger";
 
-const console = Logger();
+import * as yargs  from "yargs";
+import { hideBin } from "yargs/helpers";
+const argv:any = yargs(hideBin(process.argv)).argv;
 
+let logCtg;
+if (argv.verbose) {
+    logCtg = "all";
+} else if (argv.debug) {
+    logCtg = "debug";
+}
+const log = Logger(logCtg);
 const webpack: any = WebpackRaw;
 
 export class VendorPack {
@@ -21,14 +30,14 @@ export class VendorPack {
     }
 
     public async run() {
-        console.log("->", this.taskName, HelperTask.taking());
+        log.info("->", this.taskName, HelperTask.taking());
         if (this.browserVendor.length > 0) {
-            console.info("VendorPack > start", this.browserVendor.join(","));
+            log.info("VendorPack > start", this.browserVendor.join(","));
             await this.pack();
             this.vendorModel = true;
             return true;
         } else {
-            console.warn("VendorPack", "is disabled", this.browserVendor);
+            log.warn("VendorPack", "is disabled", this.browserVendor);
         }
         this.vendorModel = false;
         return false;
@@ -113,17 +122,17 @@ export class VendorPack {
 
     private done(error, stats) {
         if (error === null) {
-            console.info(this.taskName, "pack.done");
+            log.info(this.taskName, "pack.done");
         } else {
-            console.info(this.taskName, "pack.done.error", error);
+            log.info(this.taskName, "pack.done.error", error);
             if (stats.compilation.errors.length > 0) {
                 const errors = stats.compilation.errors[0];
                 try {
-                    console.warn(this.taskName, "代码有错误",
+                    log.warn(this.taskName, "代码有错误",
                         errors.module.rawRequest, "错误数", stats.compilation.errors.length);
-                    console.error(this.taskName, errors.message);
+                    log.error(this.taskName, errors.message);
                 } catch (error) {
-                    console.error(this.taskName, errors);
+                    log.error(this.taskName, errors);
                 }
             }
         }

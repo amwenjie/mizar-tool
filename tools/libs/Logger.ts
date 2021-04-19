@@ -11,7 +11,7 @@ log4js.configure({
             layout: {
                 type: "coloured",
             },
-        },     //控制台输出
+        }, // 控制台输出
         file: {
             type: "dateFile",
             filename: 'logs/log.log',
@@ -20,7 +20,10 @@ log4js.configure({
         },
     },
     categories: {
-        default: { appenders: ['default'], level: 'ALL' },
+        all: { appenders: ['default'], level: 'ALL' },
+        debug: { appenders: ['default'], level: 'debug' },
+        default: { appenders: ['default'], level: 'warn' },
+        error: { appenders: ['default'], level: 'error' },
         logFile: { appenders: ['default', 'file'], level: 'ALL' },
     },
     replaceConsole: true,

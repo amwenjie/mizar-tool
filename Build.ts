@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import * as ora from "ora";
 import * as yargs  from "yargs";
 import { hideBin } from "yargs/helpers";
 import { HelperTask } from "./tools/task/HelperTask";
@@ -6,24 +7,48 @@ import { PublishTask } from "./tools/task/PublishTask";
 import { PackageInfo } from "./tools/task/PackageInfo";
 import { ShellTask } from "./tools/task/ShellTask";
 import { UglifyJSTask } from "./tools/task/UglifyJSTask";
+import { CopyTask } from "./tools/task/CopyTask";
+import Logger from "./tools/libs/Logger";
 
+const argv:any = yargs(hideBin(process.argv)).argv;
+
+let logCtg;
+if (argv.verbose) {
+    logCtg = "all";
+} else if (argv.debug) {
+    logCtg = "debug";
+}
+const log = Logger(logCtg);
 class Build {
     public async startup() {
-        const argv = yargs(hideBin(process.argv)).argv;
-        console.log('build', argv);
+        const taskSpinner = ora("prepare the task environment...").start();
+        log.log();
         const task = new HelperTask();
         // 清理及数据准备工作
         task.init();
         task.start();
+        taskSpinner.succeed();
+        const packageInfoSpinner = ora("process build target directory & packageInfo...").start();
+        log.log();
         await task.cleanAsync();
 
         // 开始编译工作
         try {
             await new PackageInfo().run();
+            packageInfoSpinner.succeed();
+            const tsSpinner = ora("transform ts file...").start();
+            log.log();
             await new ShellTask().run("tsc -p ./tools");
+            await new ShellTask().run("tsc -p ./bin");
+            tsSpinner.succeed();
+            const ugSpinner = ora("optimize...").start();
+            log.log();
             await new UglifyJSTask().run();
+            await new CopyTask("./packages", "./packages").run();
+            ugSpinner.succeed();
+            log.log();
         } catch (e) {
-            console.log(e);
+            log.error(e);
         }
         if (argv.publish) {
             // 开始发布任务

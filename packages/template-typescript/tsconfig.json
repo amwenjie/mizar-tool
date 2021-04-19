@@ -1,0 +1,26 @@
+{
+    "compilerOptions": {
+        "target": "es3",
+        "traceResolution": false,
+        "lib": [
+            "es2015",
+            "dom",
+            "es2017"
+        ],
+        "importHelpers": true,
+        "allowJs": true,
+        "baseUrl": "src",
+        "outDir": "build",
+        "pretty": true,
+        "module": "commonjs",
+        "jsx": "react",
+        "declaration": false,
+        "sourceMap": true,
+        "noImplicitAny": false,
+        "noFallthroughCasesInSwitch": false,
+        "typeRoots": [
+            "node_modules/@types",
+            "typings"
+        ]
+    }
+}

@@ -11,8 +11,15 @@ import { WebpackTaskBase } from "../libs/WebpackTaskBase";
 import { HelperTask } from "./HelperTask";
 import { RunServer } from "./RunServer";
 import Logger from "../libs/Logger";
+const argv = yargs(hideBin(process.argv)).argv;
 
-const console = Logger();
+let logCtg;
+if (argv.verbose) {
+    logCtg = "all";
+} else if (argv.debug) {
+    logCtg = "debug";
+}
+const log = Logger(logCtg);
 
 export class ServerPack extends WebpackTaskBase {
     private globalConfig: IGlobalConfig;
@@ -30,13 +37,13 @@ export class ServerPack extends WebpackTaskBase {
     public setAutoRun(autoRun: boolean = true) {
         this.autoRun = autoRun;
         this.debug = ConfigHelper.get("debugPort", 0);
-        console.info("debugPort", this.debug);
+        log.info("debugPort", this.debug);
         return this;
     }
-    public setWatchModel(watchModel: boolean) {
-        this.watchModel = watchModel;
-        return this;
-    }
+    // public setWatchModel(watchModel: boolean) {
+    //     this.watchModel = watchModel;
+    //     return this;
+    // }
     public async scan() {
         return new Promise((resolve) => {
             const entry = {};
@@ -54,8 +61,8 @@ export class ServerPack extends WebpackTaskBase {
                 }
             });
             walk.on("end", () => {
-                console.info(this.taskName, "scan.done", Path.resolve(this.rootPath));
-                console.info(this.taskName, "pack.keys", Object.keys(entry).join(","));
+                log.info(this.taskName, "scan.done", Path.resolve(this.rootPath));
+                log.info(this.taskName, "pack.keys", Object.keys(entry).join(","));
                 resolve(entry);
             });
         });
@@ -64,20 +71,18 @@ export class ServerPack extends WebpackTaskBase {
         this.globalConfig = getGlobalConfig();
         this.tslintConfig = ConfigHelper.get("tslint", { disable: false });
         this.cssModule = ConfigHelper.get("serverPack.cssModule", true);
-        this.argv = yargs(hideBin(process.argv)).argv;
-
-        console.log("->", this.taskName, HelperTask.taking());
-        console.info(this.taskName, { "index": Path.resolve(`${this.rootPath}/${this.src}`) });
+        log.info("->", this.taskName, HelperTask.taking());
+        log.info(this.taskName, { "index": Path.resolve(`${this.rootPath}/${this.src}`) });
         try {
             await this.pack({ "index": Path.resolve(`${this.rootPath}/${this.src}`) });
         } catch (e) {
-            console.error(this.taskName, " run into an error: ", e);
+            log.error(this.taskName, " run into an error: ", e);
         }
     }
     
     private shouldSourceModuled(resourcePath: string): boolean {
-        // console.warn('!/node_modules/i.test(resourcePath): ', !/node_modules/i.test(resourcePath));
-        // console.warn('/components?|pages?/i.test(resourcePath): ', /components?|pages?/i.test(resourcePath));
+        // log.warn('!/node_modules/i.test(resourcePath): ', !/node_modules/i.test(resourcePath));
+        // log.warn('/components?|pages?/i.test(resourcePath): ', /components?|pages?/i.test(resourcePath));
         return /components?|pages?/i.test(resourcePath);
     }
 
@@ -113,7 +118,7 @@ export class ServerPack extends WebpackTaskBase {
                     allowlist: [
                         /mizar-ssrframe/,
                     ],
-                }),
+                }) as any
             ],
             module: {
                 rules: rules.concat([
@@ -243,12 +248,12 @@ export class ServerPack extends WebpackTaskBase {
             config.devtool = undefined;
         }
         if (this.argv && this.argv.verbose) {
-            console.info("ServerPack.pack", { config: JSON.stringify(config) });
+            log.info("ServerPack.pack", { config: JSON.stringify(config) });
         }
         try {
             await this.webpack(config);
         } catch (e) {
-            console.error(this.taskName, " webpacking raised an error: ", e);
+            log.error(this.taskName, " webpacking raised an error: ", e);
         }
     }
     protected async doneCallback() {

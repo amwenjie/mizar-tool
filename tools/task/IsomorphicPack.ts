@@ -17,9 +17,15 @@ import { ConfigHelper } from "../libs/ConfigHelper";
 import Logger from "../libs/Logger";
 import { WebpackTaskBase } from "../libs/WebpackTaskBase";
 import { HelperTask } from "./HelperTask";
+const argv = yargs(hideBin(process.argv)).argv;
 
-const console = Logger();
-
+let logCtg;
+if (argv.verbose) {
+    logCtg = "all";
+} else if (argv.debug) {
+    logCtg = "debug";
+}
+const log = Logger(logCtg);
 export class IsomorphicPack extends WebpackTaskBase {
     public rootPath: string = "./";
     public src = "src/isomorphic/clientEntries";
@@ -40,14 +46,14 @@ export class IsomorphicPack extends WebpackTaskBase {
             this.globalConfig.publicPath,
             'client/'
         ].join("");
-        console.info("isomorphicPack getPublicPath: ", path);
+        log.info("isomorphicPack getPublicPath: ", path);
         return path;
     }
 
-    public setWatchModel(watchModel: boolean) {
-        this.watchModel = watchModel;
-        return this;
-    }
+    // public setWatchModel(watchModel: boolean) {
+    //     this.watchModel = watchModel;
+    //     return this;
+    // }
     public setVendorModel(vendorModel: boolean) {
         this.vendorModel = vendorModel;
         return this;
@@ -57,20 +63,17 @@ export class IsomorphicPack extends WebpackTaskBase {
         this.tslintConfig = ConfigHelper.get("tslint", { disable: false });
         this.publicPath = this.getPublicPath();
         this.outputPath = `${this.rootPath}${this.globalConfig.clientOutput}`;
-        this.argv = yargs(hideBin(process.argv)).argv;
 
-        console.log("->", "IsomorphicPack", HelperTask.taking());
+        log.info("->", "IsomorphicPack", HelperTask.taking());
         try {
             const entry = await this.scan();
             if (!entry || Object.keys(entry).length === 0) {
                 return;
             }
-            if (this.argv && this.argv.verbose) {
-                console.info(this.taskName, "run.entry", entry);
-            }
+            log.info(this.taskName, "run.entry", entry);
             await this.pack(entry);
         } catch (error) {
-            console.error(this.taskName, "FATAL_ERROR", error.message);
+            log.error(this.taskName, "FATAL_ERROR", error.message);
             throw error;
         }
     }
@@ -84,7 +87,7 @@ export class IsomorphicPack extends WebpackTaskBase {
             const entries = {};
             const entryDir = this.rootPath + this.src;
             if (!fs.existsSync(entryDir)) {
-                console.warn("isomorphic pack build入口目录不存在：", entryDir);
+                log.warn("isomorphic pack build入口目录不存在：", entryDir);
                 resolve({});
                 return;
             }
@@ -101,8 +104,8 @@ export class IsomorphicPack extends WebpackTaskBase {
                 }
             });
             walk.on("end", () => {
-                console.info("IsomorphicPack.scan.end", Path.resolve(this.rootPath));
-                console.info("IsomorphicPack.pack.keys", Object.keys(entries).join(","));
+                log.info("IsomorphicPack.scan.end", Path.resolve(this.rootPath));
+                log.info("IsomorphicPack.pack.keys", Object.keys(entries).join(","));
                 resolve(entries);
             });
             walk.on("error", (error) => {
@@ -112,8 +115,9 @@ export class IsomorphicPack extends WebpackTaskBase {
     }
 
     private shouldSourceModuled(resourcePath: string): boolean {
-        // console.warn('!/node_modules/i.test(resourcePath): ', !/node_modules/i.test(resourcePath));
-        // console.warn('/components?|pages?/i.test(resourcePath): ', /components?|pages?/i.test(resourcePath));
+        log.debug('resourcePath: ', resourcePath);
+        log.debug('!/node_modules/i.test(resourcePath): ', !/node_modules/i.test(resourcePath));
+        log.debug('/components?|pages?/i.test(resourcePath): ', /components?|pages?/i.test(resourcePath));
         return /components?|pages?/i.test(resourcePath);
     }
 
@@ -152,7 +156,7 @@ export class IsomorphicPack extends WebpackTaskBase {
     }
 
     private async pack(entry) {
-        // console.info("IsomorphicPack.pack.run", entry);
+        // log.info("IsomorphicPack.pack.run", entry);
         let localIdentName = prodLocalIdentName;
         let sourceMap = false;
         if (this.watchModel) {
@@ -352,7 +356,7 @@ export class IsomorphicPack extends WebpackTaskBase {
                         //     //         toplevel: true,
                         //     //     });
                         //     //     if (result.error) {
-                        //     //         console.error(this.taskName, " copy js: ", absoluteFrom, " emit an error: ", result.error);
+                        //     //         log.error(this.taskName, " copy js: ", absoluteFrom, " emit an error: ", result.error);
                         //     //         return content;
                         //     //     } else {
                         //     //         return Buffer.from(result.code);
@@ -372,7 +376,7 @@ export class IsomorphicPack extends WebpackTaskBase {
                         //     //         level: 1
                         //     //     }).minify(content.toString());
                         //     //     if (result.errors) {
-                        //     //         console.error(this.taskName, " copy css: ", absoluteFrom, " emit an error: ", result.errors);
+                        //     //         log.error(this.taskName, " copy css: ", absoluteFrom, " emit an error: ", result.errors);
                         //     //         return content;
                         //     //     } else {
                         //     //         return Buffer.from(result.styles);
@@ -392,7 +396,7 @@ export class IsomorphicPack extends WebpackTaskBase {
                         //     //         level: 1
                         //     //     }).minify(content.toString());
                         //     //     if (result.errors) {
-                        //     //         console.error(this.taskName, " copy css: ", absoluteFrom, " emit an error: ", result.errors);
+                        //     //         log.error(this.taskName, " copy css: ", absoluteFrom, " emit an error: ", result.errors);
                         //     //         return content;
                         //     //     } else {
                         //     //         return Buffer.from(result.styles);
@@ -485,13 +489,13 @@ export class IsomorphicPack extends WebpackTaskBase {
         //     config.plugins.push(dllReferencePlugin);
         // }
         if (this.argv && this.argv.verbose) {
-            console.info(this.taskName, "pack", { config: JSON.stringify(config) });
+            log.info(this.taskName, "pack", { config: JSON.stringify(config) });
         }
         
         try {
             await this.webpack(config);
         } catch (e) {
-            console.error(this.taskName, " webpacking raised an error: ", e);
+            log.error(this.taskName, " webpacking raised an error: ", e);
         }
     }
 }

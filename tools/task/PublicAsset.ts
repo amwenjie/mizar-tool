@@ -6,7 +6,17 @@ import Logger from "../libs/Logger";
 import { HelperTask } from "./HelperTask";
 import getGlobalConfig from "../getGlobalConfig";
 
-const console = Logger();
+import * as yargs  from "yargs";
+import { hideBin } from "yargs/helpers";
+const argv:any = yargs(hideBin(process.argv)).argv;
+
+let logCtg;
+if (argv.verbose) {
+    logCtg = "all";
+} else if (argv.debug) {
+    logCtg = "debug";
+}
+const log = Logger(logCtg);
 export class PublicAsset {
     public taskName = "PublicAsset";
     public watchModel: boolean = false;
@@ -17,7 +27,7 @@ export class PublicAsset {
     private dest = Path.resolve(getGlobalConfig().rootOutput, "public");
 
     private copy(src) {
-        console.info(this.taskName, " src: ", src, " dest: ", this.dest);
+        log.info(this.taskName, " src: ", src, " dest: ", this.dest);
         return gulp.src(src)
             .pipe(plumber())
             // .pipe(rev())
@@ -44,8 +54,8 @@ export class PublicAsset {
 
     public async run() {
         return new Promise((resolve, reject) => {
-            console.log("->", this.taskName, HelperTask.taking());
-            console.info(this.taskName, ' src: ', this.src);
+            log.info("->", this.taskName, HelperTask.taking());
+            log.info(this.taskName, ' src: ', this.src);
             this.copy(this.src).on("end", e => {
                 if (e) {
                     reject(e);
@@ -54,13 +64,13 @@ export class PublicAsset {
                 if (this.watchModel) {
                     const watcher = gulp.watch(this.src, this.copy);
                     watcher.on("change", (eventType: string, filename: string) => {
-                        console.info(this.taskName, " file " + filename + " was " + eventType + ", running tasks...");
+                        log.info(this.taskName, " file " + filename + " was " + eventType + ", running tasks...");
                     });
                 }
-                console.info(this.taskName, " done ", this.count++);
+                log.info(this.taskName, " done ", this.count++);
                 resolve("done");
             }).on("error", e => {
-                console.info(this.taskName, " error ", e);
+                log.info(this.taskName, " error ", e);
                 reject(e);
             });
         });

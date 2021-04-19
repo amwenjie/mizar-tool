@@ -1,9 +1,19 @@
+import * as yargs  from "yargs";
+import { hideBin } from "yargs/helpers";
 import * as Path from "path";
 import * as webpack from "webpack";
 import { HelperTask } from "../task/HelperTask";
 import Logger from "./Logger";
 
-const console = Logger();
+const argv:any = yargs(hideBin(process.argv)).argv;
+
+let logCtg;
+if (argv.verbose) {
+    logCtg = "all";
+} else if (argv.debug) {
+    logCtg = "debug";
+}
+const log = Logger(logCtg);
 
 export class WebpackTaskBase {
     public taskName = "WebpackTaskBase";
@@ -16,7 +26,7 @@ export class WebpackTaskBase {
         this.taskName = taskName;
     }
 
-    public setWatch(watchModel) {
+    public setWatchModel(watchModel) {
         this.watchModel = watchModel;
         return this;
     }
@@ -45,29 +55,29 @@ export class WebpackTaskBase {
         });
     }
     protected async doneCallback() {
-        console.log(this.taskName, "doneCallback");
+        log.info(this.taskName, "doneCallback");
     }
     protected async done(webpackSelfError, stats) {
         if (webpackSelfError) {
-            console.error(this.taskName, "> error", webpackSelfError.stack || webpackSelfError);
+            log.error(this.taskName, "> error", webpackSelfError.stack || webpackSelfError);
             if (webpackSelfError.details) {
-                console.error(webpackSelfError.details);
+                log.error(webpackSelfError.details);
             }
             this.helperTask.sendMessage(this.taskName, "webpack运行有错" + this.count);
             return;
         }
         const info = stats.toJson();
         const errors = info.errors;
-        console.warn("共有错误数：", errors.length);
+        log.warn("共有错误数：", errors.length);
         const warnings = info.warnings;
-        console.warn("共有警告数：", warnings.length);
+        log.warn("共有警告数：", warnings.length);
 
         if (stats.hasErrors()) {
             // 有错误
-            console.error(`${this.taskName} has error: `);
-            console.error(info.errors);
+            log.error(`${this.taskName} has error: `);
+            log.error(info.errors);
             // errors.forEach((error) => {
-            //     console.error(`WebpackTaskBase ${this.taskName}  error : ${error}`);
+            //     log.error(`WebpackTaskBase ${this.taskName}  error : ${error}`);
             // });
             // const firstError = errors[0];
             this.helperTask.sendMessage(this.taskName, "代码有错误");
@@ -81,12 +91,12 @@ export class WebpackTaskBase {
         if (stats.hasWarnings()) {
             // 有警告
             if (this.watchModel === true) {
-                console.warn(`${this.taskName} has warning: `);
-                console.warn(info.warnings);
+                log.warn(`${this.taskName} has warning: `);
+                log.warn(info.warnings);
             }
             // if (this.watchModel === true) {
             //     warnings.forEach((warning) => {
-            //         console.warn(`WebpackTaskBase ${this.taskName} warning : ${warning}`);
+            //         log.warn(`WebpackTaskBase ${this.taskName} warning : ${warning}`);
             //     });
             // }
             // const firstWarning = warnings[0];
@@ -94,7 +104,7 @@ export class WebpackTaskBase {
         }
 
         // 完成
-        console.info(this.taskName + ".done", this.count++);
+        log.info(this.taskName + ".done", this.count++);
         await this.doneCallback();
         this.helperTask.sendMessage(this.taskName, "编译结束:" + this.count);
     }
