@@ -104,39 +104,5 @@
   },
   "engines": {
     "node": "^12.0.0 || >= 14.0.0"
-  },
-  "browserslist": [
-    "Android 2.3",
-    "Android >= 4",
-    "Chrome >= 20",
-    "Firefox >= 24",
-    "Explorer >= 8",
-    "iOS >= 6",
-    "Opera >= 12",
-    "Safari >= 6"
-  ],
-  "customConfig": {
-    "debugPort": 9026,
-    "vendorPack": {
-      "minify": true,
-      "browserVendor": []
-    },
-    "tslint": {
-      "disable": false
-    },
-    "clientPack": {
-      "minify": true,
-      "cssModule": true,
-      "chunk": true,
-      "style": {
-        "sourceMap": true,
-        "base64": false,
-        "ieCompat": true
-      }
-    },
-    "serverPack": {
-      "minify": true,
-      "templateMinify": true
-    }
   }
 }

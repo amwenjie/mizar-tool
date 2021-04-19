@@ -36,7 +36,7 @@ class Build {
         try {
             await new PackageInfo().run();
             packageInfoSpinner.succeed();
-            const tsSpinner = ora("transform ts file...").start();
+            const tsSpinner = ora("transform typescript file...").start();
             log.log();
             await new ShellTask().run("tsc -p ./tools");
             await new ShellTask().run("tsc -p ./bin");

@@ -36,7 +36,7 @@ let projectName;
 function getDependencies() {
     return Object.keys({
         "core-js": "^3.8.2",
-        "mizar-ssrframe": "~0.0.7",
+        "mizar": "~0.0.8",
         "react": "~17.0.1",
         "react-dom": "~17.0.1",
         "react-redux": "~7.2.2",
@@ -71,7 +71,7 @@ function init() {
         //     );
         //     log.log(
         //         `      ${chalk.cyan(
-        //             'https://github.com/amwenjie/mizar-tool/issues/new'
+        //             'https://github.com/amwenjie/alcor/issues/new'
         //         )}`
         //     );
         //     log.log();
@@ -99,7 +99,7 @@ function init() {
                         'Safari',
                     ],
                     // npmPackages: getDependencies(),
-                    // npmGlobalPackages: ['mizar-tool'],
+                    // npmGlobalPackages: ['alcor'],
                 },
                 {
                     duplicates: true,
@@ -135,7 +135,7 @@ function init() {
     checkForLatestVersion()
         .catch(() => {
             try {
-                return execSync('npm view mizar-ssrframe-tool version').toString().trim();
+                return execSync('npm view alcor version').toString().trim();
             } catch (e) {
                 return null;
             }
@@ -145,7 +145,7 @@ function init() {
                 log.log();
                 log.error(
                     chalk.yellow(
-                        `You are running \`mizar-ssrframe-tool\` ${packageJson.version}, which is behind the latest release (${latest}).\n\n`
+                        `You are running \`alcor\` ${packageJson.version}, which is behind the latest release (${latest}).\n\n`
                     )
                 );
                 log.log();
@@ -671,7 +671,7 @@ function checkForLatestVersion() {
     return new Promise((resolve, reject) => {
         https
             .get(
-                'https://registry.npmjs.org/-/package/mizar-ssrframe-tool/dist-tags',
+                'https://registry.npmjs.org/-/package/alcor/dist-tags',
                 res => {
                     if (res.statusCode === 200) {
                         let body = '';
@@ -729,7 +729,7 @@ init();
 //                                 'Safari',
 //                             ],
 //                             // npmPackages: getDependencies(),
-//                             // npmGlobalPackages: ['mizar-tool'],
+//                             // npmGlobalPackages: ['alcor'],
 //                         },
 //                         {
 //                             duplicates: true,
@@ -765,7 +765,7 @@ init();
 //             checkForLatestVersion()
 //                 .catch(() => {
 //                     try {
-//                         return execSync('npm view mizar-ssrframe-tool version').toString().trim();
+//                         return execSync('npm view alcor version').toString().trim();
 //                     } catch (e) {
 //                         return null;
 //                     }
@@ -775,7 +775,7 @@ init();
 //                         log.log();
 //                         log.error(
 //                             chalk.yellow(
-//                                 `You are running \`mizar-ssrframe-tool\` ${packageJson.version}, which is behind the latest release (${latest}).\n\n`
+//                                 `You are running \`alcor\` ${packageJson.version}, which is behind the latest release (${latest}).\n\n`
 //                             )
 //                         );
 //                         log.log();

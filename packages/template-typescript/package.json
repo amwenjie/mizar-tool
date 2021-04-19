@@ -35,26 +35,37 @@
         "mizar-ssrframe-tool": "~0.0.16"
     },
     "browserslist": [
-        "Android 2.3",
-        "Android >= 4",
-        "Chrome >= 20",
-        "Firefox >= 24",
-        "Explorer >= 8",
-        "iOS >= 6",
-        "Opera >= 12",
-        "Safari >= 6"
+      "Android 2.3",
+      "Android >= 4",
+      "Chrome >= 20",
+      "Firefox >= 24",
+      "Explorer >= 8",
+      "iOS >= 6",
+      "Opera >= 12",
+      "Safari >= 6"
     ],
     "customConfig": {
-        "port": 8889,
-        "debugPort": 9026,
-        "cdn": "http://localhost:8889/",
-        "assetsPathPrefix": "static",
-        "tslint": {
-            "disable": false
-        },
-        "serverPack": {
-            "minify": true,
-            "templateMinify": true
+      "debugPort": 9026,
+      "vendorPack": {
+        "minify": true,
+        "browserVendor": []
+      },
+      "tslint": {
+        "disable": false
+      },
+      "clientPack": {
+        "minify": true,
+        "cssModule": true,
+        "chunk": true,
+        "style": {
+          "sourceMap": true,
+          "base64": false,
+          "ieCompat": true
         }
+      },
+      "serverPack": {
+        "minify": true,
+        "templateMinify": true
+      }
     }
 }
