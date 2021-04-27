@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import * as ora from "ora";
-import * as yargs  from "yargs";
+import * as yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 import { HelperTask } from "./task/HelperTask";
 import { IsomorphicPack } from "./task/IsomorphicPack";
@@ -41,7 +41,7 @@ export class ProjectBuild {
     }
     private async build() {
         let spinner;
-        spinner = ora("prepare the task environment...").start();
+        spinner = ora("prepare the environment...").start();
         log.log();
         // 环境准备
         const task = new HelperTask();
@@ -50,7 +50,7 @@ export class ProjectBuild {
         task.start();
         spinner.succeed();
         try {
-            spinner = ora("process build target directory & packageInfo...").start();
+            spinner = ora("process target directory & packageInfo...").start();
             log.log();
             // 1 clean
             await task.cleanAsync();
@@ -63,7 +63,7 @@ export class ProjectBuild {
             await new StylePack()
                 .setWatchModel(this.watchModel)
                 .run();
-                spinner.succeed();
+            spinner.succeed();
             // 3. 生成ClientPack
             // const vendor = await new VendorPack()
             //     .setWatchModel(this.watchModel)
@@ -101,9 +101,9 @@ export class ProjectBuild {
     if (argv.runServer) {
         projectBuild.setRunServer(true);
     }
-    if (argv.publish) {
-        projectBuild.setPublishModel(true);
-    }
+    // if (argv.publish) {
+    //     projectBuild.setPublishModel(true);
+    // }
     try {
         await projectBuild.start();
     } catch (error) {

@@ -54,7 +54,13 @@ export class HelperTask {
         if (argv["no-notify"]) {
             return;
         }
-        log.info("sendMessage", titleStr, messageStr);
+        let logMethod = "info";
+        if (/错误|error/.test(messageStr)) {
+            logMethod = "error";
+        } else if (/警告|warn/.test(messageStr)) {
+            logMethod = "warn";
+        }
+        log[logMethod]("sendMessage", titleStr, messageStr);
         const msg = {
             message: messageStr.substr(0, 100),
             title: titleStr,

@@ -102,9 +102,7 @@ export class VendorPack {
             }
 
             const defineOption = {
-                "process.env": {
-                    NODE_ENV,
-                },
+                "process.env.NODE_ENV": NODE_ENV,
             };
             config.plugins.push(new webpack.DefinePlugin(defineOption));
             const compiler = webpack(config);

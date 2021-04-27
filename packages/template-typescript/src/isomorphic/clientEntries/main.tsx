@@ -1,4 +1,4 @@
-import { bootstrap } from "mizar-ssrframe/iso/bootstrap";
+import { bootstrap } from "mizar/iso/bootstrap";
 import pageRouter from "../pageRouter";
 
 bootstrap(pageRouter)('app');

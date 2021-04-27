@@ -21,7 +21,7 @@ if (argv.verbose) {
 const log = Logger(logCtg);
 class Build {
     public async startup() {
-        const taskSpinner = ora("prepare the task environment...").start();
+        const taskSpinner = ora("prepare the environment...").start();
         log.log();
         const task = new HelperTask();
         // 清理及数据准备工作
@@ -38,8 +38,8 @@ class Build {
             packageInfoSpinner.succeed();
             const tsSpinner = ora("transform typescript file...").start();
             log.log();
-            await new ShellTask().run("tsc -p ./tools");
-            await new ShellTask().run("tsc -p ./bin");
+            await new ShellTask("./tools").run("tsc", "-p");
+            await new ShellTask("./bin").run("tsc", "-p");
             tsSpinner.succeed();
             const ugSpinner = ora("optimize...").start();
             log.log();

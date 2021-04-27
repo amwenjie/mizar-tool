@@ -472,9 +472,7 @@ export class IsomorphicPack extends WebpackTaskBase {
         }
 
         const defineOption = {
-            "process.env": {
-                NODE_ENV,
-            },
+            "process.env.NODE_ENV": NODE_ENV,
         };
         config.plugins.push(new webpack.DefinePlugin(defineOption));
 
@@ -493,7 +491,7 @@ export class IsomorphicPack extends WebpackTaskBase {
         }
         
         try {
-            await this.webpack(config);
+            await this.compile(config);
         } catch (e) {
             log.error(this.taskName, " webpacking raised an error: ", e);
         }

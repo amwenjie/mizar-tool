@@ -14,7 +14,7 @@
     },
     "dependencies": {
         "core-js": "^3.8.2",
-        "mizar-ssrframe": "~0.0.7",
+        "mizar": "~0.0.8",
         "react": "~17.0.1",
         "react-dom": "~17.0.1",
         "react-redux": "~7.2.2",
@@ -32,7 +32,7 @@
         "@types/react-router": "~5.1.11",
         "@types/react-router-config": "~5.0.2",
         "@types/react-router-dom": "~5.1.7",
-        "mizar-ssrframe-tool": "~0.0.16"
+        "alcor": "~0.1.0"
     },
     "browserslist": [
       "Android 2.3",

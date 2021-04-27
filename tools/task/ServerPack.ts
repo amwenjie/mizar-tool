@@ -116,7 +116,7 @@ export class ServerPack extends WebpackTaskBase {
             externals: [
                 nodeExternals({
                     allowlist: [
-                        /mizar-ssrframe/,
+                        /mizar/,
                     ],
                 }) as any
             ],
@@ -251,7 +251,7 @@ export class ServerPack extends WebpackTaskBase {
             log.info("ServerPack.pack", { config: JSON.stringify(config) });
         }
         try {
-            await this.webpack(config);
+            await this.compile(config);
         } catch (e) {
             log.error(this.taskName, " webpacking raised an error: ", e);
         }

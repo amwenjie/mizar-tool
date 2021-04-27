@@ -1,4 +1,4 @@
-import { connect } from "mizar-ssrframe/iso/connect";
+import { connect } from "mizar/iso/connect";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import Page from "../../common/components/Page";

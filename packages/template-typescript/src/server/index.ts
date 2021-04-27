@@ -1,5 +1,5 @@
-import WebServer from "mizar-ssrframe/server";
-import { bootstrap } from "mizar-ssrframe/server/bootstrap";
+import WebServer from "mizar/server";
+import { bootstrap } from "mizar/server/bootstrap";
 import clientRouter from "../isomorphic/pageRouter";
 import config from "../config";
 import meta from "./meta";
