@@ -62,9 +62,10 @@ export class PublicAsset {
                     return;
                 }
                 if (this.watchModel) {
-                    const watcher = gulp.watch(this.src, this.copy);
+                    const watcher = gulp.watch(this.src);
                     watcher.on("change", (eventType: string, filename: string) => {
                         log.info(this.taskName, " file " + filename + " was " + eventType + ", running tasks...");
+                        this.copy(this.src);
                     });
                 }
                 log.info(this.taskName, " done ", this.count++);

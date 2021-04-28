@@ -8,6 +8,7 @@
  */
 
 // var path = require("path")
+import { bold, green } from "colorette"
 import * as  cp from "child_process";
 import Logger from "../libs/Logger";
 
@@ -24,7 +25,7 @@ if (argv.verbose) {
 const log = Logger(logCtg);
 
 // Should match the text string used in `src/server.js/server.listen(...)`
-const RUNNING_REGEXP = /The server is running at http:\/\/(.*?)\//;
+const RUNNING_REGEXP = /server starup successful, listen at port: (\d+)/;
 
 let server;
 
@@ -37,10 +38,11 @@ export function RunServer(serverPath, debug, cb: any = false) {
         const match = data.toString("utf8").match(RUNNING_REGEXP);
         // process.stdout.write(time.replace(/.*(\d{2}:\d{2}:\d{2}).*/, "[$1]") + " [INFO] server  - ");
         // log.info(time.replace(/.*(\d{2}:\d{2}:\d{2}).*/, "[$1] "))
-        process.stdout.write(data);
+        // process.stdout.write(data);
 
         if (match) {
             server.stdout.removeListener("data", onStdOut);
+            log.info(bold(green("server starup successful, at port: " + match[1])));
             server.stdout.on("data", (x) => process.stdout.write(x));
             if (cb) {
                 cbIsPending = false;

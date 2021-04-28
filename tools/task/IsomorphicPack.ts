@@ -203,20 +203,7 @@ export class IsomorphicPack extends WebpackTaskBase {
             module: {
                 rules: rules.concat([
                     {
-                        test: /\.ts$/,
-                        use: [
-                            {
-                                loader: "ts-loader",
-                                options: {
-                                    compilerOptions: {
-                                        declaration: false,
-                                    },
-                                },
-                            },
-                        ],
-                    },
-                    {
-                        test: /\.tsx$/,
+                        test: /\.tsx?$/,
                         use: [
                             {
                                 loader: "ts-loader",

@@ -16,35 +16,50 @@ if (argv.verbose) {
 const log = Logger(logCtg);
 
 export class WebpackTaskBase {
-    // private compileContext = {
-    //     compiler: null,
-    //     state: false,
-    //     stats: undefined
-    // };
-    
+    private static compileQueue = [];
     private watcher;
+    private index: number;
     public taskName = "WebpackTaskBase";
     public watchModel = false;
     public count = 1;
     public helperTask = new HelperTask();
     public projectRoot = Path.resolve(".");
 
-    // private compileInvalid() {
-    //     if (this.compileContext.state) {
-    //         log.info("compilation starting...");
-    //     }
-    //     this.compileContext.state = false;
-    //     this.compileContext.stats = undefined;
-    // }
+    private compileInvalid() {
+        const context = WebpackTaskBase.compileQueue[this.index];
+        if (context) {
+            context.state = false;
+            context.callback = null;
+        }
+    }
+    
+    private compileWatchRun() {
+        const context = WebpackTaskBase.compileQueue[this.index];
+        if (context) {
+            context.state = false;
+            context.callback = this.doneCallback.bind(this);
+        }
+    }
 
-    // private compileDone(stats) {
-    //     this.compileContext.state = true;
-    //     this.compileContext.stats = stats;
-    //     const printedStats = stats.toString(this.compileContext.compiler.options.stats);
-    //     if (printedStats) {
-    //         log.info("stats: ", printedStats);
-    //     }
-    // }
+    private compileDone(status) {
+        const context = WebpackTaskBase.compileQueue[this.index];
+        if (context) {
+            context.state = true;
+        }
+    }
+
+    private shouldDoneCallbackExec() {
+        const beforeQueue = WebpackTaskBase.compileQueue.slice(0, this.index);
+        return beforeQueue.every(context => {
+            return context.state === true;
+        });
+    }
+
+    private isAllCompileDone() {
+        return WebpackTaskBase.compileQueue.every(context => {
+            return context.state === true;
+        });
+    }
 
     public setTaskName(taskName: string) {
         this.taskName = taskName;
@@ -67,25 +82,41 @@ export class WebpackTaskBase {
                         }));
                     }
                     await this.done(error, stats);
+                    if (this.isAllCompileDone()) {
+                        WebpackTaskBase.compileQueue.forEach(async (context) => {
+                            if (typeof context.callback === "function") {
+                                await context.callback(); // .call(context.context);
+                                context.callback = null;
+                            }
+                        });
+                    }
+                    // if (this.shouldDoneCallbackExec()) {
+                    //     await this.doneCallback();
+                    // }
                 } catch (error) {
                     return reject(error);
                 }
                 resolve("succeess");
             };
             const compiler = webpack(config);
+            WebpackTaskBase.compileQueue.push({
+                state: false,
+                callback: null,
+            });
+            this.index = WebpackTaskBase.compileQueue.length - 1;
             // this.compileContext.compiler = compiler;
-            // compiler.hooks.watchRun.tap("alcor-webpack-task-base", () => {
-            //     log.info("++++++", this.taskName, "watchRun");
-            //     // this.compileInvalid();
-            // });
-            // compiler.hooks.invalid.tap("alcor-webpack-task-base", () => {
-            //     log.info("++++++", this.taskName, "invalid");
-            //     // this.compileInvalid();
-            // });
-            // compiler.hooks.done.tap('alcor-webpack-task-base', stats => {
-            //     log.info("++++++", this.taskName, "done", typeof stats);
-            //     // this.compileDone(stats);
-            // });
+            compiler.hooks.invalid.tap("alcor-webpack-task-base", () => {
+                // log.info("++++++", this.taskName, "invalid");
+                this.compileInvalid();
+            });
+            compiler.hooks.watchRun.tap("alcor-webpack-task-base", () => {
+                // log.info("++++++", this.taskName, "watchRun");
+                this.compileWatchRun();
+            });
+            compiler.hooks.done.tap('alcor-webpack-task-base', stats => {
+                // log.info("++++++", this.taskName, "done");
+                this.compileDone(stats);
+            });
             // compiler.hooks.failed.tap('alcor-webpack-task-base', error => {
             //     log.info("++++++", this.taskName, "failed", error);
             //     // this.compileDone(stats);
@@ -94,16 +125,26 @@ export class WebpackTaskBase {
             //     log.info("++++++", this.taskName, "watchClose");
             //     // this.compileDone(stats);
             // });
-            if (this.watchModel) { 
+            if (this.watchModel) {
                 this.watcher = compiler.watch({}, callback);
                 this.bindExit();
             } else {
-                compiler.run(callback);
+                compiler.run(async (error, stats) => {
+                    await callback(error, stats);
+                    compiler.close(error => {
+                        if (error) {
+                            log.error(this.taskName, " compile close error: ");
+                            log.error(error);
+                            return;
+                        }
+                        log.info(this.taskName, " compile closed.");
+                    });
+                });
             }
         });
     }
     protected async doneCallback() {
-        log.info(this.taskName, "doneCallback");
+        log.info(this.taskName, " empty doneCallback");
     }
     protected async done(webpackSelfError, stats) {
         if (webpackSelfError) {
@@ -154,14 +195,20 @@ export class WebpackTaskBase {
 
         // 完成
         log.info(this.taskName + ".done", this.count);
-        await this.doneCallback();
         this.helperTask.sendMessage(this.taskName, "编译结束:" + this.count++);
     }
     
     public bindExit() {
         process.on('SIGINT', () => {
+            log.info('process SIGINT');
             if (this.watcher) {
-                this.watcher.close();
+                this.watcher.close(() => {
+                    log.debug("before remove compileQueue.length: ", WebpackTaskBase.compileQueue.length);
+                    WebpackTaskBase.compileQueue.splice(this.index, 1);
+                    log.info('GC: remove compileQueue index: ', this.index);
+                    WebpackTaskBase.compileQueue.splice(this.index, 1);
+                    log.debug("after remove compileQueue.length: ", WebpackTaskBase.compileQueue.length);
+                });
             }
         });
     }

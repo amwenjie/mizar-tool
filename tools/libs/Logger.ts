@@ -26,7 +26,7 @@ log4js.configure({
         error: { appenders: ['default'], level: 'error' },
         logFile: { appenders: ['default', 'file'], level: 'ALL' },
     },
-    replaceConsole: true,
+    // replaceConsole: true,
 } as log4js.Configuration);
 
 export default (category = "default") => log4js.getLogger(category);

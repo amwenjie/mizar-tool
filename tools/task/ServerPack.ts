@@ -123,7 +123,7 @@ export class ServerPack extends WebpackTaskBase {
             module: {
                 rules: rules.concat([
                     {
-                        test: /((\.ts)|(\.tsx))$/,
+                        test: /\.tsx?$/,
                         exclude: /node_modules/,
                         use: [
                             {
@@ -257,6 +257,7 @@ export class ServerPack extends WebpackTaskBase {
         }
     }
     protected async doneCallback() {
+        log.info(this.taskName, " doneCallback");
         if (this.autoRun === true && this.watchModel === true) {
             // const pkgName = ConfigHelper.getPackageName();
             let serverEntry = "index";

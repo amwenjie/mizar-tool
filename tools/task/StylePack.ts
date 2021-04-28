@@ -56,7 +56,7 @@ export class StylePack {
         source = source.pipe(sourcemaps.init());
         const less = {
             paths: [
-                Path.resolve(`${this.rootPath}/src/isomorphic/`),
+                Path.resolve(`${this.rootPath}/src/isomorphic`),
                 Path.resolve(`${this.rootPath}/src/public`),
             ],
             plugins: [],
@@ -103,12 +103,13 @@ export class StylePack {
                     return;
                 }
                 if (this.watchModel) {
-                    const watcher = gulp.watch(this.src, this.lessCompile);
-                    watcher.on("change", (eventType: string, filename: string) => {
-                        log.info("开始编译less:", "file " + filename + " was " + eventType + ", running tasks...");
+                    const watcher = gulp.watch(this.src);
+                    watcher.on("change", (filename: string) => {
+                        log.info("less file change: " + filename);
+                        this.lessCompile();
                     });
                 }
-                log.info(this.taskName, "done", this.count++);
+                // log.info(this.taskName, "done", this.count++);
                 resolve("done");
             }).on("error", e => {
                 log.info("StylePack.error", e);
