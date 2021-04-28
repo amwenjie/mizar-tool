@@ -155,6 +155,18 @@ export class IsomorphicPack extends WebpackTaskBase {
         return map;
     }
 
+    private getCssAssetsMainfest() {
+        const cssMainfestPath = Path.resolve(this.outputPath, this.globalConfig.assetsMainfest);
+        const cssMainfestJson = require(cssMainfestPath);
+        const seedJson: any = {};
+        Object.getOwnPropertyNames(cssMainfestJson).forEach(key => {
+            seedJson[`styleEntries/${key}`] = this.publicPath + cssMainfestJson[key];
+        });
+        log.debug("seedJson: ", seedJson);
+        fs.unlink(cssMainfestPath, (err) => {});
+        return seedJson;
+    }
+
     private async pack(entry) {
         // log.info("IsomorphicPack.pack.run", entry);
         let localIdentName = prodLocalIdentName;
@@ -190,7 +202,7 @@ export class IsomorphicPack extends WebpackTaskBase {
                 publicPath: this.publicPath,
                 filename: "[name]_[contenthash:8].js",
                 path: Path.resolve(this.outputPath),
-                assetModuleFilename: "assets/[name]_[contenthash][ext][query]",
+                assetModuleFilename: "assets/[name]_[contenthash:8][ext][query]",
             },
             externals: ({ context, request }, callback) => {
                 const isExternal = /\/server\//i.test(request);
@@ -402,7 +414,8 @@ export class IsomorphicPack extends WebpackTaskBase {
                     ],
                 }),
                 new WebpackManifestPlugin({
-                    fileName: Path.resolve(this.globalConfig.rootOutput, "assetsConfigMainfest.json"),
+                    seed: this.getCssAssetsMainfest(),
+                    fileName: Path.resolve(this.globalConfig.rootOutput, this.globalConfig.assetsMainfest),
                 }),
             ],
             resolve: {

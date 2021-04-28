@@ -75,12 +75,16 @@ export class StylePack {
                 cssnano()
             ]));
         if (this.watchModel) {
-            source = source.pipe(sourcemaps.write("./"));
+            source = source.pipe(sourcemaps.init());
         }
         source = source.pipe(rev());
+        if (this.watchModel) {
+            source = source.pipe(sourcemaps.write("./"));
+        }
         source = source.pipe(gulp.dest(this.dest));
-        // source = source.pipe(rev.mainfest());
-        // source = source.pipe(gulp.dest(getGlobalConfig().clientOutput));
+        source = source.pipe(rev.manifest("assetsMainfest.json"));
+        source = source.pipe(gulp.dest(this.dest));
+        // gulp.dest(getGlobalConfig().clientOutput));
 
         source.on("end", (event) => {
             log.info(this.taskName + " > done", this.count++);
