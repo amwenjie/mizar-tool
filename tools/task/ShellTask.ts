@@ -62,17 +62,8 @@ export class ShellTask {
                     log.info(this.taskName, " file change: ", path, " re-run shell");
                     this.exec(cli);
                 });
-            this.bindExit();
-            log.info(this.taskName, "start watch ", this.src, " change... ");
+            log.info(this.taskName, "start watching ", this.src);
         }
-    }
-
-    public bindExit() {
-        process.on('SIGINT', () => {
-            if (this.watcher) {
-                this.watcher.close();
-            }
-        });
     }
 }
 export default ShellTask;

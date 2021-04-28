@@ -61,8 +61,8 @@ export class ServerPack extends WebpackTaskBase {
                 }
             });
             walk.on("end", () => {
-                log.info(this.taskName, "scan.done", Path.resolve(this.rootPath));
-                log.info(this.taskName, "pack.keys", Object.keys(entry).join(","));
+                log.debug(this.taskName, "scan.done", Path.resolve(this.rootPath));
+                log.debug(this.taskName, "pack.keys", Object.keys(entry).join(","));
                 resolve(entry);
             });
         });
@@ -72,7 +72,7 @@ export class ServerPack extends WebpackTaskBase {
         this.tslintConfig = ConfigHelper.get("tslint", { disable: false });
         this.cssModule = ConfigHelper.get("serverPack.cssModule", true);
         log.info("->", this.taskName, HelperTask.taking());
-        log.info(this.taskName, { "index": Path.resolve(`${this.rootPath}/${this.src}`) });
+        log.debug(this.taskName, { "index": Path.resolve(`${this.rootPath}/${this.src}`) });
         try {
             await this.pack({ "index": Path.resolve(`${this.rootPath}/${this.src}`) });
         } catch (e) {

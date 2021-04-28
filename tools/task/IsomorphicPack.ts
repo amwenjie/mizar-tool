@@ -10,7 +10,7 @@ import * as fs from "fs-extra";
 import * as klaw from "klaw";
 import * as Path from "path";
 import * as webpack from "webpack";
-import * as yargs  from "yargs";
+import * as yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 import getGlobalConfig, { IGlobalConfig, devLocalIdentName, prodLocalIdentName } from "../getGlobalConfig";
 import { ConfigHelper } from "../libs/ConfigHelper";
@@ -70,7 +70,7 @@ export class IsomorphicPack extends WebpackTaskBase {
             if (!entry || Object.keys(entry).length === 0) {
                 return;
             }
-            log.info(this.taskName, "run.entry", entry);
+            log.debug(this.taskName, "run.entry", entry);
             await this.pack(entry);
         } catch (error) {
             log.error(this.taskName, "FATAL_ERROR", error.message);
@@ -104,8 +104,8 @@ export class IsomorphicPack extends WebpackTaskBase {
                 }
             });
             walk.on("end", () => {
-                log.info("IsomorphicPack.scan.end", Path.resolve(this.rootPath));
-                log.info("IsomorphicPack.pack.keys", Object.keys(entries).join(","));
+                log.debug("IsomorphicPack.scan.end", Path.resolve(this.rootPath));
+                log.debug("IsomorphicPack.pack.keys", Object.keys(entries).join(","));
                 resolve(entries);
             });
             walk.on("error", (error) => {
@@ -115,27 +115,27 @@ export class IsomorphicPack extends WebpackTaskBase {
     }
 
     private shouldSourceModuled(resourcePath: string): boolean {
-        log.debug('resourcePath: ', resourcePath);
-        log.debug('!/node_modules/i.test(resourcePath): ', !/node_modules/i.test(resourcePath));
-        log.debug('/components?|pages?/i.test(resourcePath): ', /components?|pages?/i.test(resourcePath));
+        // log.debug('resourcePath: ', resourcePath);
+        // log.debug('!/node_modules/i.test(resourcePath): ', !/node_modules/i.test(resourcePath));
+        // log.debug('/components?|pages?/i.test(resourcePath): ', /components?|pages?/i.test(resourcePath));
         return /components?|pages?/i.test(resourcePath);
     }
 
     private recursiveIssuer(m, c) {
         const issuer = c.moduleGraph.getIssuer(m);
         // For webpack@4 chunks = m.issuer
-      
+
         if (issuer) {
             return this.recursiveIssuer(issuer, c);
         }
-      
+
         const chunks = c.chunkGraph.getModuleChunks(m);
         // For webpack@4 chunks = m._chunks
-      
+
         for (const chunk of chunks) {
             return chunk.name;
         }
-      
+
         return false;
     }
 
@@ -192,7 +192,7 @@ export class IsomorphicPack extends WebpackTaskBase {
                 path: Path.resolve(this.outputPath),
                 assetModuleFilename: "assets/[name]_[contenthash][ext][query]",
             },
-            externals: ({context, request}, callback) => {
+            externals: ({ context, request }, callback) => {
                 const isExternal = /\/server\//i.test(request);
                 if (isExternal || request === "node-mocks-http") {
                     callback(null, "''");
@@ -316,9 +316,6 @@ export class IsomorphicPack extends WebpackTaskBase {
                     filename: "[name]_[contenthash:8].css",
                     // chunkFilename: "[name]-chunk-[id]_[contenthash:8].css",
                 }),
-                new WebpackManifestPlugin({
-                    fileName: Path.resolve(this.globalConfig.rootOutput, "assetsConfigMainfest.json"),
-                }),
                 new CopyWebpackPlugin({
                     patterns: [
                         {
@@ -404,6 +401,9 @@ export class IsomorphicPack extends WebpackTaskBase {
                         // },
                     ],
                 }),
+                new WebpackManifestPlugin({
+                    fileName: Path.resolve(this.globalConfig.rootOutput, "assetsConfigMainfest.json"),
+                }),
             ],
             resolve: {
                 extensions: [".ts", ".tsx", ".js", ".css", ".png", ".jpg", ".gif", ".less"],
@@ -476,7 +476,7 @@ export class IsomorphicPack extends WebpackTaskBase {
         if (this.argv && this.argv.verbose) {
             log.info(this.taskName, "pack", { config: JSON.stringify(config) });
         }
-        
+
         try {
             await this.compile(config);
         } catch (e) {

@@ -127,7 +127,6 @@ export class WebpackTaskBase {
             // });
             if (this.watchModel) {
                 this.watcher = compiler.watch({}, callback);
-                this.bindExit();
             } else {
                 compiler.run(async (error, stats) => {
                     await callback(error, stats);
@@ -196,21 +195,6 @@ export class WebpackTaskBase {
         // 完成
         log.info(this.taskName + ".done", this.count);
         this.helperTask.sendMessage(this.taskName, "编译结束:" + this.count++);
-    }
-    
-    public bindExit() {
-        process.on('SIGINT', () => {
-            log.info('process SIGINT');
-            if (this.watcher) {
-                this.watcher.close(() => {
-                    log.debug("before remove compileQueue.length: ", WebpackTaskBase.compileQueue.length);
-                    WebpackTaskBase.compileQueue.splice(this.index, 1);
-                    log.info('GC: remove compileQueue index: ', this.index);
-                    WebpackTaskBase.compileQueue.splice(this.index, 1);
-                    log.debug("after remove compileQueue.length: ", WebpackTaskBase.compileQueue.length);
-                });
-            }
-        });
     }
 }
 export default WebpackTaskBase;
