@@ -71,7 +71,7 @@ export class HelperTask {
     public start() {
         this.startDateTime = new Date();
         this.spinner.start();
-        log.log();
+        console.log();
         log.info("-------------------------------编译详细信息-------------------------------------");
     }
     public end() {
@@ -79,7 +79,7 @@ export class HelperTask {
         this.spinner.stop();
         log.info("-------------------------------编译信息结束-------------------------------------");
         log.info("编译总耗时", (this.endDateTime.getTime() - this.startDateTime.getTime()) / 1000, "s");
-        log.log();
+        console.log();
         this.sendMessage("首次编译结束", "编译总耗时 " +
             ((this.endDateTime.getTime() - this.startDateTime.getTime()) / 1000) + " s");
         this.spinner = null;

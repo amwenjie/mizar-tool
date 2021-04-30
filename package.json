@@ -79,7 +79,7 @@
     "@types/autoprefixer": "~9.7.2",
     "@types/clean-css": "~4.2.4",
     "@types/connect": "~3.4.34",
-    "@types/copy-webpack-plugin": "^6.4.0",
+    "@types/copy-webpack-plugin": "~6.4.2",
     "@types/core-js": "~2.5.4",
     "@types/cssnano": "~4.0.0",
     "@types/fs-extra": "~9.0.6",

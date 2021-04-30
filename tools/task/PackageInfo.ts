@@ -45,17 +45,20 @@ export class PackageInfo {
         const cuzConf = packageJson.customConfig || {};
         const customConfig: {
             port: number;
+            logger?: string;
             assetsPathPrefix?: string;
             cdn?: string;
             debugPort?: number;
         } = {
             port: cuzConf.port,
+            logger: cuzConf.logger,
             assetsPathPrefix: cuzConf.assetsPathPrefix,
             cdn: cuzConf.cdn,
         };
         if (this.watchModel) {
             customConfig.debugPort = cuzConf.debugPort
         }
+        packageJson.customConfig = customConfig;
         packageJson = ObjectUtil.sort(packageJson);
         return packageJson;
     }

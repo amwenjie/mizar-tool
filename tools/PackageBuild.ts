@@ -26,34 +26,34 @@ class PackageBuild {
     public async startup() {
         let spinner;
         spinner = ora("prepare the environment...").start();
-        log.log();
+        console.log();
         const task = new HelperTask();
         task.init();
         task.start();
         spinner.succeed();
         try {
             spinner = ora("process target directory & packageInfo...").start();
-            log.log();
+            console.log();
             await task.cleanAsync();
             await new PackageInfo().run();
             spinner.succeed();
             spinner = ora("public assets pack...").start();
-            log.log();
+            console.log();
             await new PublicAsset().setWatchModel(this.watchModel).run();
             await new PublicAsset("iso", "PublicAsset iso ").setWatchModel(this.watchModel).run();
             spinner.succeed();
             spinner = ora("transform ts file...").start();
-            log.log();
+            console.log();
             await new ShellTask("./src").setWatchModel(this.watchModel).run("tsc", "-p");
             spinner.succeed();
-            log.log();
+            console.log();
             if (this.publishModel) {
                 // 开始发布任务
                 await new PublishTask().start();
             }
         } catch (e) {
             spinner.fail();
-            log.log();
+            console.log();
             log.error("PackageBuild", e);
         }
         task.end();

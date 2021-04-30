@@ -14,8 +14,7 @@ export default {
     ],
     links: [
     ],
-    isMobile: true,
-    uiDesignWidth: 750,
+    calcRootFontSize: 1242,
     loading: {
         showLoading: false
     }

@@ -13,7 +13,7 @@ if (argv.verbose) {
 const log = Logger(logCtg);
 export class TSLint {
     public async run() {
-        log.log("TSLint start");
+        log.info("TSLint start");
         try {
             await new ShellTask("./src").run("tslint", "-p");
             log.info("TSLint is ok");

@@ -22,6 +22,7 @@ export interface ICustomConfig {
     port: number;
     assetsPathPrefix?: string;
     cdn?: string;
+    logger?: string;
     tslint?: {
         disable: boolean;
     };
@@ -100,7 +101,7 @@ export class ConfigHelper {
     }
     public static getPackageVersion() {
         let patchVer = 0;
-        // log.log(argv);
+        // log.info(argv);
         if (argv.patchVer && argv.patchVer !== true) {
             patchVer = argv.patchVer;
         }
@@ -113,18 +114,17 @@ export class ConfigHelper {
         return ConfigHelper.privateGet("name");
     }
     public static getAssetsPathPrefix() {
-        return ConfigHelper.get("assetsPathPrefix", "");
+        let prefix = ConfigHelper.get("assetsPathPrefix", "");
+        if (prefix && !prefix.endsWith("/")) {
+            prefix += "/";
+        }
+        return prefix;
     }
     public static getCDN() {
         return ConfigHelper.get("cdn", "");
     }
     public static getPublicPath() {
-        const assetPath = ConfigHelper.getAssetsPathPrefix();
-        if (assetPath) {
-            return `${ConfigHelper.getAssetsPathPrefix()}/${ConfigHelper.getPackageName()}/`;
-        } else {
-            return `${ConfigHelper.getPackageName()}/`;
-        }
+        return `${ConfigHelper.getAssetsPathPrefix()}${ConfigHelper.getPackageName()}/`;
     }
 }
 export default ConfigHelper;

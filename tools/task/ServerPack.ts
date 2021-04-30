@@ -238,6 +238,7 @@ export class ServerPack extends WebpackTaskBase {
                     Path.resolve(`${this.rootPath}/node_modules`),
                 ],
             },
+            externalsPresets: { node: true },
             target: "node",
             optimization: {
                 emitOnErrors: false

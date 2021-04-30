@@ -25,7 +25,7 @@ if (argv.verbose) {
 const log = Logger(logCtg);
 
 // Should match the text string used in `src/server.js/server.listen(...)`
-const RUNNING_REGEXP = /server starup successful, listen at port: (\d+)/;
+const RUNNING_REGEXP = /server start successful, listening at port: (\d+)/;
 
 let server;
 
@@ -42,12 +42,14 @@ export function RunServer(serverPath, debug, cb: any = false) {
 
         if (match) {
             server.stdout.removeListener("data", onStdOut);
-            log.info(bold(green("server starup successful, at port: " + match[1])));
+            log.info(bold(green("server start successful, port: " + match[1])));
             server.stdout.on("data", (x) => process.stdout.write(x));
             if (cb) {
                 cbIsPending = false;
                 cb(null, match[1]);
             }
+        } else {
+            process.stdout.write(data);
         }
     }
 

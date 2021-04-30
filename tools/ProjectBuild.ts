@@ -42,7 +42,7 @@ export class ProjectBuild {
     private async build() {
         let spinner;
         spinner = ora("prepare the environment...").start();
-        log.log();
+        console.log();
         // 环境准备
         const task = new HelperTask();
         task.setWatchModel(this.watchModel);
@@ -51,7 +51,7 @@ export class ProjectBuild {
         spinner.succeed();
         try {
             spinner = ora("process target directory & packageInfo...").start();
-            log.log();
+            console.log();
             // 1 clean
             await task.cleanAsync();
             await new PackageInfo().setWatchModel(true).run();
@@ -59,7 +59,7 @@ export class ProjectBuild {
             // await new PublicAsset().run();
             // 2. 生成样式
             spinner = ora("style pack...").start();
-            log.log();
+            console.log();
             await new StylePack()
                 .setWatchModel(this.watchModel)
                 .run();
@@ -70,14 +70,14 @@ export class ProjectBuild {
             //     .run();
             // 4. 生成同构下的ClientPack
             spinner = ora("client assets pack...").start();
-            log.log();
+            console.log();
             const isomorphicClientPack = new IsomorphicPack();
             isomorphicClientPack.setWatchModel(this.watchModel);
             // isomorphicClientPack.setVendorModel(vendor);
             await isomorphicClientPack.run();
             spinner.succeed();
             spinner = ora("server assets pack...").start();
-            log.log();
+            console.log();
             // 5. 生成ServerPack
             const serverPack = new ServerPack();
             serverPack.setAutoRun(this.runServerModel);

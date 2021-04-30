@@ -22,14 +22,14 @@ const log = Logger(logCtg);
 class Build {
     public async startup() {
         const taskSpinner = ora("prepare the environment...").start();
-        log.log();
+        console.log();
         const task = new HelperTask();
         // 清理及数据准备工作
         task.init();
         task.start();
         taskSpinner.succeed();
         const packageInfoSpinner = ora("process build target directory & packageInfo...").start();
-        log.log();
+        console.log();
         await task.cleanAsync();
 
         // 开始编译工作
@@ -37,16 +37,16 @@ class Build {
             await new PackageInfo().run();
             packageInfoSpinner.succeed();
             const tsSpinner = ora("transform typescript file...").start();
-            log.log();
+            console.log();
             await new ShellTask("./tools").run("tsc", "-p");
             await new ShellTask("./bin").run("tsc", "-p");
             tsSpinner.succeed();
             const ugSpinner = ora("optimize...").start();
-            log.log();
+            console.log();
             await new UglifyJSTask().run();
             await new CopyTask("./packages", "./packages").run();
             ugSpinner.succeed();
-            log.log();
+            console.log();
         } catch (e) {
             log.error(e);
         }

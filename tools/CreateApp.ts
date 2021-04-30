@@ -61,30 +61,30 @@ function init() {
         .option('--use-pnp')
         .allowUnknownOption()
         // .on('--help', () => {
-        //     log.log(
+        //     log.info(
         //         `    Only ${chalk.green('<project-directory>')} is required.`
         //     );
-        //     log.log();
-        //     log.log(
+        //     console.log();
+        //     log.info(
         //         `    If you have any problems, do not hesitate to file an issue:`
         //     );
-        //     log.log(
+        //     log.info(
         //         `      ${chalk.cyan(
         //             'https://github.com/amwenjie/alcor/issues/new'
         //         )}`
         //     );
-        //     log.log();
+        //     console.log();
         // })
         .parse(process.argv);
 
     const cmdOpts = createApp.opts();
 
     if (cmdOpts.info) {
-        log.log(chalk.bold('\nEnvironment Info:'));
-        log.log(
+        log.info(chalk.bold('\nEnvironment Info:'));
+        log.info(
             `\n  current version of ${packageJson.name}: ${packageJson.version}`
         );
-        log.log(`  running from ${__dirname}`);
+        log.info(`  running from ${__dirname}`);
         return envinfo
             .run(
                 {
@@ -110,16 +110,16 @@ function init() {
 
     if (typeof projectName === 'undefined') {
         log.error('Please specify the project directory:');
-        log.log(
+        log.info(
             `  ${chalk.cyan(createApp.name())} ${chalk.green('<project-directory>')}`
         );
-        log.log();
-        log.log('For example:');
-        log.log(
+        console.log();
+        log.info('For example:');
+        log.info(
             `  ${chalk.cyan(createApp.name())} ${chalk.green('my-mizar-app')}`
         );
-        log.log();
-        log.log(
+        console.log();
+        log.info(
             `Run ${chalk.cyan(`${createApp.name()} --help`)} to see all options.`
         );
         process.exit(1);
@@ -141,13 +141,13 @@ function init() {
         })
         .then(latest => {
             if (latest && semver.lt(packageJson.version, latest)) {
-                log.log();
+                console.log();
                 log.error(
                     chalk.yellow(
                         `You are running \`alcor\` ${packageJson.version}, which is behind the latest release (${latest}).\n\n`
                     )
                 );
-                log.log();
+                console.log();
                 process.exit(1);
             } else {
                 createMizarApp(
@@ -167,7 +167,7 @@ function init() {
 function createMizarApp(name, verbose, useYarn, usePnp) {
     const unsupportedNodeVersion = !semver.satisfies(process.version, packageJson.engines.node);
     if (unsupportedNodeVersion) {
-        log.log(
+        log.info(
             chalk.yellow(
                 `You are using Node ${process.version} so the project will be bootstrapped with an old unsupported version of tools.\n\n` +
                 `Please update to Node 10 or higher for a better, fully supported experience.\n`
@@ -183,10 +183,10 @@ function createMizarApp(name, verbose, useYarn, usePnp) {
     if (!isSafeToCreateProjectIn(root, name)) {
         process.exit(1);
     }
-    log.log();
+    console.log();
 
-    log.log(`Creating a new mizar app in ${chalk.green(root)}.`);
-    log.log();
+    log.info(`Creating a new mizar app in ${chalk.green(root)}.`);
+    console.log();
 
     const canUseYarn = useYarn && shouldUseYarn();
     const originalDirectory = process.cwd();
@@ -199,7 +199,7 @@ function createMizarApp(name, verbose, useYarn, usePnp) {
         const npmInfo = checkNpmVersion();
         if (!npmInfo.hasMinNpm) {
             if (npmInfo.npmVersion) {
-                log.log(
+                log.info(
                     chalk.yellow(
                         `You are using npm ${npmInfo.npmVersion} so the project will be bootstrapped with an old unsupported version of tools.\n\n` +
                         `Please update to npm 6 or higher for a better, fully supported experience.\n`
@@ -211,7 +211,7 @@ function createMizarApp(name, verbose, useYarn, usePnp) {
         const yarnInfo = checkYarnVersion();
         if (yarnInfo.yarnVersion) {
             if (!yarnInfo.hasMinYarnPnp) {
-                log.log(
+                log.info(
                     chalk.yellow(
                         `You are using Yarn ${yarnInfo.yarnVersion} together with the --use-pnp flag, but Plug'n'Play is only supported starting from the 1.12 release.\n\n` +
                         `Please update to Yarn 1.12 or higher for a better, fully supported experience.\n`
@@ -221,7 +221,7 @@ function createMizarApp(name, verbose, useYarn, usePnp) {
                 usePnp = false;
             }
             if (!yarnInfo.hasMaxYarnPnp) {
-                log.log(
+                log.info(
                     chalk.yellow(
                         'The --use-pnp flag is no longer necessary with yarn 2 and will be deprecated and removed in a future release.\n'
                     )
@@ -293,9 +293,9 @@ function install(root, canUseYarn, usePnp, dependencies, verbose, isOnline) {
             args.push(root);
 
             if (!isOnline) {
-                log.log(chalk.yellow('You appear to be offline.'));
-                log.log(chalk.yellow('Falling back to the local Yarn cache.'));
-                log.log();
+                log.info(chalk.yellow('You appear to be offline.'));
+                log.info(chalk.yellow('Falling back to the local Yarn cache.'));
+                console.log();
             }
         } else {
             command = 'npm';
@@ -311,9 +311,9 @@ function install(root, canUseYarn, usePnp, dependencies, verbose, isOnline) {
             ];
 
             if (usePnp) {
-                log.log(chalk.yellow("NPM doesn't support PnP."));
-                log.log(chalk.yellow('Falling back to the regular installs.'));
-                log.log();
+                log.info(chalk.yellow("NPM doesn't support PnP."));
+                log.info(chalk.yellow('Falling back to the regular installs.'));
+                console.log();
             }
         }
 
@@ -329,7 +329,7 @@ function install(root, canUseYarn, usePnp, dependencies, verbose, isOnline) {
                 });
                 return;
             }
-            log.log(
+            log.info(
                 `The app ${chalk.green(path.basename(root))} is initialized success`
             );
             resolve(void 0);
@@ -347,7 +347,7 @@ function run(
 ) {
     const allDependencies = getDependencies();
 
-    log.log('Installing packages. This might take a couple of minutes.');
+    log.info('Installing packages. This might take a couple of minutes.');
     checkIfOnline(canUseYarn)
         .then(isOnline => {
             fs.copySync(path.resolve(originalDirectory, "./packages/template-typescript"), "./")
@@ -363,17 +363,17 @@ function run(
             );
         })
         .catch(reason => {
-            log.log();
-            log.log('Aborting installation.');
+            console.log();
+            log.info('Aborting installation.');
             if (reason.command) {
-                log.log(`  ${chalk.cyan(reason.command)} has failed.`);
+                log.info(`  ${chalk.cyan(reason.command)} has failed.`);
             } else {
-                log.log(
+                log.info(
                     chalk.red('Unexpected error. Please report it as a bug:')
                 );
-                log.log(reason);
+                log.info(reason);
             }
-            log.log();
+            console.log();
 
             // On 'exit' we will delete these files from target directory.
             const knownGeneratedFiles = [
@@ -386,7 +386,7 @@ function run(
                 knownGeneratedFiles.forEach(fileToMatch => {
                     // This removes all knownGeneratedFiles.
                     if (file === fileToMatch) {
-                        log.log(`Deleting generated file... ${chalk.cyan(file)}`);
+                        log.info(`Deleting generated file... ${chalk.cyan(file)}`);
                         fs.removeSync(path.join(root, file));
                     }
                 });
@@ -394,7 +394,7 @@ function run(
             const remainingFiles = fs.readdirSync(path.join(root));
             if (!remainingFiles.length) {
                 // Delete target folder if empty
-                log.log(
+                log.info(
                     `Deleting ${chalk.cyan(`${appName}/`)} from ${chalk.cyan(
                         path.resolve(root, '..')
                     )}`
@@ -402,7 +402,7 @@ function run(
                 process.chdir(path.resolve(root, '..'));
                 fs.removeSync(path.join(root));
             }
-            log.log('Done.');
+            log.info('Done.');
             process.exit(1);
         });
 }
@@ -534,24 +534,24 @@ function isSafeToCreateProjectIn(root, name) {
         .filter(file => !isErrorLog(file));
 
     if (conflicts.length > 0) {
-        log.log(
+        log.info(
             `The directory ${chalk.green(name)} contains files that could conflict:`
         );
-        log.log();
+        console.log();
         for (const file of conflicts) {
             try {
                 const stats = fs.lstatSync(path.join(root, file));
                 if (stats.isDirectory()) {
-                    log.log(`  ${chalk.blue(`${file}/`)}`);
+                    log.info(`  ${chalk.blue(`${file}/`)}`);
                 } else {
-                    log.log(`  ${file}`);
+                    log.info(`  ${file}`);
                 }
             } catch (e) {
-                log.log(`  ${file}`);
+                log.info(`  ${file}`);
             }
         }
-        log.log();
-        log.log(
+        console.log();
+        log.info(
             'Either try using a new directory name, or remove the files listed above.'
         );
 
@@ -710,11 +710,11 @@ init();
 //             const cmdOpts = options;
 
 //             if (cmdOpts.info) {
-//                 log.log(chalk.bold('\nEnvironment Info:'));
-//                 log.log(
+//                 log.info(chalk.bold('\nEnvironment Info:'));
+//                 log.info(
 //                     `\n  current version of ${packageJson.name}: ${packageJson.version}`
 //                 );
-//                 log.log(`  running from ${__dirname}`);
+//                 log.info(`  running from ${__dirname}`);
 //                 return envinfo
 //                     .run(
 //                         {
@@ -740,16 +740,16 @@ init();
 
 //             if (typeof projectName === 'undefined') {
 //                 log.error('Please specify the project directory:');
-//                 log.log(
+//                 log.info(
 //                     `  ${chalk.cyan(createApp.name())} ${chalk.green('<project-directory>')}`
 //                 );
-//                 log.log();
-//                 log.log('For example:');
-//                 log.log(
+//                 console.log();
+//                 log.info('For example:');
+//                 log.info(
 //                     `  ${chalk.cyan(createApp.name())} ${chalk.green('my-mizar-app')}`
 //                 );
-//                 log.log();
-//                 log.log(
+//                 console.log();
+//                 log.info(
 //                     `Run ${chalk.cyan(`${createApp.name()} --help`)} to see all options.`
 //                 );
 //                 process.exit(1);
@@ -771,13 +771,13 @@ init();
 //                 })
 //                 .then(latest => {
 //                     if (latest && semver.lt(packageJson.version, latest)) {
-//                         log.log();
+//                         console.log();
 //                         log.error(
 //                             chalk.yellow(
 //                                 `You are running \`alcor\` ${packageJson.version}, which is behind the latest release (${latest}).\n\n`
 //                             )
 //                         );
-//                         log.log();
+//                         console.log();
 //                         process.exit(1);
 //                     } else {
 //                         createMizarApp(
