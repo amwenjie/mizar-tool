@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { green } from "colorette";
 import * as ora from "ora";
 import * as yargs  from "yargs";
 import { hideBin } from "yargs/helpers";
@@ -25,35 +26,30 @@ class PackageBuild {
 
     public async startup() {
         let spinner;
-        spinner = ora("prepare the environment...").start();
-        console.log();
+        spinner = ora("prepare the environment...\r\n").start();
         const task = new HelperTask();
         task.init();
         task.start();
         spinner.succeed();
         try {
-            spinner = ora("process target directory & packageInfo...").start();
-            console.log();
+            spinner = ora("process target directory & packageInfo...\r\n").start();
             await task.cleanAsync();
             await new PackageInfo().run();
             spinner.succeed();
-            spinner = ora("public assets pack...").start();
-            console.log();
+            spinner = ora("public assets pack...\r\n").start();
             await new PublicAsset().setWatchModel(this.watchModel).run();
             await new PublicAsset("iso", "PublicAsset iso ").setWatchModel(this.watchModel).run();
             spinner.succeed();
-            spinner = ora("transform ts file...").start();
-            console.log();
+            spinner = ora("transform ts file...\r\n").start();
             await new ShellTask("./src").setWatchModel(this.watchModel).run("tsc", "-p");
             spinner.succeed();
-            console.log();
+            console.log(green("build success"));
             if (this.publishModel) {
                 // 开始发布任务
                 await new PublishTask().start();
             }
         } catch (e) {
             spinner.fail();
-            console.log();
             log.error("PackageBuild", e);
         }
         task.end();

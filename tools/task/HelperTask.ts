@@ -18,7 +18,7 @@ const log = Logger(logCtg);
 
 export class HelperTask {
     constructor() {
-        this.spinner = ora("running task...");
+        // this.spinner = ora("running task...");
     }
     public static taking() {
         const now = new Date();
@@ -70,19 +70,19 @@ export class HelperTask {
     }
     public start() {
         this.startDateTime = new Date();
-        this.spinner.start();
-        console.log();
+        // this.spinner.start();
+        // console.log();
         log.info("-------------------------------编译详细信息-------------------------------------");
     }
     public end() {
         this.endDateTime = new Date();
-        this.spinner.stop();
+        // this.spinner.stop();
         log.info("-------------------------------编译信息结束-------------------------------------");
         log.info("编译总耗时", (this.endDateTime.getTime() - this.startDateTime.getTime()) / 1000, "s");
-        console.log();
+        // console.log();
         this.sendMessage("首次编译结束", "编译总耗时 " +
             ((this.endDateTime.getTime() - this.startDateTime.getTime()) / 1000) + " s");
-        this.spinner = null;
+        // this.spinner = null;
     }
 
     public async cleanAsync() {

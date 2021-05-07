@@ -42,7 +42,7 @@ export function RunServer(serverPath, debug, cb: any = false) {
 
         if (match) {
             server.stdout.removeListener("data", onStdOut);
-            log.info(bold(green("server start successful, port: " + match[1])));
+            console.log(bold(green("server start successful, listen at port: " + match[1])));
             server.stdout.on("data", (x) => process.stdout.write(x));
             if (cb) {
                 cbIsPending = false;

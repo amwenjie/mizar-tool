@@ -84,7 +84,7 @@ function init() {
         log.info(
             `\n  current version of ${packageJson.name}: ${packageJson.version}`
         );
-        log.info(`  running from ${__dirname}`);
+        log.info(`  running from ${path.resolve('./')}`);
         return envinfo
             .run(
                 {
@@ -105,7 +105,9 @@ function init() {
                     showNotFound: true,
                 }
             )
-            .then(log.log);
+            .then((msg, ...args) => {
+                log.info(msg, ...args);
+            });
     }
 
     if (typeof projectName === 'undefined') {
@@ -350,7 +352,7 @@ function run(
     log.info('Installing packages. This might take a couple of minutes.');
     checkIfOnline(canUseYarn)
         .then(isOnline => {
-            fs.copySync(path.resolve(originalDirectory, "./packages/template-typescript"), "./")
+            fs.copySync(path.resolve(__dirname, "../packages/template-typescript"), "./")
         })
         .then((isOnline) => {
             return install(

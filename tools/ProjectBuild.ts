@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { green } from "colorette";
 import * as ora from "ora";
 import * as yargs from "yargs";
 import { hideBin } from "yargs/helpers";
@@ -10,6 +11,7 @@ import { PublicAsset } from "./task/PublicAsset";
 import { ServerPack } from "./task/ServerPack";
 import { StylePack } from "./task/StylePack";
 import Logger from "./libs/Logger";
+
 
 const log = Logger();
 
@@ -41,8 +43,7 @@ export class ProjectBuild {
     }
     private async build() {
         let spinner;
-        spinner = ora("prepare the environment...").start();
-        console.log();
+        spinner = ora("prepare the environment...\r\n").start();
         // 环境准备
         const task = new HelperTask();
         task.setWatchModel(this.watchModel);
@@ -50,16 +51,14 @@ export class ProjectBuild {
         task.start();
         spinner.succeed();
         try {
-            spinner = ora("process target directory & packageInfo...").start();
-            console.log();
+            spinner = ora("process target directory & packageInfo...\r\n").start();
             // 1 clean
             await task.cleanAsync();
             await new PackageInfo().setWatchModel(true).run();
             spinner.succeed();
             // await new PublicAsset().run();
             // 2. 生成样式
-            spinner = ora("style pack...").start();
-            console.log();
+            spinner = ora("style pack...\r\n").start();
             await new StylePack()
                 .setWatchModel(this.watchModel)
                 .run();
@@ -69,21 +68,20 @@ export class ProjectBuild {
             //     .setWatchModel(this.watchModel)
             //     .run();
             // 4. 生成同构下的ClientPack
-            spinner = ora("client assets pack...").start();
-            console.log();
+            spinner = ora("client assets pack...\r\n").start();
             const isomorphicClientPack = new IsomorphicPack();
             isomorphicClientPack.setWatchModel(this.watchModel);
             // isomorphicClientPack.setVendorModel(vendor);
             await isomorphicClientPack.run();
             spinner.succeed();
-            spinner = ora("server assets pack...").start();
-            console.log();
+            spinner = ora("server assets pack...\r\n").start();
             // 5. 生成ServerPack
             const serverPack = new ServerPack();
             serverPack.setAutoRun(this.runServerModel);
             serverPack.setWatchModel(this.watchModel);
             await serverPack.run();
             spinner.succeed();
+            console.log(green("build success"));
         } catch (e) {
             spinner.fail();
             log.error("ProjectBuild raised an error: ", e);

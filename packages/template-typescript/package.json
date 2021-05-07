@@ -10,7 +10,7 @@
     "license": "MIT",
     "scripts": {
         "build": "alcor build",
-        "debug": "alcor build -dr"
+        "debug": "alcor build -ds"
     },
     "dependencies": {
         "core-js": "^3.8.2",
@@ -45,7 +45,10 @@
       "Safari >= 6"
     ],
     "customConfig": {
+      "cdn": "/",
+      "assetsPathPrefix": "static/",
       "debugPort": 9026,
+      "port": 8889,
       "vendorPack": {
         "minify": true,
         "browserVendor": []

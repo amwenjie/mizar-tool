@@ -1,3 +1,4 @@
+import { blue, green } from "colorette";
 import * as yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 import * as Path from "path";
@@ -25,11 +26,12 @@ export class WebpackTaskBase {
     public helperTask = new HelperTask();
     public projectRoot = Path.resolve(".");
 
-    private compileInvalid() {
+    private compileInvalid(fileName, changeTime) {
         const context = WebpackTaskBase.compileQueue[this.index];
         if (context) {
             context.state = false;
             context.callback = null;
+            log.info(`${this.taskName}, file change: ${fileName}`);
         }
     }
     
@@ -105,9 +107,9 @@ export class WebpackTaskBase {
             });
             this.index = WebpackTaskBase.compileQueue.length - 1;
             // this.compileContext.compiler = compiler;
-            compiler.hooks.invalid.tap("alcor-webpack-task-base", () => {
+            compiler.hooks.invalid.tap("alcor-webpack-task-base", (fileName, changeTime) => {
                 // log.info("++++++", this.taskName, "invalid");
-                this.compileInvalid();
+                this.compileInvalid(fileName, changeTime);
             });
             compiler.hooks.watchRun.tap("alcor-webpack-task-base", () => {
                 // log.info("++++++", this.taskName, "watchRun");
@@ -143,7 +145,7 @@ export class WebpackTaskBase {
         });
     }
     protected async doneCallback() {
-        log.info(this.taskName, " empty doneCallback");
+        console.log(green(`${this.taskName}, success`));
     }
     protected async done(webpackSelfError, stats) {
         if (webpackSelfError) {

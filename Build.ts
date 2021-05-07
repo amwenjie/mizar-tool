@@ -21,32 +21,27 @@ if (argv.verbose) {
 const log = Logger(logCtg);
 class Build {
     public async startup() {
-        const taskSpinner = ora("prepare the environment...").start();
-        console.log();
+        const taskSpinner = ora("prepare the environment...\r\n").start();
         const task = new HelperTask();
         // 清理及数据准备工作
         task.init();
         task.start();
         taskSpinner.succeed();
-        const packageInfoSpinner = ora("process build target directory & packageInfo...").start();
-        console.log();
+        const packageInfoSpinner = ora("process build target directory & packageInfo...\r\n").start();
         await task.cleanAsync();
 
         // 开始编译工作
         try {
             await new PackageInfo().run();
             packageInfoSpinner.succeed();
-            const tsSpinner = ora("transform typescript file...").start();
-            console.log();
+            const tsSpinner = ora("transform typescript file...\r\n").start();
             await new ShellTask("./tools").run("tsc", "-p");
             await new ShellTask("./bin").run("tsc", "-p");
             tsSpinner.succeed();
-            const ugSpinner = ora("optimize...").start();
-            console.log();
+            const ugSpinner = ora("optimize...\r\n").start();
             await new UglifyJSTask().run();
             await new CopyTask("./packages", "./packages").run();
             ugSpinner.succeed();
-            console.log();
         } catch (e) {
             log.error(e);
         }

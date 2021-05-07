@@ -1,3 +1,4 @@
+import { green } from "colorette";
 import * as fs from "fs-extra";
 import * as  klaw from "klaw";
 import * as Path from "path";
@@ -258,7 +259,7 @@ export class ServerPack extends WebpackTaskBase {
         }
     }
     protected async doneCallback() {
-        log.info(this.taskName, " doneCallback");
+        console.log(green(`${this.taskName}, success`));
         if (this.autoRun === true && this.watchModel === true) {
             // const pkgName = ConfigHelper.getPackageName();
             let serverEntry = "index";
