@@ -15,18 +15,8 @@ const spawn = require('cross-spawn');
 const url = require('url');
 const validateProjectName = require('validate-npm-package-name');
 
-import * as yargs  from "yargs";
-import { hideBin } from "yargs/helpers";
 import Logger from "./libs/Logger";
-const argv = yargs(hideBin(process.argv)).argv;
-
-let logCtg;
-if (argv.verbose) {
-    logCtg = "all";
-} else if (argv.debug) {
-    logCtg = "debug";
-}
-const log = Logger(logCtg);
+const log = Logger("CreateApp");
 
 const packageJson = require('../package.json');
 

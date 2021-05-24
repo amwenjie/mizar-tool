@@ -3,18 +3,7 @@ import * as Path from "path";
 import { HelperTask } from "./HelperTask";
 import Logger from "../libs/Logger";
 
-import * as yargs  from "yargs";
-import { hideBin } from "yargs/helpers";
-const argv:any = yargs(hideBin(process.argv)).argv;
-
-let logCtg;
-if (argv.verbose) {
-    logCtg = "all";
-} else if (argv.debug) {
-    logCtg = "debug";
-}
-const log = Logger(logCtg);
-
+const log = Logger("PublishTask");
 export class PublishTask {
     public buildPath = Path.normalize("build");
 

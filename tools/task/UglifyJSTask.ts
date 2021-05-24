@@ -2,18 +2,7 @@ import * as gulp from "gulp";
 import * as uglify from "gulp-uglify";
 import { HelperTask } from "./HelperTask";
 import Logger from "../libs/Logger";
-
-import * as yargs  from "yargs";
-import { hideBin } from "yargs/helpers";
-const argv:any = yargs(hideBin(process.argv)).argv;
-
-let logCtg;
-if (argv.verbose) {
-    logCtg = "all";
-} else if (argv.debug) {
-    logCtg = "debug";
-}
-const log = Logger(logCtg);
+const log = Logger("UglifyJSTask");
 export class UglifyJSTask {
     private uglifyProcess (src) {
         return gulp.src(src)

@@ -7,13 +7,7 @@ import Logger from "../libs/Logger";
 
 const argv:any = yargs(hideBin(process.argv)).argv;
 
-let logCtg;
-if (argv.verbose) {
-    logCtg = "all";
-} else if (argv.debug) {
-    logCtg = "debug";
-}
-const log = Logger(logCtg);
+const log = Logger("ConfigHelper");
 
 const configName = "package.json";
 const cuzConf = "customConfig";

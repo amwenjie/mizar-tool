@@ -1,16 +1,6 @@
 import Logger from "../libs/Logger";
 import ShellTask from "./ShellTask";
-import * as yargs  from "yargs";
-import { hideBin } from "yargs/helpers";
-const argv:any = yargs(hideBin(process.argv)).argv;
-
-let logCtg;
-if (argv.verbose) {
-    logCtg = "all";
-} else if (argv.debug) {
-    logCtg = "debug";
-}
-const log = Logger(logCtg);
+const log = Logger("TSLint");
 export class TSLint {
     public async run() {
         log.info("TSLint start");

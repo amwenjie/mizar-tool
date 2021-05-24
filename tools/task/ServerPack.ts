@@ -4,29 +4,19 @@ import * as  klaw from "klaw";
 import * as Path from "path";
 import * as webpack from "webpack";
 import * as nodeExternals from "webpack-node-externals";
-import yargs from "yargs";
-import { hideBin } from "yargs/helpers";
 import getGlobalConfig, { IGlobalConfig, devLocalIdentName, prodLocalIdentName } from "../getGlobalConfig";
 import { ConfigHelper } from "../libs/ConfigHelper";
 import { WebpackTaskBase } from "../libs/WebpackTaskBase";
 import { HelperTask } from "./HelperTask";
 import { RunServer } from "./RunServer";
 import Logger from "../libs/Logger";
-const argv = yargs(hideBin(process.argv)).argv;
-
-let logCtg;
-if (argv.verbose) {
-    logCtg = "all";
-} else if (argv.debug) {
-    logCtg = "debug";
-}
-const log = Logger(logCtg);
+const log = Logger("ServerPack");
 
 export class ServerPack extends WebpackTaskBase {
     private globalConfig: IGlobalConfig;
     private tslintConfig;
     private cssModule;
-    private rootPath: string = Path.normalize("./");
+    private rootPath: string = "./";
     private src: string = "src/server/index";
     private autoRun: boolean = false;
     private debug: number = 0;
@@ -45,37 +35,14 @@ export class ServerPack extends WebpackTaskBase {
     //     this.watchModel = watchModel;
     //     return this;
     // }
-    public async scan() {
-        return new Promise((resolve) => {
-            const entry = {};
-            const router = this.rootPath + this.src;
-            const walk = klaw(router);
-            walk.on("data", (state) => {
-                const src = state.path;
-                if (/\.ts?/.test(src)) {
-                    const dirName = src.replace(Path.resolve(this.rootPath), "")
-                        .replace(".tsx", "")
-                        .replace(".ts", "")
-                        .replace(/\\/g, "/")
-                        .replace("/" + this.src, "");
-                    entry[dirName] = src;
-                }
-            });
-            walk.on("end", () => {
-                log.debug(this.taskName, "scan.done", Path.resolve(this.rootPath));
-                log.debug(this.taskName, "pack.keys", Object.keys(entry).join(","));
-                resolve(entry);
-            });
-        });
-    }
+
     public async run() {
         this.globalConfig = getGlobalConfig();
         this.tslintConfig = ConfigHelper.get("tslint", { disable: false });
         this.cssModule = ConfigHelper.get("serverPack.cssModule", true);
         log.info("->", this.taskName, HelperTask.taking());
-        log.debug(this.taskName, { "index": Path.resolve(`${this.rootPath}/${this.src}`) });
         try {
-            await this.pack({ "index": Path.resolve(`${this.rootPath}/${this.src}`) });
+            await this.pack({"index": Path.resolve(`${this.rootPath}/${this.src}`)});
         } catch (e) {
             log.error(this.taskName, " run into an error: ", e);
         }
@@ -122,10 +89,15 @@ export class ServerPack extends WebpackTaskBase {
                 }) as any
             ],
             module: {
+                parser: {
+                    javascript: {
+                        commonjsMagicComments: true,
+                    },
+                },
                 rules: rules.concat([
                     {
                         test: /\.tsx?$/,
-                        exclude: /node_modules/,
+                        exclude: /node_modules|\.d\.ts$/,
                         use: [
                             {
                                 loader: "ts-loader",
@@ -233,10 +205,12 @@ export class ServerPack extends WebpackTaskBase {
                 libraryTarget: "commonjs2",
                 path: Path.resolve(`${this.rootPath}/${this.globalConfig.rootOutput}`),
             },
+            plugins: [
+            ],
             resolve: {
                 extensions: [".ts", ".tsx", ".js", ".png", ".jpg", ".gif", ".less"],
                 modules: [
-                    Path.resolve(`${this.rootPath}/node_modules`),
+                    Path.resolve(`${this.rootPath}node_modules`),
                 ],
             },
             externalsPresets: { node: true },
@@ -246,9 +220,19 @@ export class ServerPack extends WebpackTaskBase {
             },
         };
 
+        let NODE_ENV = JSON.stringify("development");
         if (this.watchModel === false) {
             config.devtool = undefined;
+            NODE_ENV = JSON.stringify("production");
         }
+        const defineOption = {
+            "process.env.NODE_ENV": NODE_ENV,
+            "process.env.RUNTIME_ENV": JSON.stringify("server"),
+            "process.env.IS_SERVER_ENV": JSON.stringify(true),
+            "process.env.IS_DEBUG_MODE": JSON.stringify(!!this.watchModel),
+        };
+        config.plugins.push(new webpack.DefinePlugin(defineOption));
+
         if (this.argv && this.argv.verbose) {
             log.info("ServerPack.pack", { config: JSON.stringify(config) });
         }

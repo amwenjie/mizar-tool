@@ -3,18 +3,7 @@ import * as WebpackRaw from "webpack";
 import ConfigHelper from "../libs/ConfigHelper";
 import { HelperTask } from "./HelperTask";
 import Logger from "../libs/Logger";
-
-import * as yargs  from "yargs";
-import { hideBin } from "yargs/helpers";
-const argv:any = yargs(hideBin(process.argv)).argv;
-
-let logCtg;
-if (argv.verbose) {
-    logCtg = "all";
-} else if (argv.debug) {
-    logCtg = "debug";
-}
-const log = Logger(logCtg);
+const log = Logger("VendorPack");
 const webpack: any = WebpackRaw;
 
 export class VendorPack {

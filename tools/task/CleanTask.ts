@@ -1,18 +1,8 @@
 import * as fs from "fs-extra";
-import * as yargs  from "yargs";
-import { hideBin } from "yargs/helpers";
 import { HelperTask } from "./HelperTask";
 import Logger from "../libs/Logger";
 
-const argv:any = yargs(hideBin(process.argv)).argv;
-
-let logCtg;
-if (argv.verbose) {
-    logCtg = "all";
-} else if (argv.debug) {
-    logCtg = "debug";
-}
-const log = Logger(logCtg);
+const log = Logger("CleanTask");
 export class CleanTask {
     public start() {
         log.info("->", "CleanTask", HelperTask.taking());

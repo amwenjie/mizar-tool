@@ -11,18 +11,7 @@
 import { bold, green } from "colorette"
 import * as  cp from "child_process";
 import Logger from "../libs/Logger";
-
-import * as yargs  from "yargs";
-import { hideBin } from "yargs/helpers";
-const argv:any = yargs(hideBin(process.argv)).argv;
-
-let logCtg;
-if (argv.verbose) {
-    logCtg = "all";
-} else if (argv.debug) {
-    logCtg = "debug";
-}
-const log = Logger(logCtg);
+const log = Logger("RunServer");
 
 // Should match the text string used in `src/server.js/server.listen(...)`
 const RUNNING_REGEXP = /server start successful, listening at port: (\d+)/;

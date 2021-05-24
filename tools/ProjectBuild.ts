@@ -8,12 +8,13 @@ import { IsomorphicPack } from "./task/IsomorphicPack";
 import { PublishTask } from "./task/PublishTask";
 import { PackageInfo } from "./task/PackageInfo";
 import { PublicAsset } from "./task/PublicAsset";
+import { ServerApiPack } from "./task/ServerApiPack";
 import { ServerPack } from "./task/ServerPack";
 import { StylePack } from "./task/StylePack";
 import Logger from "./libs/Logger";
 
 
-const log = Logger();
+const log = Logger("ProjectBuild");
 
 export class ProjectBuild {
     private watchModel = false;
@@ -74,8 +75,14 @@ export class ProjectBuild {
             // isomorphicClientPack.setVendorModel(vendor);
             await isomorphicClientPack.run();
             spinner.succeed();
+            // 5. 生成ServerApiPack
+            spinner = ora("server api assets pack...\r\n").start();
+            const serverApiPack = new ServerApiPack();
+            serverApiPack.setWatchModel(this.watchModel);
+            await serverApiPack.run();
+            spinner.succeed();
+            // 6. 生成ServerPack
             spinner = ora("server assets pack...\r\n").start();
-            // 5. 生成ServerPack
             const serverPack = new ServerPack();
             serverPack.setAutoRun(this.runServerModel);
             serverPack.setWatchModel(this.watchModel);

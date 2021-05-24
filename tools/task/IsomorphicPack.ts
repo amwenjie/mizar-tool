@@ -3,29 +3,18 @@ import * as CssMinimizerPlugin from "css-minimizer-webpack-plugin";
 import * as DirectoryNamedWebpackPlugin from "directory-named-webpack-plugin";
 import * as MiniCssExtractPlugin from "mini-css-extract-plugin";
 import * as TerserJSPlugin from "terser-webpack-plugin";
-import * as UglifyJS from "uglify-js";
-import * as CleanCSS from "clean-css";
 import { WebpackManifestPlugin } from "webpack-manifest-plugin";
 import * as fs from "fs-extra";
 import * as klaw from "klaw";
 import * as Path from "path";
 import * as webpack from "webpack";
-import * as yargs from "yargs";
-import { hideBin } from "yargs/helpers";
 import getGlobalConfig, { IGlobalConfig, devLocalIdentName, prodLocalIdentName } from "../getGlobalConfig";
 import { ConfigHelper } from "../libs/ConfigHelper";
 import Logger from "../libs/Logger";
 import { WebpackTaskBase } from "../libs/WebpackTaskBase";
 import { HelperTask } from "./HelperTask";
-const argv = yargs(hideBin(process.argv)).argv;
 
-let logCtg;
-if (argv.verbose) {
-    logCtg = "all";
-} else if (argv.debug) {
-    logCtg = "debug";
-}
-const log = Logger(logCtg);
+const log = Logger("IsomorphicPack");
 export class IsomorphicPack extends WebpackTaskBase {
     public rootPath: string = "./";
     public src = "src/isomorphic/clientEntries";
@@ -34,7 +23,6 @@ export class IsomorphicPack extends WebpackTaskBase {
     private globalConfig: IGlobalConfig;
     private publicPath = "";
     private outputPath = "";
-    private argv = null;
     constructor() {
         super();
         this.setTaskName("IsomorphicPack");
@@ -68,6 +56,7 @@ export class IsomorphicPack extends WebpackTaskBase {
         try {
             const entry = await this.scan();
             if (!entry || Object.keys(entry).length === 0) {
+                log.warn(this.taskName, " scan emtpy entry");
                 return;
             }
             log.debug(this.taskName, "run.entry", entry);
@@ -216,6 +205,7 @@ export class IsomorphicPack extends WebpackTaskBase {
                 rules: rules.concat([
                     {
                         test: /\.tsx?$/,
+                        exclude: /\.d\.ts$/,
                         use: [
                             {
                                 loader: "ts-loader",
@@ -473,6 +463,9 @@ export class IsomorphicPack extends WebpackTaskBase {
 
         const defineOption = {
             "process.env.NODE_ENV": NODE_ENV,
+            "process.env.RUNTIME_ENV": JSON.stringify("client"),
+            "process.env.IS_SERVER_ENV": JSON.stringify(false),
+            "process.env.IS_DEBUG_MODE": JSON.stringify(!!this.watchModel),
         };
         config.plugins.push(new webpack.DefinePlugin(defineOption));
 
@@ -486,9 +479,7 @@ export class IsomorphicPack extends WebpackTaskBase {
         //     });
         //     config.plugins.push(dllReferencePlugin);
         // }
-        if (this.argv && this.argv.verbose) {
-            log.info(this.taskName, "pack", { config: JSON.stringify(config) });
-        }
+        log.info(this.taskName, "pack", { config: JSON.stringify(config) });
 
         try {
             await this.compile(config);

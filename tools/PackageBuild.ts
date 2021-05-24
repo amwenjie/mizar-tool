@@ -10,7 +10,7 @@ import { PublicAsset } from "./task/PublicAsset";
 import { ShellTask } from "./task/ShellTask";
 import Logger from "./libs/Logger";
 
-const log = Logger();
+const log = Logger("PackageBuild");
 
 class PackageBuild {
     private watchModel = false;

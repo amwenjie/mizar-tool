@@ -12,13 +12,7 @@ import Logger from "./tools/libs/Logger";
 
 const argv:any = yargs(hideBin(process.argv)).argv;
 
-let logCtg;
-if (argv.verbose) {
-    logCtg = "all";
-} else if (argv.debug) {
-    logCtg = "debug";
-}
-const log = Logger(logCtg);
+const log = Logger("Build");
 class Build {
     public async startup() {
         const taskSpinner = ora("prepare the environment...\r\n").start();

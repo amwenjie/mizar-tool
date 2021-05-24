@@ -6,15 +6,7 @@ import { hideBin } from "yargs/helpers";
 import { CleanTask } from "./CleanTask";
 import Logger from "../libs/Logger";
 
-const argv:any = yargs(hideBin(process.argv)).argv;
-
-let logCtg;
-if (argv.verbose) {
-    logCtg = "all";
-} else if (argv.debug) {
-    logCtg = "debug";
-}
-const log = Logger(logCtg);
+const log = Logger("HelperTask");
 
 export class HelperTask {
     constructor() {

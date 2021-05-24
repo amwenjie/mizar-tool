@@ -8,13 +8,7 @@ import Logger from "./Logger";
 
 const argv: any = yargs(hideBin(process.argv)).argv;
 
-let logCtg;
-if (argv.verbose) {
-    logCtg = "all";
-} else if (argv.debug) {
-    logCtg = "debug";
-}
-const log = Logger(logCtg);
+const log = Logger("WebpackTaskBase");
 
 export class WebpackTaskBase {
     private static compileQueue = [];
