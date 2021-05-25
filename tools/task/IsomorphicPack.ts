@@ -1,9 +1,11 @@
+import { green } from "colorette";
 import * as CopyWebpackPlugin from "copy-webpack-plugin";
 import * as CssMinimizerPlugin from "css-minimizer-webpack-plugin";
 import * as DirectoryNamedWebpackPlugin from "directory-named-webpack-plugin";
 import * as MiniCssExtractPlugin from "mini-css-extract-plugin";
 import * as TerserJSPlugin from "terser-webpack-plugin";
 import { WebpackManifestPlugin } from "webpack-manifest-plugin";
+import { yellow } from "colorette";
 import * as fs from "fs-extra";
 import * as klaw from "klaw";
 import * as Path from "path";
@@ -16,15 +18,15 @@ import { HelperTask } from "./HelperTask";
 
 const log = Logger("IsomorphicPack");
 export class IsomorphicPack extends WebpackTaskBase {
-    public rootPath: string = "./";
-    public src = "src/isomorphic/clientEntries";
-    public vendorModel: boolean = false;
+    private src = "src/isomorphic/clientEntries";
+    private styleSrc = "src/isomorphic/styleEntries";
+    private vendorModel: boolean = false;
     private tslintConfig = null;
     private globalConfig: IGlobalConfig;
     private publicPath = "";
     private outputPath = "";
     constructor() {
-        super();
+        super("IsomorphicPack");
         this.setTaskName("IsomorphicPack");
     }
 
@@ -56,7 +58,7 @@ export class IsomorphicPack extends WebpackTaskBase {
         try {
             const entry = await this.scan();
             if (!entry || Object.keys(entry).length === 0) {
-                log.warn(this.taskName, " scan emtpy entry");
+                log.warn(yellow(`${this.taskName}, scan emtpy entry`));
                 return;
             }
             log.debug(this.taskName, "run.entry", entry);
@@ -67,23 +69,60 @@ export class IsomorphicPack extends WebpackTaskBase {
         }
     }
 
-    /**
-     * 入口文件搜寻
-     */
-    private async scan() {
+    private async styleScan() {
+        return new Promise((resolve, reject) => {
+            const entries = {};
+            const entryDir = this.rootPath + this.styleSrc;
+            if (!fs.existsSync(entryDir)) {
+                log.warn(yellow(`isomorphic pack styleEntry 入口目录不存在：, ${entryDir}`));
+                resolve({});
+                return;
+            }
+            const walk = klaw(entryDir, {
+                depthLimit: -1,
+            });
+            walk.on("data", (state) => {
+                const src = state.path;
+                const isFile = state.stats.isFile();
+                if (isFile && /\.css$|\.s[ac]ss$|\.less$/i.test(src)) {
+                    const dirName = src.replace(Path.resolve(this.rootPath), "")
+                        .replace(".css", "")
+                        .replace(".less", "")
+                        .replace(".sass", "")
+                        .replace(".scss", "")
+                        .replace(/\\/g, "/")
+                        .replace("/" + this.styleSrc + "/", "");
+                    entries["styleEntry/" + dirName] = [src];
+                }
+            });
+            walk.on("end", () => {
+                log.debug("IsomorphicPack.styleScan.end", Path.resolve(this.rootPath));
+                log.debug("IsomorphicPack.styleScan.entries", entries);
+                resolve(entries);
+            });
+            walk.on("error", (error) => {
+                reject(error);
+            });
+        });
+    }
+
+    private async pageScan() {
         return new Promise((resolve, reject) => {
             const react16Depends = ["core-js/features/map", "core-js/features/set"];
             const entries = {};
             const entryDir = this.rootPath + this.src;
             if (!fs.existsSync(entryDir)) {
-                log.warn("isomorphic pack build入口目录不存在：", entryDir);
+                log.warn(yellow(`isomorphic pack build 入口目录不存在：, ${entryDir}`));
                 resolve({});
                 return;
             }
-            const walk = klaw(entryDir);
+            const walk = klaw(entryDir, {
+                depthLimit: -1,
+            });
             walk.on("data", (state) => {
                 const src = state.path;
-                if (/\.ts|\.tsx|\.js/.test(src)) {
+                const isFile = state.stats.isFile();
+                if (isFile && /\.ts$|\.tsx$|\.js$/i.test(src)) {
                     const dirName = src.replace(Path.resolve(this.rootPath), "")
                         .replace(".tsx", "")
                         .replace(".ts", "")
@@ -93,12 +132,28 @@ export class IsomorphicPack extends WebpackTaskBase {
                 }
             });
             walk.on("end", () => {
-                log.debug("IsomorphicPack.scan.end", Path.resolve(this.rootPath));
-                log.debug("IsomorphicPack.pack.keys", Object.keys(entries).join(","));
+                log.debug("IsomorphicPack.pageScan.end", Path.resolve(this.rootPath));
+                log.debug("IsomorphicPack.pageScan.entries", entries);
                 resolve(entries);
             });
             walk.on("error", (error) => {
                 reject(error);
+            });
+        });
+    }
+
+    /**
+     * 入口文件搜寻
+     */
+    private async scan() {
+        return new Promise((resolve, reject) => {
+            Promise.all([this.styleScan(), this.pageScan()])
+            .then(entries => {
+                const combinedEntries = Object.assign({}, entries[0], entries[1]);
+                log.debug("IsomorphicPack.pack.keys", Object.keys(combinedEntries).join(","));
+                resolve(combinedEntries);
+            }).catch(e => {
+                reject(e);
             });
         });
     }
@@ -204,8 +259,8 @@ export class IsomorphicPack extends WebpackTaskBase {
             module: {
                 rules: rules.concat([
                     {
-                        test: /\.tsx?$/,
-                        exclude: /\.d\.ts$/,
+                        test: /\.tsx?$/i,
+                        exclude: /\.d\.ts$/i,
                         use: [
                             {
                                 loader: "ts-loader",
@@ -218,7 +273,7 @@ export class IsomorphicPack extends WebpackTaskBase {
                         ],
                     },
                     {
-                        test: /\.css$/,
+                        test: /\.css$/i,
                         use: [
                             {
                                 loader: MiniCssExtractPlugin.loader,
@@ -258,7 +313,7 @@ export class IsomorphicPack extends WebpackTaskBase {
                         type: "javascript/auto",
                     },
                     {
-                        test: /\.less$/,
+                        test: /\.less$/i,
                         use: [
                             {
                                 loader: MiniCssExtractPlugin.loader,
@@ -304,7 +359,53 @@ export class IsomorphicPack extends WebpackTaskBase {
                         type: "javascript/auto",
                     },
                     {
-                        test: /\.(ico|jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|swf)(\?.*)?$/,
+                        test: /\.s[ac]ss$/i,
+                        use: [
+                            {
+                                loader: MiniCssExtractPlugin.loader,
+                                options: {
+                                    modules: {
+                                        namedExport: true,
+                                    },
+                                },
+                            },
+                            {
+                                loader: "css-loader",
+                                options: {
+                                    importLoaders: 2,
+                                    sourceMap,
+                                    esModule: true,
+                                    modules: {
+                                        auto: this.shouldSourceModuled,
+                                        localIdentName: localIdentName,
+                                        namedExport: true,
+                                    },
+                                },
+                            },
+                            {
+                                loader: "postcss-loader",
+                                options: {
+                                    postcssOptions: () => {
+                                        return {
+                                            plugins: [
+                                                require("precss"),
+                                                require("autoprefixer"),
+                                            ],
+                                        };
+                                    },
+                                },
+                            },
+                            {
+                                loader: "sass-loader",
+                                options: {
+                                    sourceMap,
+                                },
+                            },
+                        ],
+                        type: "javascript/auto",
+                    },
+                    {
+                        test: /\.(ico|jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|swf)(\?.*)?$/i,
                         type: "asset",
                     },
                 ]),
@@ -404,7 +505,7 @@ export class IsomorphicPack extends WebpackTaskBase {
                     ],
                 }),
                 new WebpackManifestPlugin({
-                    seed: this.getCssAssetsMainfest(),
+                    // seed: this.getCssAssetsMainfest(),
                     fileName: Path.resolve(this.globalConfig.rootOutput, this.globalConfig.assetsMainfest),
                 }),
             ],
@@ -417,6 +518,7 @@ export class IsomorphicPack extends WebpackTaskBase {
                 plugins: [new DirectoryNamedWebpackPlugin()],
             },
             optimization: {
+                minimize: true,
                 moduleIds: "deterministic",
                 runtimeChunk: {
                     name: "runtime"
@@ -486,6 +588,49 @@ export class IsomorphicPack extends WebpackTaskBase {
         } catch (e) {
             log.error(this.taskName, " webpacking raised an error: ", e);
         }
+    }
+
+    // protected async doneCallback() {
+    //     console.log(green(`${this.taskName}, success`));
+    //     await this.reorgStyleEntry();
+    // }
+
+    private async reorgStyleEntry() {
+        const cssMainfestPath = Path.resolve(this.globalConfig.rootOutput, this.globalConfig.assetsMainfest);
+        const cssMainfestJson = require(cssMainfestPath);
+        console.log("cssMainfestJson: ", cssMainfestJson);
+        const dltKeys = Object.keys(cssMainfestJson).filter(key => /^styleEntry\/.+\.js$/.test(key));
+        dltKeys.forEach(k => {
+            delete cssMainfestJson[k];
+        });
+        try {
+            await fs.writeJson(cssMainfestPath, cssMainfestJson, {
+                spaces: 2,
+            });
+            await this.reorgStyleEntryFile();
+        } catch (err) {
+            log.error("reorgStyleEntry error: ", err);
+        }
+    }
+
+    private async reorgStyleEntryFile() {
+        return new Promise((resolve, reject) => {
+            const styleEntryDir = Path.resolve(this.outputPath, "styleEntry");
+            if (fs.existsSync(styleEntryDir)) {
+                const walk = klaw(styleEntryDir, {
+                    filter: path => /\.ts$|\.tsx$|\.js$/i.test(path)
+                });
+                walk.on("data", (state) => {
+                    fs.unlink(state.path, (err) => {});
+                });
+                walk.on("error", (err, file) => {
+                    log.error("unlink file: ", file.path, " rais an error: ", err.message);
+                    resolve("error");
+                })
+                walk.on("end", () => resolve("end"));
+            }
+            resolve("no-file");
+        });
     }
 }
 export default IsomorphicPack;

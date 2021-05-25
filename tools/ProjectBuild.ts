@@ -7,12 +7,11 @@ import { HelperTask } from "./task/HelperTask";
 import { IsomorphicPack } from "./task/IsomorphicPack";
 import { PublishTask } from "./task/PublishTask";
 import { PackageInfo } from "./task/PackageInfo";
-import { PublicAsset } from "./task/PublicAsset";
+// import { PublicAsset } from "./task/PublicAsset";
 import { ServerApiPack } from "./task/ServerApiPack";
 import { ServerPack } from "./task/ServerPack";
-import { StylePack } from "./task/StylePack";
+// import { StylePack } from "./task/StylePack";
 import Logger from "./libs/Logger";
-
 
 const log = Logger("ProjectBuild");
 
@@ -59,11 +58,11 @@ export class ProjectBuild {
             spinner.succeed();
             // await new PublicAsset().run();
             // 2. 生成样式
-            spinner = ora("style pack...\r\n").start();
-            await new StylePack()
-                .setWatchModel(this.watchModel)
-                .run();
-            spinner.succeed();
+            // spinner = ora("style pack...\r\n").start();
+            // await new StylePack()
+            //     .setWatchModel(this.watchModel)
+            //     .run();
+            // spinner.succeed();
             // 3. 生成ClientPack
             // const vendor = await new VendorPack()
             //     .setWatchModel(this.watchModel)

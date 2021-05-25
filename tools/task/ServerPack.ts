@@ -16,14 +16,15 @@ export class ServerPack extends WebpackTaskBase {
     private globalConfig: IGlobalConfig;
     private tslintConfig;
     private cssModule;
-    private rootPath: string = "./";
     private src: string = "src/server/index";
     private autoRun: boolean = false;
     private debug: number = 0;
     private argv = null;
+
     public constructor() {
-        super();
+        super("ServerPack");
         this.taskName = "ServerPack";
+        this.shouldRestartDevServer = false;
     }
     public setAutoRun(autoRun: boolean = true) {
         this.autoRun = autoRun;
@@ -42,7 +43,7 @@ export class ServerPack extends WebpackTaskBase {
         this.cssModule = ConfigHelper.get("serverPack.cssModule", true);
         log.info("->", this.taskName, HelperTask.taking());
         try {
-            await this.pack({"index": Path.resolve(`${this.rootPath}/${this.src}`)});
+            await this.pack({"index": Path.resolve(`${this.rootPath}${this.src}`)});
         } catch (e) {
             log.error(this.taskName, " run into an error: ", e);
         }
@@ -96,8 +97,8 @@ export class ServerPack extends WebpackTaskBase {
                 },
                 rules: rules.concat([
                     {
-                        test: /\.tsx?$/,
-                        exclude: /node_modules|\.d\.ts$/,
+                        test: /\.tsx?$/i,
+                        exclude: /node_modules|\.d\.ts$/i,
                         use: [
                             {
                                 loader: "ts-loader",
@@ -110,7 +111,7 @@ export class ServerPack extends WebpackTaskBase {
                         ],
                     },
                     {
-                        test: /\.(ico|jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2)(\?.*)?$/,
+                        test: /\.(ico|jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2)(\?.*)?$/i,
                         type: "asset",
                         generator: {
                             filename: Path.resolve(
@@ -120,7 +121,7 @@ export class ServerPack extends WebpackTaskBase {
                         },
                     },
                     {
-                        test: /\.css$/,
+                        test: /\.css$/i,
                         use: [
                             // {
                             //     loader: "isomorphic-style-loader",
@@ -156,7 +157,7 @@ export class ServerPack extends WebpackTaskBase {
                         type: "javascript/auto",
                     },
                     {
-                        test: /\.less$/,
+                        test: /\.less$/i,
                         use: [
                             // {
                             //     loader: "isomorphic-style-loader",
@@ -197,13 +198,51 @@ export class ServerPack extends WebpackTaskBase {
                         ],
                         type: "javascript/auto",
                     },
+                    {
+                        test: /\.s[ac]ss$/i,
+                        use: [
+                            {
+                                loader: "css-loader",
+                                options: {
+                                    importLoaders: 2,
+                                    sourceMap,
+                                    esModule: true,
+                                    modules: {
+                                        auto: this.shouldSourceModuled,
+                                        localIdentName: localIdentName,
+                                        namedExport: true,
+                                    },
+                                },
+                            },
+                            {
+                                loader: "postcss-loader",
+                                options: {
+                                    postcssOptions: () => {
+                                        return {
+                                            plugins: [
+                                                require("precss"),
+                                                require("autoprefixer"),
+                                            ],
+                                        };
+                                    },
+                                },
+                            },
+                            {
+                                loader: "sass-loader",
+                                options: {
+                                    sourceMap,
+                                },
+                            },
+                        ],
+                        type: "javascript/auto",
+                    },
                 ]),
             },
             name: this.taskName,
             output: {
                 filename: "[name].js",
                 libraryTarget: "commonjs2",
-                path: Path.resolve(`${this.rootPath}/${this.globalConfig.rootOutput}`),
+                path: Path.resolve(`${this.rootPath}${this.globalConfig.rootOutput}`),
             },
             plugins: [
             ],

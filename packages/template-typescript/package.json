@@ -25,7 +25,6 @@
         "redux-thunk": "~2.3.0"
     },
     "devDependencies": {
-        "@types/mocha": "~2.2.34",
         "@types/react": "~17.0.0",
         "@types/react-dom": "~17.0.0",
         "@types/react-redux": "~7.1.15",

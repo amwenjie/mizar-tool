@@ -1,6 +1,5 @@
 import * as gulp from "gulp";
 import * as plumber from "gulp-plumber";
-import * as rev from "gulp-rev";
 import * as Path from "path";
 import Logger from "../libs/Logger";
 import { HelperTask } from "./HelperTask";
@@ -12,7 +11,7 @@ export class PublicAsset {
     public watchModel: boolean = false;
     private rootPath: string = "./";
     private count = 1;
-    private ext = "{js,less,css,txt,ico,ttf,gif,png,jpeg,jpg,swf,woff,woff2,webp,mp4,avi,flv}";
+    private ext = "{js,less,css,sass,scss,txt,ico,ttf,gif,png,jpeg,jpg,swf,woff,woff2,webp,mp4,avi,flv}";
     private src = Path.resolve(this.rootPath, `src/public/**/*.${this.ext}`);
     private dest = Path.resolve(getGlobalConfig().rootOutput, "public");
 

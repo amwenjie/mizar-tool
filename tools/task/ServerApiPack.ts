@@ -16,13 +16,12 @@ export class ServerApiPack extends WebpackTaskBase {
     private globalConfig: IGlobalConfig;
     private tslintConfig;
     private cssModule;
-    private rootPath: string = "./";
     private apiSrc: string = "src/server/apis";
     private autoRun: boolean = false;
     private debug: number = 0;
     private argv = null;
     public constructor() {
-        super();
+        super("ServerApiPack");
         this.taskName = "ServerApiPack";
     }
     public setAutoRun(autoRun: boolean = true) {
@@ -138,7 +137,7 @@ export class ServerApiPack extends WebpackTaskBase {
             output: {
                 filename: "[name].js",
                 libraryTarget: "commonjs2",
-                path: Path.resolve(`${this.rootPath}/${this.globalConfig.rootOutput}`),
+                path: Path.resolve(`${this.rootPath}${this.globalConfig.rootOutput}`),
             },
             plugins: [
             ],
