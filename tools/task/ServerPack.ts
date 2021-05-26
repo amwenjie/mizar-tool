@@ -19,7 +19,6 @@ export class ServerPack extends WebpackTaskBase {
     private src: string = "src/server/index";
     private autoRun: boolean = false;
     private debug: number = 0;
-    private argv = null;
 
     public constructor() {
         super("ServerPack");
@@ -77,10 +76,18 @@ export class ServerPack extends WebpackTaskBase {
                 },
             });
         }
+        
+        const mode = this.watchModel ? "development" : "production"; // this.watchModel ? JSON.stringify("development") : JSON.stringify("production");
+        const defineOption = {
+            // "process.env.NODE_ENV": JSON.stringify(mode),
+            // "process.env.RUNTIME_ENV": JSON.stringify("client"),
+            // "process.env.IS_SERVER_ENV": JSON.stringify(false),
+            "process.env.IS_DEBUG_MODE": JSON.stringify(!!this.watchModel),
+        };
         const config: webpack.Configuration = {
-            mode: this.watchModel ? "development" : "production",
-            cache: true,
-            devtool: "source-map",
+            mode,
+            // cache: true,
+            devtool: this.watchModel ? "source-map" : undefined,
             entry,
             externals: [
                 nodeExternals({
@@ -245,11 +252,13 @@ export class ServerPack extends WebpackTaskBase {
                 path: Path.resolve(`${this.rootPath}${this.globalConfig.rootOutput}`),
             },
             plugins: [
+                new webpack.DefinePlugin(defineOption),
             ],
             resolve: {
-                extensions: [".ts", ".tsx", ".js", ".png", ".jpg", ".gif", ".less"],
+                extensions: [".ts", ".tsx", ".js", ".css", ".png", ".jpg", ".gif", ".less", "sass", "scss", "..."],
                 modules: [
-                    Path.resolve(`${this.rootPath}node_modules`),
+                    Path.resolve(__dirname, "src"),
+                    "node_modules",
                 ],
             },
             externalsPresets: { node: true },
@@ -258,23 +267,7 @@ export class ServerPack extends WebpackTaskBase {
                 emitOnErrors: false
             },
         };
-
-        let NODE_ENV = JSON.stringify("development");
-        if (this.watchModel === false) {
-            config.devtool = undefined;
-            NODE_ENV = JSON.stringify("production");
-        }
-        const defineOption = {
-            "process.env.NODE_ENV": NODE_ENV,
-            "process.env.RUNTIME_ENV": JSON.stringify("server"),
-            "process.env.IS_SERVER_ENV": JSON.stringify(true),
-            "process.env.IS_DEBUG_MODE": JSON.stringify(!!this.watchModel),
-        };
-        config.plugins.push(new webpack.DefinePlugin(defineOption));
-
-        if (this.argv && this.argv.verbose) {
-            log.info("ServerPack.pack", { config: JSON.stringify(config) });
-        }
+        log.info("ServerPack.pack", { config: JSON.stringify(config) });
         try {
             await this.compile(config);
         } catch (e) {

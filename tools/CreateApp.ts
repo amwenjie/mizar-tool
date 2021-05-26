@@ -33,7 +33,8 @@ function getDependencies() {
         "react-router-config": "~5.1.1",
         "react-router-dom": "~5.2.0",
         "redux": "~4.0.5",
-        "redux-thunk": "~2.3.0"
+        "redux-thunk": "~2.3.0",
+        "tslib": "~2.2.0"
     }).sort();
 }
 

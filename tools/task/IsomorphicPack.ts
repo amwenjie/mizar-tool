@@ -235,11 +235,20 @@ export class IsomorphicPack extends WebpackTaskBase {
                 },
             });
         }
+        
+        const mode = this.watchModel ? "development" : "production";
+        // const mode = this.watchModel ? JSON.stringify("development") : JSON.stringify("production");
+        const defineOption = {
+            // "process.env.NODE_ENV": JSON.stringify(mode),
+            // "process.env.RUNTIME_ENV": JSON.stringify("client"),
+            // "process.env.IS_SERVER_ENV": JSON.stringify(false),
+            "process.env.IS_DEBUG_MODE": JSON.stringify(!!this.watchModel),
+        };
         const config: webpack.Configuration = {
-            mode: this.watchModel ? "development" : "production",
-            cache: true,
+            mode,
+            // cache: true,
             // debug: true,
-            devtool: "source-map",
+            devtool: this.watchModel ? "source-map" : undefined,
             entry: entry,
             output: {
                 chunkFilename: "[name]-chunk_[contenthash:8].js",
@@ -412,6 +421,7 @@ export class IsomorphicPack extends WebpackTaskBase {
             },
             name: "IsomorphicPack",
             plugins: [
+                new webpack.DefinePlugin(defineOption),
                 // new webpack.ProvidePlugin({
                 //     Promise: "bluebird",
                 // }),
@@ -510,15 +520,15 @@ export class IsomorphicPack extends WebpackTaskBase {
                 }),
             ],
             resolve: {
-                extensions: [".ts", ".tsx", ".js", ".css", ".png", ".jpg", ".gif", ".less"],
+                extensions: [".ts", ".tsx", ".js", ".css", ".png", ".jpg", ".gif", ".less", "sass", "scss", "..."],
                 modules: [
-                    Path.resolve("src"),
-                    Path.resolve(`${this.rootPath}node_modules`),
+                    Path.resolve(__dirname, "src"),
+                    "node_modules",
                 ],
                 plugins: [new DirectoryNamedWebpackPlugin()],
             },
             optimization: {
-                minimize: true,
+                minimize: !this.watchModel,
                 moduleIds: "deterministic",
                 runtimeChunk: {
                     name: "runtime"
@@ -555,21 +565,6 @@ export class IsomorphicPack extends WebpackTaskBase {
                 ],
             },
         };
-
-        let NODE_ENV = JSON.stringify("development");
-        // 不是监控模式就压缩代码
-        if (this.watchModel === false) {
-            config.devtool = undefined;
-            NODE_ENV = JSON.stringify("production");
-        }
-
-        const defineOption = {
-            "process.env.NODE_ENV": NODE_ENV,
-            "process.env.RUNTIME_ENV": JSON.stringify("client"),
-            "process.env.IS_SERVER_ENV": JSON.stringify(false),
-            "process.env.IS_DEBUG_MODE": JSON.stringify(!!this.watchModel),
-        };
-        config.plugins.push(new webpack.DefinePlugin(defineOption));
 
         // if (this.vendorModel) {
         //     const manifestPath =
