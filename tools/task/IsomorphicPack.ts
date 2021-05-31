@@ -543,7 +543,7 @@ export class IsomorphicPack extends WebpackTaskBase {
                             priority: 30,
                             chunks: "all",
                         },
-                        defaultVendors: {
+                        appVendor: {
                             test: /[\\/]node_modules[\\/]/,
                             name: "vendor",
                             priority: 20,
@@ -552,8 +552,8 @@ export class IsomorphicPack extends WebpackTaskBase {
                         },
                         common: {
                             name: "common",
-                            minChunks: 2,
                             priority: 10,
+                            minChunks: 2,
                             chunks: "all",
                             reuseExistingChunk: true,
                         },
