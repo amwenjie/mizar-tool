@@ -1,9 +1,9 @@
+import { green, red, yellow } from "colorette";
 import * as yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 import * as webpack from "webpack";
 import Logger from "./Logger";
 import TaskBase from "./TaskBase";
-import { collapseTextChangeRangesAcrossMultipleVersions } from "typescript";
 
 const argv: any = yargs(hideBin(process.argv)).argv;
 
@@ -143,7 +143,7 @@ export class WebpackTaskBase extends TaskBase {
 
             if (stats.hasErrors()) {
                 // 有错误
-                log.error(`${this.taskName} has errors: `);
+                log.error(red(`${this.taskName} has errors: `));
                 log.error(info.errors);
                 // errors.forEach((error) => {
                 //     log.error(`WebpackTaskBase ${this.taskName}  error : ${error}`);
@@ -160,7 +160,7 @@ export class WebpackTaskBase extends TaskBase {
             if (stats.hasWarnings()) {
                 // 有警告
                 if (this.watchModel === true) {
-                    log.warn(`${this.taskName} has warnings: `);
+                    log.warn(yellow(`${this.taskName} has warnings: `));
                     log.warn(info.warnings);
                 }
                 // if (this.watchModel === true) {

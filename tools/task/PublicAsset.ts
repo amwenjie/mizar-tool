@@ -26,7 +26,7 @@ export class PublicAsset {
     }
 
     constructor(src?: string, taskName?: string) {
-        this.dest = Path.resolve(getGlobalConfig().clientOutput, "../public");
+        this.dest = Path.resolve(getGlobalConfig().clientOutput);
         if (src) {
             this.src = Path.resolve(this.rootPath, `src/${src}/**/*.${this.ext}`);
             this.dest = Path.resolve(getGlobalConfig().rootOutput, src);

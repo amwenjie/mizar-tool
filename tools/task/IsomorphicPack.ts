@@ -435,7 +435,6 @@ export class IsomorphicPack extends WebpackTaskBase {
                         {
                             context: "src",
                             from: "public/**/*",
-                            to: Path.resolve(this.outputPath, "..")
                             // to: ({ context, absoluteFilename }) => {
                             //     const rel = Path.relative(context, absoluteFilename);
                             //     const relPath = rel.slice(0, rel.lastIndexOf("/"));
@@ -538,20 +537,27 @@ export class IsomorphicPack extends WebpackTaskBase {
                 splitChunks: {
                     // chunks: "all",
                     cacheGroups: {
+                        libBase: {
+                            test: /react$|redux$|react-(redux|dom|router|router-config|router-dom)|redux-thunk/,
+                            name: "lib",
+                            priority: 30,
+                            chunks: "all",
+                        },
                         defaultVendors: {
                             test: /[\\/]node_modules[\\/]/,
                             name: "vendor",
-                            priority: 0,
+                            priority: 20,
                             chunks: "all",
+                            reuseExistingChunk: true,
                         },
                         common: {
                             name: "common",
                             minChunks: 2,
-                            priority: -10,
+                            priority: 10,
                             chunks: "all",
-                            reuseExistingChunk: true
+                            reuseExistingChunk: true,
                         },
-                        ...this.getEntryPageModuleStyle(entry),
+                        // ...this.getEntryPageModuleStyle(entry),
                     },
                 },
                 minimizer: [
