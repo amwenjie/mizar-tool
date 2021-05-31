@@ -185,6 +185,7 @@ export class IsomorphicPack extends WebpackTaskBase {
 
     private getEntryPageModuleStyle(entry) {
         const map = {};
+        // .filter(name => !/^styleEntry\//.test(name))
         Object.keys(entry).forEach(name => {
             // const styleName = [name, "Styles"].join("");
             map[name] = {
@@ -434,6 +435,7 @@ export class IsomorphicPack extends WebpackTaskBase {
                         {
                             context: "src",
                             from: "public/**/*",
+                            to: Path.resolve(this.outputPath, "..")
                             // to: ({ context, absoluteFilename }) => {
                             //     const rel = Path.relative(context, absoluteFilename);
                             //     const relPath = rel.slice(0, rel.lastIndexOf("/"));

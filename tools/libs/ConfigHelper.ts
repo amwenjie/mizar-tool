@@ -118,7 +118,7 @@ export class ConfigHelper {
         return ConfigHelper.get("cdn", "");
     }
     public static getPublicPath() {
-        return `${ConfigHelper.getAssetsPathPrefix()}${ConfigHelper.getPackageName()}/`;
+        return `${ConfigHelper.getAssetsPathPrefix()}`; // ${ConfigHelper.getPackageName()}/`;
     }
 }
 export default ConfigHelper;

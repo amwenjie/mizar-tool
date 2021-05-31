@@ -13,7 +13,7 @@ export class PublicAsset {
     private count = 1;
     private ext = "{js,less,css,sass,scss,txt,ico,ttf,gif,png,jpeg,jpg,swf,woff,woff2,webp,mp4,avi,flv}";
     private src = Path.resolve(this.rootPath, `src/public/**/*.${this.ext}`);
-    private dest = Path.resolve(getGlobalConfig().rootOutput, "public");
+    private dest: string; // = Path.resolve(getGlobalConfig().rootOutput, "public");
 
     private copy(src) {
         log.info(this.taskName, " src: ", src, " dest: ", this.dest);
@@ -26,7 +26,7 @@ export class PublicAsset {
     }
 
     constructor(src?: string, taskName?: string) {
-        this.dest = getGlobalConfig().clientOutput;
+        this.dest = Path.resolve(getGlobalConfig().clientOutput, "../public");
         if (src) {
             this.src = Path.resolve(this.rootPath, `src/${src}/**/*.${this.ext}`);
             this.dest = Path.resolve(getGlobalConfig().rootOutput, src);

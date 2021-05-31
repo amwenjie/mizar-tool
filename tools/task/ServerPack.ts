@@ -249,7 +249,7 @@ export class ServerPack extends WebpackTaskBase {
             output: {
                 filename: "[name].js",
                 libraryTarget: "commonjs2",
-                path: Path.resolve(`${this.rootPath}${this.globalConfig.rootOutput}`),
+                path: Path.resolve(`${this.globalConfig.rootOutput}`),
             },
             plugins: [
                 new webpack.DefinePlugin(defineOption),
