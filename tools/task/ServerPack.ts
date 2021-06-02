@@ -1,6 +1,5 @@
 import { green } from "colorette";
 import * as fs from "fs-extra";
-import * as  klaw from "klaw";
 import * as Path from "path";
 import * as webpack from "webpack";
 import * as nodeExternals from "webpack-node-externals";
@@ -15,7 +14,6 @@ const log = Logger("ServerPack");
 export class ServerPack extends WebpackTaskBase {
     private globalConfig: IGlobalConfig;
     private tslintConfig;
-    private cssModule;
     private src: string = "src/server/index";
     private autoRun: boolean = false;
     private debug: number = 0;
@@ -39,7 +37,6 @@ export class ServerPack extends WebpackTaskBase {
     public async run() {
         this.globalConfig = getGlobalConfig();
         this.tslintConfig = ConfigHelper.get("tslint", { disable: false });
-        this.cssModule = ConfigHelper.get("serverPack.cssModule", true);
         log.info("->", this.taskName, HelperTask.taking());
         try {
             await this.pack({"index": Path.resolve(`${this.rootPath}${this.src}`)});

@@ -29,6 +29,7 @@ alcor
     .option('-s, --server', 'run a development server')
     // .option('-p, --publish', 'publish the package')
     .option('--verbose', 'print additional logs')
+    .option('--analyz', 'generate stats file, open analyz server on debug mode')
     .allowUnknownOption()
     .action(options => {
         const command = 'node';
@@ -44,6 +45,9 @@ alcor
         // if (options.publish) {
         //     args.push('--publish');
         // }
+        if (options.analyz) {
+            args.push('--analyz');
+        }
         if (options.verbose) {
             args.push('--verbose')
         }

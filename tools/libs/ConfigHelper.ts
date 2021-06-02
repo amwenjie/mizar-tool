@@ -1,6 +1,7 @@
 import * as fs from "fs-extra";
 import * as JSONCParser from "jsonc-parser";
 import * as Path from "path";
+import { Options } from "stylelint-webpack-plugin/declarations/getOptions";
 import * as yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 import Logger from "../libs/Logger";
@@ -10,35 +11,18 @@ const argv:any = yargs(hideBin(process.argv)).argv;
 const log = Logger("ConfigHelper");
 
 const configName = "package.json";
-const cuzConf = "customConfig";
+const cuzConf = "appConfig";
 
 export interface ICustomConfig {
     port: number;
     assetsPathPrefix?: string;
+    debugPort?: number;
     cdn?: string;
     logger?: string;
     tslint?: {
         disable: boolean;
     };
-    vendorPack?: {
-        minify: boolean;
-        browserVendor: any[]
-    };
-    clientPack?: {
-        minify?: boolean;
-        cssModule?: boolean;
-        chunk?: boolean;
-        style?: {
-            sourceMap?: boolean;
-            base64?: boolean;
-            ieCompat?: boolean;
-        }
-    };
-    serverPack: {
-        minify?: boolean;
-        templateMinify?: boolean;
-        debugPort: number;
-    };
+    stylelint?: boolean | Options | string;
 }
 
 export class ConfigHelper {
@@ -50,7 +34,7 @@ export class ConfigHelper {
             log.info("read in store", key + "->" + JSON.stringify(ConfigHelper.store[`${configName}-${node}`]));
             return ConfigHelper.store[`${configName}-${node}`];
         }
-        const configPath = Path.resolve(`./build/${configName}`);
+        const configPath = Path.resolve(`./${configName}`);
         log.info("confighelper privateGet configPath: ", configPath);
         try {
             const content = fs.readFileSync(configPath, "utf8");

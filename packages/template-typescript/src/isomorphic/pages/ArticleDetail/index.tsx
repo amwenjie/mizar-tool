@@ -1,3 +1,4 @@
+import Component from "mizar/iso/Component";
 import { connect } from "mizar/iso/connect";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
@@ -6,7 +7,7 @@ import { IProps, IVideoPlayerParam } from "./interface";
 import { articleDetailReducer } from "./reducer";
 import * as css from "./main.less";
 
-class ArticleDetail extends React.Component<IProps, {}> {
+class ArticleDetail extends Component<IProps, {}> {
     public static async getInitialData(serverFetch, query, params) {
         // const a = await serverFetch({
         //     url: "/article/detail.api",

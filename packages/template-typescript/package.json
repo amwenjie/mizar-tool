@@ -44,31 +44,13 @@
       "Opera >= 12",
       "Safari >= 6"
     ],
-    "customConfig": {
+    "appConfig": {
       "cdn": "/",
       "assetsPathPrefix": "static/",
       "debugPort": 9026,
       "port": 8889,
-      "vendorPack": {
-        "minify": true,
-        "browserVendor": []
-      },
       "tslint": {
         "disable": false
-      },
-      "clientPack": {
-        "minify": true,
-        "cssModule": true,
-        "chunk": true,
-        "style": {
-          "sourceMap": true,
-          "base64": false,
-          "ieCompat": true
-        }
-      },
-      "serverPack": {
-        "minify": true,
-        "templateMinify": true
       }
     }
 }

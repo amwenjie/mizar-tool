@@ -14,19 +14,10 @@ const log = Logger("ServerApiPack");
 export class ServerApiPack extends WebpackTaskBase {
     private globalConfig: IGlobalConfig;
     private tslintConfig;
-    private cssModule;
     private apiSrc: string = "src/server/apis";
-    private autoRun: boolean = false;
-    private debug: number = 0;
     public constructor() {
         super("ServerApiPack");
         this.taskName = "ServerApiPack";
-    }
-    public setAutoRun(autoRun: boolean = true) {
-        this.autoRun = autoRun;
-        this.debug = ConfigHelper.get("debugPort", 0);
-        log.info("debugPort", this.debug);
-        return this;
     }
     // public setWatchModel(watchModel: boolean) {
     //     this.watchModel = watchModel;
@@ -64,7 +55,6 @@ export class ServerApiPack extends WebpackTaskBase {
     public async run() {
         this.globalConfig = getGlobalConfig();
         this.tslintConfig = ConfigHelper.get("tslint", { disable: false });
-        this.cssModule = ConfigHelper.get("serverPack.cssModule", true);
         log.info("->", this.taskName, HelperTask.taking());
         try {
             const entry = await this.scan();

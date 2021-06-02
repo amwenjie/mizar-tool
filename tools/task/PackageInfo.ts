@@ -32,7 +32,7 @@ export class PackageInfo {
         packageJson.scripts = undefined;
         packageJson.scriptOperation = undefined;
         packageJson.devDependencies = undefined;
-        const cuzConf = packageJson.customConfig || {};
+        const cuzConf = packageJson.appConfig || {};
         const customConfig: {
             port: number;
             logger?: string;
@@ -48,7 +48,7 @@ export class PackageInfo {
         if (this.watchModel) {
             customConfig.debugPort = cuzConf.debugPort
         }
-        packageJson.customConfig = customConfig;
+        packageJson.appConfig = customConfig;
         packageJson = ObjectUtil.sort(packageJson);
         return packageJson;
     }

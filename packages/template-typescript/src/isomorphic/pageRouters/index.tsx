@@ -1,4 +1,3 @@
-import * as React from "react";
 import ArticleDetail from "../pages/ArticleDetail";
 import VideoDetail from "../pages/VideoDetail";
 import NotFound from "../pages/NotFound";

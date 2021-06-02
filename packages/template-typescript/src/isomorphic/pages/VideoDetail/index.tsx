@@ -1,3 +1,4 @@
+import Component from "mizar/iso/Component";
 import { connect } from "mizar/iso/connect";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
@@ -6,7 +7,7 @@ import { IProps, IVideoPlayerParam } from "./interface";
 import { videoDetailReducer } from "./reducer";
 import { showVideoPlayer } from "./action";
 import * as cssStyle from "./main.less";
-class VideoDetail extends React.Component<IProps, {}> {
+class VideoDetail extends Component<IProps, {}> {
     public static async getInitialData(serverFetch, query, params) {
         return {
             title: "video page",

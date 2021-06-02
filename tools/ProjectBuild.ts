@@ -19,6 +19,7 @@ export class ProjectBuild {
     private watchModel = false;
     private runServerModel = false;
     private publishModel = false;
+    private analyzMode = false;
     public async start() {
         try {
             await this.build();
@@ -28,6 +29,9 @@ export class ProjectBuild {
         } catch (e) {
             log.error("ProjectBuild", e);
         }
+    }
+    public setAnalyzMode(analyzMode) {
+        this.analyzMode = analyzMode;
     }
     public setWatchModel(watchModel) {
         this.watchModel = watchModel;
@@ -70,7 +74,9 @@ export class ProjectBuild {
             // 4. 生成同构下的ClientPack
             spinner = ora("client assets pack...\r\n").start();
             const isomorphicClientPack = new IsomorphicPack();
-            isomorphicClientPack.setWatchModel(this.watchModel);
+            isomorphicClientPack
+                .setWatchModel(this.watchModel)
+                .setAnalyzMode(this.analyzMode);
             // isomorphicClientPack.setVendorModel(vendor);
             await isomorphicClientPack.run();
             spinner.succeed();
@@ -83,8 +89,9 @@ export class ProjectBuild {
             // 6. 生成ServerPack
             spinner = ora("server assets pack...\r\n").start();
             const serverPack = new ServerPack();
-            serverPack.setAutoRun(this.runServerModel);
-            serverPack.setWatchModel(this.watchModel);
+            serverPack
+                .setAutoRun(this.runServerModel)
+                .setWatchModel(this.watchModel);
             await serverPack.run();
             spinner.succeed();
             console.log(green("build success"));
@@ -104,6 +111,9 @@ export class ProjectBuild {
     }
     if (argv.runServer) {
         projectBuild.setRunServer(true);
+    }
+    if (argv.analyz) {
+        projectBuild.setAnalyzMode(true);
     }
     // if (argv.publish) {
     //     projectBuild.setPublishModel(true);
