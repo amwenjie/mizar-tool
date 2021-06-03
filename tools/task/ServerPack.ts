@@ -73,17 +73,26 @@ export class ServerPack extends WebpackTaskBase {
                 },
             });
         }
+        rules.push({
+            test: /\/pageRouters\//,
+            use: [
+                {
+                    loader: Path.resolve(__dirname, "../libs/loaders/router-loadable-loader"),
+                    options: {
+                        IS_SERVER_RUNTIME: true,
+                    }
+                },
+            ],
+        });
         
         const mode = this.watchModel ? "development" : "production"; // this.watchModel ? JSON.stringify("development") : JSON.stringify("production");
         const defineOption = {
-            // "process.env.NODE_ENV": JSON.stringify(mode),
-            // "process.env.RUNTIME_ENV": JSON.stringify("client"),
-            // "process.env.IS_SERVER_ENV": JSON.stringify(false),
-            "process.env.IS_DEBUG_MODE": JSON.stringify(!!this.watchModel),
+            IS_SERVER_RUNTIME: JSON.stringify(true),
+            IS_DEBUG_MODE: JSON.stringify(!!this.watchModel),
         };
         const config: webpack.Configuration = {
             mode,
-            // cache: true,
+            // cache: false,
             devtool: this.watchModel ? "source-map" : undefined,
             entry,
             externals: [

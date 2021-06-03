@@ -16,12 +16,14 @@ import { ConfigHelper } from "../libs/ConfigHelper";
 import Logger from "../libs/Logger";
 import { WebpackTaskBase } from "../libs/WebpackTaskBase";
 import { HelperTask } from "./HelperTask";
-import { boolean } from "yargs";
 
 const StylelintPlugin = require('stylelint-webpack-plugin');
+
+import routerLoadableLoader from "../libs/loaders/router-loadable-loader";
+
 const log = Logger("IsomorphicPack");
 export class IsomorphicPack extends WebpackTaskBase {
-    private clientEntrySrc = "src/isomorphic/clientEntries";
+    private clientEntrySrc = "src/isomorphic/pageRouters";
     private pageSrc = "src/isomorphic/pages";
     private styleSrc = "src/isomorphic/styleEntries";
     private vendorModel: boolean = false;
@@ -219,7 +221,7 @@ export class IsomorphicPack extends WebpackTaskBase {
                     //     .replace(".ts", "")
                     //     .replace(/\\/g, "/")
                     //     .replace("/" + this.src + "/", "");
-                    entries[fileObj.name] = [...react16Depends, src];
+                    entries[fileObj.name] = [src];
                 }
             });
             walk.on("end", () => {
@@ -238,9 +240,11 @@ export class IsomorphicPack extends WebpackTaskBase {
      */
     private async scan() {
         return new Promise(async (resolve, reject) => {
-            Promise.all([this.styleScan(), this.clientEntryScan()])
-            .then(entries => {
-                const combinedEntries = Object.assign({}, entries[0], entries[1]);
+            Promise.all([this.pageScan()])
+            .then((entries: [object]) => {
+                const combinedEntries = {
+                    ...entries[0],
+                };
                 log.debug("IsomorphicPack.pack.keys", Object.keys(combinedEntries).join(","));
                 resolve(combinedEntries);
             }).catch(e => {
@@ -378,7 +382,7 @@ export class IsomorphicPack extends WebpackTaskBase {
                     chunks: "all",
                     cacheGroups: {
                         libBase: {
-                            test: /[\\/](react(-(redux|dom|router|router-config|router-dom))?|redux(-thunk)?|react)[\\/]/,
+                            test: /[\\/]react(-(dom|router|router-config|router-dom|redux|loadable))?|redux(-thunk)?[\\/]/,
                             name: "lib",
                             priority: 30,
                             chunks: "all",
@@ -592,125 +596,133 @@ export class IsomorphicPack extends WebpackTaskBase {
             test: /\.(ico|jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|swf)(\?.*)?$/i,
             type: "asset",
         });
+        rules.push({
+            test: /\/pageRouters\//,
+            use: [
+                {
+                    loader: Path.resolve(__dirname, "../libs/loaders/router-loadable-loader"),
+                    options: {
+                        IS_SERVER_RUNTIME: false,
+                    }
+                },
+            ],
+        });
         return rules;
     }
 
     private getPlugins() {
         const defineOption = {
-            // "process.env.NODE_ENV": JSON.stringify(mode),
-            // "process.env.RUNTIME_ENV": JSON.stringify("client"),
-            // "process.env.IS_SERVER_ENV": JSON.stringify(false),
-            "process.env.IS_DEBUG_MODE": JSON.stringify(!!this.watchModel),
+            IS_SERVER_RUNTIME: JSON.stringify(false),
+            IS_DEBUG_MODE: JSON.stringify(!!this.watchModel),
         };
 
-        const plugins = [
-            new webpack.DefinePlugin(defineOption),
+        const plugins = [];
+        if (this.stylelintConfig !== false) {
+            plugins.push(new StylelintPlugin(this.stylelintConfig));
+        }
+        plugins.push(new webpack.DefinePlugin(defineOption));
             // new webpack.ProvidePlugin({
             //     Promise: "bluebird",
             // }),
-            new MiniCssExtractPlugin({
-                filename: "[name]_[contenthash:8].css",
-                // chunkFilename: "[name]-chunk-[id]_[contenthash:8].css",
-            }),
-            new CopyWebpackPlugin({
-                patterns: [
-                    {
-                        context: "src",
-                        from: "public/**/*",
-                        // to: ({ context, absoluteFilename }) => {
-                        //     const rel = Path.relative(context, absoluteFilename);
-                        //     const relPath = rel.slice(0, rel.lastIndexOf("/"));
-                        //     return `${relPath}/[name].[ext]`;
-                        // },
-                    },
-                    // {
-                    //     context: "./src",
-                    //     from: "public/**/*.js",
-                    //     to: ({ context, absoluteFilename }) => {
-                    //         const rel = Path.relative(context, absoluteFilename);
-                    //         const relPath = rel.slice(0, rel.lastIndexOf("/"));
-                    //         return `${relPath}/[name]_[contenthash:8].[ext]`;
-                    //     },
-                    //     // transform (content, absoluteFrom) {
-                    //     //     const result = UglifyJS.minify(content.toString(), {
-                    //     //         toplevel: true,
-                    //     //     });
-                    //     //     if (result.error) {
-                    //     //         log.error(this.taskName, " copy js: ", absoluteFrom, " emit an error: ", result.error);
-                    //     //         return content;
-                    //     //     } else {
-                    //     //         return Buffer.from(result.code);
-                    //     //     }
-                    //     // },
+        plugins.push(new MiniCssExtractPlugin({
+            filename: "[name]_[contenthash:8].css",
+            // chunkFilename: "[name]-chunk-[id]_[contenthash:8].css",
+        }));
+        plugins.push(new CopyWebpackPlugin({
+            patterns: [
+                {
+                    context: "src",
+                    from: "public/**/*",
+                    // to: ({ context, absoluteFilename }) => {
+                    //     const rel = Path.relative(context, absoluteFilename);
+                    //     const relPath = rel.slice(0, rel.lastIndexOf("/"));
+                    //     return `${relPath}/[name].[ext]`;
                     // },
-                    // {
-                    //     context: "./src",
-                    //     from: "public/**/*.css",
-                    //     to: ({ context, absoluteFilename }) => {
-                    //         const rel = Path.relative(context, absoluteFilename);
-                    //         const relPath = rel.slice(0, rel.lastIndexOf("/"));
-                    //         return `${relPath}/[name]_[contenthash:8].[ext]`;
-                    //     },
-                    //     // transform (content, absoluteFrom) {
-                    //     //     const result = new CleanCSS({
-                    //     //         level: 1
-                    //     //     }).minify(content.toString());
-                    //     //     if (result.errors) {
-                    //     //         log.error(this.taskName, " copy css: ", absoluteFrom, " emit an error: ", result.errors);
-                    //     //         return content;
-                    //     //     } else {
-                    //     //         return Buffer.from(result.styles);
-                    //     //     }
-                    //     // },
-                    // },
-                    // {
-                    //     context: "./src",
-                    //     from: "public/**/favicon.ico",
-                    //     to: ({ context, absoluteFilename }) => {
-                    //         const rel = Path.relative(context, absoluteFilename);
-                    //         const relPath = rel.slice(0, rel.lastIndexOf("/"));
-                    //         return `${relPath}/favicon.ico`;
-                    //     },
-                    //     // transform (content, absoluteFrom) {
-                    //     //     const result = new CleanCSS({
-                    //     //         level: 1
-                    //     //     }).minify(content.toString());
-                    //     //     if (result.errors) {
-                    //     //         log.error(this.taskName, " copy css: ", absoluteFrom, " emit an error: ", result.errors);
-                    //     //         return content;
-                    //     //     } else {
-                    //     //         return Buffer.from(result.styles);
-                    //     //     }
-                    //     // },
-                    // },
-                    // {
-                    //     context: "./src",
-                    //     from: "public/**/*",
-                    //     to: ({ context, absoluteFilename }) => {
-                    //         const rel = Path.relative(context, absoluteFilename)
-                    //         const relPath = rel.slice(0, rel.lastIndexOf("/"))
-                    //         return `${relPath}/[name]_[contenthash:8].[ext]`;
-                    //     },
-                    //     globOptions: {
-                    //         ignore: ["**/*.js", "**/*.css", "**/favicon.ico"],
-                    //     },
-                    // },
-                ],
-            }),
-            new WebpackManifestPlugin({
-                // seed: this.getCssAssetsMainfest(),
-                fileName: Path.resolve(this.globalConfig.rootOutput, this.globalConfig.assetsMainfest),
-            }),
-        ];
+                },
+                // {
+                //     context: "./src",
+                //     from: "public/**/*.js",
+                //     to: ({ context, absoluteFilename }) => {
+                //         const rel = Path.relative(context, absoluteFilename);
+                //         const relPath = rel.slice(0, rel.lastIndexOf("/"));
+                //         return `${relPath}/[name]_[contenthash:8].[ext]`;
+                //     },
+                //     // transform (content, absoluteFrom) {
+                //     //     const result = UglifyJS.minify(content.toString(), {
+                //     //         toplevel: true,
+                //     //     });
+                //     //     if (result.error) {
+                //     //         log.error(this.taskName, " copy js: ", absoluteFrom, " emit an error: ", result.error);
+                //     //         return content;
+                //     //     } else {
+                //     //         return Buffer.from(result.code);
+                //     //     }
+                //     // },
+                // },
+                // {
+                //     context: "./src",
+                //     from: "public/**/*.css",
+                //     to: ({ context, absoluteFilename }) => {
+                //         const rel = Path.relative(context, absoluteFilename);
+                //         const relPath = rel.slice(0, rel.lastIndexOf("/"));
+                //         return `${relPath}/[name]_[contenthash:8].[ext]`;
+                //     },
+                //     // transform (content, absoluteFrom) {
+                //     //     const result = new CleanCSS({
+                //     //         level: 1
+                //     //     }).minify(content.toString());
+                //     //     if (result.errors) {
+                //     //         log.error(this.taskName, " copy css: ", absoluteFrom, " emit an error: ", result.errors);
+                //     //         return content;
+                //     //     } else {
+                //     //         return Buffer.from(result.styles);
+                //     //     }
+                //     // },
+                // },
+                // {
+                //     context: "./src",
+                //     from: "public/**/favicon.ico",
+                //     to: ({ context, absoluteFilename }) => {
+                //         const rel = Path.relative(context, absoluteFilename);
+                //         const relPath = rel.slice(0, rel.lastIndexOf("/"));
+                //         return `${relPath}/favicon.ico`;
+                //     },
+                //     // transform (content, absoluteFrom) {
+                //     //     const result = new CleanCSS({
+                //     //         level: 1
+                //     //     }).minify(content.toString());
+                //     //     if (result.errors) {
+                //     //         log.error(this.taskName, " copy css: ", absoluteFrom, " emit an error: ", result.errors);
+                //     //         return content;
+                //     //     } else {
+                //     //         return Buffer.from(result.styles);
+                //     //     }
+                //     // },
+                // },
+                // {
+                //     context: "./src",
+                //     from: "public/**/*",
+                //     to: ({ context, absoluteFilename }) => {
+                //         const rel = Path.relative(context, absoluteFilename)
+                //         const relPath = rel.slice(0, rel.lastIndexOf("/"))
+                //         return `${relPath}/[name]_[contenthash:8].[ext]`;
+                //     },
+                //     globOptions: {
+                //         ignore: ["**/*.js", "**/*.css", "**/favicon.ico"],
+                //     },
+                // },
+            ]
+        }));
+        plugins.push(new WebpackManifestPlugin({
+            // seed: this.getCssAssetsMainfest(),
+            fileName: Path.resolve(this.globalConfig.rootOutput, this.globalConfig.assetsMainfest),
+        }));
         if (this.analyzMode) {
             plugins.push(new BundleAnalyzerPlugin({
                 analyzerMode: this.watchModel ? "server" : "disabled",
                 generateStatsFile: !this.watchModel,
                 openAnalyzer: false,
             }));
-        }
-        if (this.stylelintConfig !== false) {
-            plugins.push(new StylelintPlugin(this.stylelintConfig));
         }
         return plugins;
     }

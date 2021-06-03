@@ -54,7 +54,10 @@ export function RunServer(serverPath, debug, cb: any = false) {
     params.push(serverPath);
     log.info("启动debug模式的服务", params);
     server = cp.spawn("node", params, {
-        env: Object.assign(process.env, { NODE_ENV: "development" }),
+        env: {
+            ...process.env,
+            NODE_ENV: "development",
+        },
         cwd: "build",
         // silent: false,
     });
