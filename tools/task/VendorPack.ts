@@ -1,5 +1,5 @@
-// import * as Path from "path";
-// import * as WebpackRaw from "webpack";
+// import Path from "path";
+// import WebpackRaw from "webpack";
 // import ConfigHelper from "../libs/ConfigHelper";
 // import { HelperTask } from "./HelperTask";
 // import Logger from "../libs/Logger";

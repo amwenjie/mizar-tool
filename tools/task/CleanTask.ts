@@ -1,4 +1,4 @@
-import * as fs from "fs-extra";
+import fs from "fs-extra";
 import { HelperTask } from "./HelperTask";
 import Logger from "../libs/Logger";
 

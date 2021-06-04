@@ -1,7 +1,7 @@
 // 基于file-loader@0.11.2修改
 
-import * as loaderUtils from "loader-utils";
-import * as path from "path";
+import loaderUtils from "loader-utils";
+import path from "path";
 import { validate as schemaValidate } from "schema-utils";
 import schema from "./options";
 

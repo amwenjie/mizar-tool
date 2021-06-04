@@ -9,7 +9,7 @@
 
 // var path = require("path")
 import { bold, green } from "colorette"
-import * as  cp from "child_process";
+import  cp from "child_process";
 import Logger from "../libs/Logger";
 const log = Logger("RunServer");
 

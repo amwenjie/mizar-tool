@@ -1,6 +1,5 @@
 import { blue, green } from "colorette";
-import * as Path from "path";
-import * as yargs from "yargs";
+import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 import { HelperTask } from "../task/HelperTask";
 import Logger from "./Logger";

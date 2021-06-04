@@ -1,25 +1,21 @@
 import { green, red, yellow } from "colorette";
-import * as CopyWebpackPlugin from "copy-webpack-plugin";
-import * as CssMinimizerPlugin from "css-minimizer-webpack-plugin";
-import * as DirectoryNamedWebpackPlugin from "directory-named-webpack-plugin";
-// import * as StylelintPlugin from "stylelint-webpack-plugin";
-import * as MiniCssExtractPlugin from "mini-css-extract-plugin";
-import * as TerserJSPlugin from "terser-webpack-plugin";
+import CopyWebpackPlugin from "copy-webpack-plugin";
+import CssMinimizerPlugin from "css-minimizer-webpack-plugin";
+import DirectoryNamedWebpackPlugin from "directory-named-webpack-plugin";
+import StylelintPlugin from "stylelint-webpack-plugin";
+import MiniCssExtractPlugin from "mini-css-extract-plugin";
+import TerserJSPlugin from "terser-webpack-plugin";
 import { BundleAnalyzerPlugin } from "webpack-bundle-analyzer";
 import { WebpackManifestPlugin } from "webpack-manifest-plugin";
-import * as fs from "fs-extra";
-import * as klaw from "klaw";
-import * as Path from "path";
-import * as webpack from "webpack";
+import fs from "fs-extra";
+import klaw from "klaw";
+import Path from "path";
+import webpack from "webpack";
 import getGlobalConfig, { IGlobalConfig, devLocalIdentName, prodLocalIdentName } from "../getGlobalConfig";
 import { ConfigHelper } from "../libs/ConfigHelper";
 import Logger from "../libs/Logger";
 import { WebpackTaskBase } from "../libs/WebpackTaskBase";
 import { HelperTask } from "./HelperTask";
-
-const StylelintPlugin = require('stylelint-webpack-plugin');
-
-import routerLoadableLoader from "../libs/loaders/router-loadable-loader";
 
 const log = Logger("IsomorphicPack");
 export class IsomorphicPack extends WebpackTaskBase {
@@ -240,10 +236,15 @@ export class IsomorphicPack extends WebpackTaskBase {
      */
     private async scan() {
         return new Promise(async (resolve, reject) => {
-            Promise.all([this.pageScan()])
-            .then((entries: [object]) => {
+            Promise.all([this.pageScan(), this.clientEntryScan()])
+            .then((entries: [object, object]) => {
                 const combinedEntries = {
-                    ...entries[0],
+                    // ...entries[0],
+                    ...entries[1],
+                    // index: {
+                    //     import: Path.resolve(this.rootPath, this.clientEntrySrc, "./index.tsx"),
+                    //     dependOn: Object.keys(entries[0]),
+                    // },
                 };
                 log.debug("IsomorphicPack.pack.keys", Object.keys(combinedEntries).join(","));
                 resolve(combinedEntries);
@@ -319,7 +320,7 @@ export class IsomorphicPack extends WebpackTaskBase {
             devtool: this.watchModel ? "source-map" : undefined,
             entry: entry,
             output: {
-                chunkFilename: "[name]-chunk_[contenthash:8].js",
+                chunkFilename: "[name]_[contenthash:8].js",
                 publicPath: this.publicPath,
                 filename: "[name]_[contenthash:8].js",
                 path: Path.resolve(this.outputPath),
@@ -374,12 +375,13 @@ export class IsomorphicPack extends WebpackTaskBase {
         return {
             optimization: {
                 minimize: !this.watchModel,
+                chunkIds: "deterministic",
                 moduleIds: "deterministic",
                 runtimeChunk: {
                     name: "runtime"
                 },
                 splitChunks: {
-                    chunks: "all",
+                    // chunks: "all",
                     cacheGroups: {
                         libBase: {
                             test: /[\\/]react(-(dom|router|router-config|router-dom|redux|loadable))?|redux(-thunk)?[\\/]/,
@@ -399,7 +401,7 @@ export class IsomorphicPack extends WebpackTaskBase {
                         common: {
                             name: "common",
                             minChunks: 2,
-                            chunks: "all",
+                            chunks: "initial",
                             reuseExistingChunk: true,
                             // minSize: 10000,
                             // maxSize: 100000,
@@ -457,6 +459,17 @@ export class IsomorphicPack extends WebpackTaskBase {
                             declaration: false,
                         },
                     },
+                },
+            ],
+        });
+        rules.push({
+            test: /\/pageRouters\//,
+            use: [
+                {
+                    loader: Path.resolve(__dirname, "../libs/loaders/router-loadable-loader"),
+                    options: {
+                        IS_SERVER_RUNTIME: false,
+                    }
                 },
             ],
         });
@@ -596,17 +609,6 @@ export class IsomorphicPack extends WebpackTaskBase {
             test: /\.(ico|jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|swf)(\?.*)?$/i,
             type: "asset",
         });
-        rules.push({
-            test: /\/pageRouters\//,
-            use: [
-                {
-                    loader: Path.resolve(__dirname, "../libs/loaders/router-loadable-loader"),
-                    options: {
-                        IS_SERVER_RUNTIME: false,
-                    }
-                },
-            ],
-        });
         return rules;
     }
 
@@ -624,6 +626,10 @@ export class IsomorphicPack extends WebpackTaskBase {
             // new webpack.ProvidePlugin({
             //     Promise: "bluebird",
             // }),
+        // plugins.push(new RouterLoadablePlugin({
+        //     IS_SERVER_RUNTIME: false,
+        //     test: /\/pageRouters\//,
+        // }));
         plugins.push(new MiniCssExtractPlugin({
             filename: "[name]_[contenthash:8].css",
             // chunkFilename: "[name]-chunk-[id]_[contenthash:8].css",

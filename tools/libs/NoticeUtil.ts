@@ -1,4 +1,4 @@
-import * as Notifier from "node-notifier";
+import Notifier from "node-notifier";
 
 export class NoticeUtil {
     public static message(titleStr: string, messageStr: string) {

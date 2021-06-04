@@ -1,5 +1,5 @@
 import { execSync } from "child_process";
-import * as Path from "path";
+import Path from "path";
 import { HelperTask } from "./HelperTask";
 import Logger from "../libs/Logger";
 

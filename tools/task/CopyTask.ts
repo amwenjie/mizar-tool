@@ -1,5 +1,5 @@
-import * as fs from "fs-extra";
-import * as Path from "path";
+import fs from "fs-extra";
+import Path from "path";
 import { HelperTask } from "./HelperTask";
 import Logger from "../libs/Logger";
 import getGlobalConfig from "../getGlobalConfig";

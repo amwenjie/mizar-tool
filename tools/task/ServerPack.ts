@@ -1,8 +1,8 @@
 import { green } from "colorette";
-import * as fs from "fs-extra";
-import * as Path from "path";
-import * as webpack from "webpack";
-import * as nodeExternals from "webpack-node-externals";
+import fs from "fs-extra";
+import Path from "path";
+import webpack from "webpack";
+import nodeExternals from "webpack-node-externals";
 import getGlobalConfig, { IGlobalConfig, devLocalIdentName, prodLocalIdentName } from "../getGlobalConfig";
 import { ConfigHelper } from "../libs/ConfigHelper";
 import { WebpackTaskBase } from "../libs/WebpackTaskBase";
@@ -254,8 +254,10 @@ export class ServerPack extends WebpackTaskBase {
             name: this.taskName,
             output: {
                 filename: "[name].js",
-                libraryTarget: "commonjs2",
                 path: Path.resolve(`${this.globalConfig.rootOutput}`),
+                library: {
+                    type: "commonjs2",
+                },
             },
             plugins: [
                 new webpack.DefinePlugin(defineOption),
@@ -267,7 +269,9 @@ export class ServerPack extends WebpackTaskBase {
                     "node_modules",
                 ],
             },
-            externalsPresets: { node: true },
+            externalsPresets: {
+                node: true,
+            },
             target: "node",
             optimization: {
                 emitOnErrors: false

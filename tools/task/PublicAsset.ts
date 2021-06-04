@@ -1,6 +1,6 @@
-import * as gulp from "gulp";
-import * as plumber from "gulp-plumber";
-import * as Path from "path";
+import gulp from "gulp";
+import plumber from "gulp-plumber";
+import Path from "path";
 import Logger from "../libs/Logger";
 import { HelperTask } from "./HelperTask";
 import getGlobalConfig from "../getGlobalConfig";

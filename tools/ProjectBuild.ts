@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { green } from "colorette";
-import * as ora from "ora";
-import * as yargs from "yargs";
+import ora from "ora";
+import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 import { HelperTask } from "./task/HelperTask";
 import { IsomorphicPack } from "./task/IsomorphicPack";

@@ -1,8 +1,8 @@
 #!/usr/bin/env node
-import * as commander from 'commander';
-import * as spawn from 'cross-spawn';
-import * as chalk from 'chalk';
-import * as Path from 'path';
+import commander from 'commander';
+import spawn from 'cross-spawn';
+import chalk from 'chalk';
+import Path from 'path';
 
 const packageJson = require('../package.json');
 const alcor = new commander.Command(packageJson.name);

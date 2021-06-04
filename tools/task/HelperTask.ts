@@ -1,7 +1,7 @@
 import { execSync } from "child_process";
-import * as Notifier from "node-notifier";
-import * as ora from "ora";
-import * as yargs  from "yargs";
+import Notifier from "node-notifier";
+import ora from "ora";
+import yargs  from "yargs";
 import { hideBin } from "yargs/helpers";
 import { CleanTask } from "./CleanTask";
 import Logger from "../libs/Logger";

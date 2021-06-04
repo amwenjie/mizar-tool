@@ -1,5 +1,5 @@
-import * as fs from "fs-extra";
-import * as Path from "path";
+import fs from "fs-extra";
+import Path from "path";
 import { ConfigHelper } from "../libs/ConfigHelper";
 import { ObjectUtil } from "../libs/ObjectUtil";
 import { HelperTask } from "./HelperTask";

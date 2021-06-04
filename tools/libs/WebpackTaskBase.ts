@@ -1,7 +1,7 @@
 import { green, red, yellow } from "colorette";
-import * as yargs from "yargs";
+import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
-import * as webpack from "webpack";
+import webpack from "webpack";
 import Logger from "./Logger";
 import TaskBase from "./TaskBase";
 

@@ -1,5 +1,5 @@
-import * as gulp from "gulp";
-import * as uglify from "gulp-uglify";
+import gulp from "gulp";
+import uglify from "gulp-uglify";
 import { HelperTask } from "./HelperTask";
 import Logger from "../libs/Logger";
 const log = Logger("UglifyJSTask");

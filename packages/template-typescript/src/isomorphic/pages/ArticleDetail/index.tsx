@@ -1,11 +1,11 @@
 import Component from "mizar/iso/Component";
 import { connect } from "mizar/iso/connect";
-import * as React from "react";
-import * as ReactDOM from "react-dom";
+import React from "react";
+import ReactDOM from "react-dom";
 import Page from "../../common/components/Page";
 import { IProps, IVideoPlayerParam } from "./interface";
 import { articleDetailReducer } from "./reducer";
-import * as css from "./main.less";
+import css from "./index.less";
 
 class ArticleDetail extends Component<IProps, {}> {
     public static async getInitialData(serverFetch, query, params) {
