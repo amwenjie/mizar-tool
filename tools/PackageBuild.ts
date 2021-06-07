@@ -40,7 +40,7 @@ class PackageBuild {
             await new PublicAsset().setWatchModel(this.watchModel).run();
             await new PublicAsset("iso", "PublicAsset iso ").setWatchModel(this.watchModel).run();
             spinner.succeed();
-            spinner = ora("transform ts file...\r\n").start();
+            spinner = ora("transform typescript file...\r\n").start();
             await new ShellTask("./src").setWatchModel(this.watchModel).run("tsc", "-p");
             spinner.succeed();
             console.log(green("build success"));
