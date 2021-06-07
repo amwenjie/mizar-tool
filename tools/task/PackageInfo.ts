@@ -54,14 +54,13 @@ export class PackageInfo {
     }
     public outputPackageJson() {
         fs.writeJsonSync(this.buildPath + "/package.json", this.packageJson, { spaces: "  " });
-        if (fs.existsSync(this.rootPath + "/package-lock.json")) {
-            try {
-                fs.copySync(this.rootPath + "/package-lock.json", this.buildPath + "/package-lock.json");
-            } catch (e) {
-                log.error("copy package-lock raise an error", e);
-            }
-        }
-        
+        // if (fs.existsSync(this.rootPath + "/package-lock.json")) {
+        //     try {
+        //         fs.copySync(this.rootPath + "/package-lock.json", this.buildPath + "/package-lock.json");
+        //     } catch (e) {
+        //         log.error("copy package-lock raise an error", e);
+        //     }
+        // }
     }
     public setVersion() {
         const version = ConfigHelper.getPackageVersion();
