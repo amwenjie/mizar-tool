@@ -1,4 +1,10 @@
 export default function (source) {
+    const sourcePath = this.resourcePath;
+    if (!/\/pageRouters\/.+\.tsx?$/.test(sourcePath)
+        // || proceed.indexOf(sourcePath) > -1
+    ) {
+        return source;
+    }
     const options = this.getOptions();
     if (options.IS_SERVER_RUNTIME) {
         return source.replace(/component\:\s*("|')(.+pages\/([^"']+))\1/g, "component: require(\"$2\").default, name: \"$3\"");
@@ -17,7 +23,7 @@ export default function (source) {
         while (matched  !== null) {
             // const compName = `loadable${matched[3]}`;
             const loadableComp = `Loadable({
-                loader: () => import('${matched[2]}'),
+                loader: () => import(/* webpackChunkName: "page/${matched[3]}" */ '${matched[2]}'),
                 loading: function () { return <div>loading...</div>;},
             })`;
             // injectArr.push(`const ${compName} = ${loadableComp};`);
@@ -25,6 +31,7 @@ export default function (source) {
             matched = regexp.exec(source);
         }
         returnSource = injectArr + returnSource.replace("export default pageRouter;", "bootstrap(pageRouter)('app');export default pageRouter;");
+        // console.log("returnSource: ", returnSource);
         return returnSource;
     }
 }

@@ -15,6 +15,7 @@ import getGlobalConfig, { IGlobalConfig, devLocalIdentName, prodLocalIdentName }
 import { ConfigHelper } from "../libs/ConfigHelper";
 import Logger from "../libs/Logger";
 import { WebpackTaskBase } from "../libs/WebpackTaskBase";
+import GatherPageDepsPlugin from "../libs/plugins/page-deps-mainfest-plugin";
 import { HelperTask } from "./HelperTask";
 
 const log = Logger("IsomorphicPack");
@@ -296,18 +297,6 @@ export class IsomorphicPack extends WebpackTaskBase {
         return map;
     }
 
-    private getCssAssetsMainfest() {
-        const cssMainfestPath = Path.resolve(this.outputPath, this.globalConfig.assetsMainfest);
-        const cssMainfestJson = require(cssMainfestPath);
-        const seedJson: any = {};
-        Object.getOwnPropertyNames(cssMainfestJson).forEach(key => {
-            seedJson[`styleEntries/${key}`] = this.publicPath + cssMainfestJson[key];
-        });
-        log.debug("seedJson: ", seedJson);
-        fs.unlink(cssMainfestPath, (err) => {});
-        return seedJson;
-    }
-
     private async pack(entry) {
         // log.info("IsomorphicPack.pack.run", entry);
         const mode = this.watchModel ? "development" : "production";
@@ -351,17 +340,6 @@ export class IsomorphicPack extends WebpackTaskBase {
             },
             optimization: this.getOptimization().optimization,
         };
-
-        // if (this.vendorModel) {
-        //     const manifestPath =
-        //         Path.resolve(this.globalConfig.clientOutput, "vendor-manifest.json");
-        //     const manifest = fs.readJsonSync(manifestPath);
-        //     const dllReferencePlugin = new webpack.DllReferencePlugin({
-        //         context: this.globalConfig.clientOutput,
-        //         manifest,
-        //     });
-        //     config.plugins.push(dllReferencePlugin);
-        // }
         log.info(this.taskName, "pack", { config: JSON.stringify(config) });
 
         try {
@@ -378,7 +356,7 @@ export class IsomorphicPack extends WebpackTaskBase {
                 chunkIds: "deterministic",
                 moduleIds: "deterministic",
                 runtimeChunk: {
-                    name: "runtime"
+                    name: "runtime",
                 },
                 splitChunks: {
                     // chunks: "all",
@@ -463,7 +441,7 @@ export class IsomorphicPack extends WebpackTaskBase {
             ],
         });
         rules.push({
-            test: /\/pageRouters\//,
+            test: /\/pageRouters\/.+\.tsx?$/,
             use: [
                 {
                     loader: Path.resolve(__dirname, "../libs/loaders/router-loadable-loader"),
@@ -623,13 +601,6 @@ export class IsomorphicPack extends WebpackTaskBase {
             plugins.push(new StylelintPlugin(this.stylelintConfig));
         }
         plugins.push(new webpack.DefinePlugin(defineOption));
-            // new webpack.ProvidePlugin({
-            //     Promise: "bluebird",
-            // }),
-        // plugins.push(new RouterLoadablePlugin({
-        //     IS_SERVER_RUNTIME: false,
-        //     test: /\/pageRouters\//,
-        // }));
         plugins.push(new MiniCssExtractPlugin({
             filename: "[name]_[contenthash:8].css",
             // chunkFilename: "[name]-chunk-[id]_[contenthash:8].css",
@@ -639,89 +610,16 @@ export class IsomorphicPack extends WebpackTaskBase {
                 {
                     context: "src",
                     from: "public/**/*",
-                    // to: ({ context, absoluteFilename }) => {
-                    //     const rel = Path.relative(context, absoluteFilename);
-                    //     const relPath = rel.slice(0, rel.lastIndexOf("/"));
-                    //     return `${relPath}/[name].[ext]`;
-                    // },
                 },
-                // {
-                //     context: "./src",
-                //     from: "public/**/*.js",
-                //     to: ({ context, absoluteFilename }) => {
-                //         const rel = Path.relative(context, absoluteFilename);
-                //         const relPath = rel.slice(0, rel.lastIndexOf("/"));
-                //         return `${relPath}/[name]_[contenthash:8].[ext]`;
-                //     },
-                //     // transform (content, absoluteFrom) {
-                //     //     const result = UglifyJS.minify(content.toString(), {
-                //     //         toplevel: true,
-                //     //     });
-                //     //     if (result.error) {
-                //     //         log.error(this.taskName, " copy js: ", absoluteFrom, " emit an error: ", result.error);
-                //     //         return content;
-                //     //     } else {
-                //     //         return Buffer.from(result.code);
-                //     //     }
-                //     // },
-                // },
-                // {
-                //     context: "./src",
-                //     from: "public/**/*.css",
-                //     to: ({ context, absoluteFilename }) => {
-                //         const rel = Path.relative(context, absoluteFilename);
-                //         const relPath = rel.slice(0, rel.lastIndexOf("/"));
-                //         return `${relPath}/[name]_[contenthash:8].[ext]`;
-                //     },
-                //     // transform (content, absoluteFrom) {
-                //     //     const result = new CleanCSS({
-                //     //         level: 1
-                //     //     }).minify(content.toString());
-                //     //     if (result.errors) {
-                //     //         log.error(this.taskName, " copy css: ", absoluteFrom, " emit an error: ", result.errors);
-                //     //         return content;
-                //     //     } else {
-                //     //         return Buffer.from(result.styles);
-                //     //     }
-                //     // },
-                // },
-                // {
-                //     context: "./src",
-                //     from: "public/**/favicon.ico",
-                //     to: ({ context, absoluteFilename }) => {
-                //         const rel = Path.relative(context, absoluteFilename);
-                //         const relPath = rel.slice(0, rel.lastIndexOf("/"));
-                //         return `${relPath}/favicon.ico`;
-                //     },
-                //     // transform (content, absoluteFrom) {
-                //     //     const result = new CleanCSS({
-                //     //         level: 1
-                //     //     }).minify(content.toString());
-                //     //     if (result.errors) {
-                //     //         log.error(this.taskName, " copy css: ", absoluteFrom, " emit an error: ", result.errors);
-                //     //         return content;
-                //     //     } else {
-                //     //         return Buffer.from(result.styles);
-                //     //     }
-                //     // },
-                // },
-                // {
-                //     context: "./src",
-                //     from: "public/**/*",
-                //     to: ({ context, absoluteFilename }) => {
-                //         const rel = Path.relative(context, absoluteFilename)
-                //         const relPath = rel.slice(0, rel.lastIndexOf("/"))
-                //         return `${relPath}/[name]_[contenthash:8].[ext]`;
-                //     },
-                //     globOptions: {
-                //         ignore: ["**/*.js", "**/*.css", "**/favicon.ico"],
-                //     },
-                // },
             ]
         }));
         plugins.push(new WebpackManifestPlugin({
-            // seed: this.getCssAssetsMainfest(),
             fileName: Path.resolve(this.globalConfig.rootOutput, this.globalConfig.assetsMainfest),
+        }));
+        plugins.push(new GatherPageDepsPlugin({
+            clientPath: this.globalConfig.clientOutput,
+            buildPath: this.globalConfig.rootOutput,
+            assetsFilename: this.globalConfig.assetsMainfest,
         }));
         if (this.analyzMode) {
             plugins.push(new BundleAnalyzerPlugin({
@@ -731,49 +629,6 @@ export class IsomorphicPack extends WebpackTaskBase {
             }));
         }
         return plugins;
-    }
-
-    // protected async doneCallback() {
-    //     console.log(green(`${this.taskName}, success`));
-    //     await this.reorgStyleEntry();
-    // }
-
-    private async reorgStyleEntry() {
-        const cssMainfestPath = Path.resolve(this.globalConfig.rootOutput, this.globalConfig.assetsMainfest);
-        const cssMainfestJson = require(cssMainfestPath);
-        console.log("cssMainfestJson: ", cssMainfestJson);
-        const dltKeys = Object.keys(cssMainfestJson).filter(key => /^styleEntry\/.+\.js$/.test(key));
-        dltKeys.forEach(k => {
-            delete cssMainfestJson[k];
-        });
-        try {
-            await fs.writeJson(cssMainfestPath, cssMainfestJson, {
-                spaces: 2,
-            });
-            await this.reorgStyleEntryFile();
-        } catch (err) {
-            log.error("reorgStyleEntry error: ", err);
-        }
-    }
-
-    private async reorgStyleEntryFile() {
-        return new Promise((resolve, reject) => {
-            const styleEntryDir = Path.resolve(this.outputPath, "styleEntry");
-            if (fs.existsSync(styleEntryDir)) {
-                const walk = klaw(styleEntryDir, {
-                    filter: path => /\.ts$|\.tsx$|\.js$/i.test(path)
-                });
-                walk.on("data", (state) => {
-                    fs.unlink(state.path, (err) => {});
-                });
-                walk.on("error", (err, file) => {
-                    log.error("unlink file: ", file.path, " rais an error: ", err.message);
-                    resolve("error");
-                })
-                walk.on("end", () => resolve("end"));
-            }
-            resolve("no-file");
-        });
     }
 }
 export default IsomorphicPack;
