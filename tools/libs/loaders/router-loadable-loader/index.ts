@@ -1,3 +1,6 @@
+import fs from "fs-extra";
+import Path from "path";
+
 export default function (source) {
     const sourcePath = this.resourcePath;
     if (!/\/pageRouters\/.+\.tsx?$/.test(sourcePath)
@@ -22,9 +25,14 @@ export default function (source) {
         let matched = regexp.exec(source);
         while (matched  !== null) {
             // const compName = `loadable${matched[3]}`;
+            const skeleton = `${matched[3].replace(/(\/index(\.tsx)?)?$/, "")}/skeleton.tsx`;
+            let loading = "function () { return <div>loading...</div>;}";
+            if (fs.existsSync(Path.resolve(process.cwd(), "src/isomorphic/pages/", skeleton))) {
+                loading = `require("../pages/${skeleton}").default`;
+            }
             const loadableComp = `Loadable({
                 loader: () => import(/* webpackChunkName: "page/${matched[3]}" */ '${matched[2]}'),
-                loading: function () { return <div>loading...</div>;},
+                loading: ${loading},
             })`;
             // injectArr.push(`const ${compName} = ${loadableComp};`);
             returnSource = returnSource.replace(matched[0], `component: ${loadableComp}, name: "${matched[3]}"`);

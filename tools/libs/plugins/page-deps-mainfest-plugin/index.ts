@@ -35,7 +35,6 @@ function gatheringDeps(file, assetsKeys: string[]) {
         console.error("gatheringDeps: ", e);
         throw e;
     }
-    console.log("depsMap: ", depsMap);
     return depsMap;
 }
 
