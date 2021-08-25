@@ -105,7 +105,7 @@ export class ProjectBuild {
 
 (async () => {
     const projectBuild = new ProjectBuild();
-    const argv = yargs(hideBin(process.argv)).argv;
+    const argv = yargs(hideBin(process.argv)).argv  as any;
     if (argv.watch) {
         projectBuild.setWatchModel(true);
     }

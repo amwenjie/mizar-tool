@@ -59,7 +59,7 @@ class PackageBuild {
 (async () => {
     try {
         const packageBuild = new PackageBuild();
-        const argv = yargs(hideBin(process.argv)).argv;
+        const argv = yargs(hideBin(process.argv)).argv as any;
         if (argv.watch) {
             packageBuild.setWatchModel(true);
         }

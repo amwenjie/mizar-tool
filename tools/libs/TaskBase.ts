@@ -5,7 +5,7 @@ import { HelperTask } from "../task/HelperTask";
 import Logger from "./Logger";
 
 const log = Logger("TaskBase");
-const argv: any = yargs(hideBin(process.argv)).argv;
+const argv: any = yargs(hideBin(process.argv)).argv as any;
 
 export class TaskBase {
     protected static compileQueue = [];

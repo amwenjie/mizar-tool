@@ -5,7 +5,7 @@ import webpack from "webpack";
 import Logger from "./Logger";
 import TaskBase from "./TaskBase";
 
-const argv: any = yargs(hideBin(process.argv)).argv;
+const argv: any = yargs(hideBin(process.argv)).argv  as any;
 
 const log = Logger("WebpackTaskBase");
 

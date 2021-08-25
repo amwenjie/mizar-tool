@@ -2,7 +2,7 @@ import yargs  from "yargs";
 import { hideBin } from "yargs/helpers";
 // import log4js from "log4js";
 
-const argv = yargs(hideBin(process.argv)).argv;
+const argv = yargs(hideBin(process.argv)).argv as any;
 
 // log4js.configure({
 //     appenders: {

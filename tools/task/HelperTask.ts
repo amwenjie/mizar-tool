@@ -42,7 +42,7 @@ export class HelperTask {
         );
     }
     public async sendMessage(titleStr: string, messageStr: string) {
-        const argv = yargs(hideBin(process.argv)).argv;
+        const argv = yargs(hideBin(process.argv)).argv  as any;
         if (argv["no-notify"]) {
             return;
         }

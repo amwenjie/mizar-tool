@@ -10,7 +10,7 @@ import { UglifyJSTask } from "./tools/task/UglifyJSTask";
 import { CopyTask } from "./tools/task/CopyTask";
 import Logger from "./tools/libs/Logger";
 
-const argv:any = yargs(hideBin(process.argv)).argv;
+const argv:any = yargs(hideBin(process.argv)).argv as any;
 
 const log = Logger("Build");
 class Build {

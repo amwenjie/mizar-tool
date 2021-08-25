@@ -1,12 +1,12 @@
 import fs from "fs-extra";
 import { parse } from "jsonc-parser";
 import Path from "path";
-import { Options } from "stylelint-webpack-plugin/declarations/getOptions";
+import { Options } from "stylelint-webpack-plugin";
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 import Logger from "../libs/Logger";
 
-const argv:any = yargs(hideBin(process.argv)).argv;
+const argv:any = yargs(hideBin(process.argv)).argv  as any;
 
 const log = Logger("ConfigHelper");
 
