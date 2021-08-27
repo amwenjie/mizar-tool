@@ -10,14 +10,18 @@ const argv:any = yargs(hideBin(process.argv)).argv  as any;
 
 const log = Logger("ConfigHelper");
 
-const configName = "package.json";
-const cuzConf = "appConfig";
+const configureJSON = Path.resolve("./config/configure.json");
+const appConfJSON = Path.resolve("./config/app.json");
 
-export interface ICustomConfig {
+export interface IAppConf {
+    name: string;
     port: number;
     assetsPathPrefix?: string;
-    debugPort?: number;
     cdn?: string;
+}
+
+export interface IConfigure {
+    debugPort?: number;
     logger?: string;
     tslint?: {
         disable: boolean;
@@ -26,15 +30,14 @@ export interface ICustomConfig {
 }
 
 export class ConfigHelper {
-    private static privateGet(node: string, defaultValue = null) {
+    private static privateGet(node: string, defaultValue = null, configPath = configureJSON) {
         let result = defaultValue;
-        const key = `${configName}->${node}`;
+        const key = `${configPath}->${node}`;
         log.info("ConfigHelper privateGet key: ", key);
-        if (ConfigHelper.store[`${configName}-${node}`]) {
-            log.info("read in store", key + "->" + JSON.stringify(ConfigHelper.store[`${configName}-${node}`]));
-            return ConfigHelper.store[`${configName}-${node}`];
+        if (ConfigHelper.store[`${configPath}-${node}`]) {
+            log.info("read in store", key + "->" + JSON.stringify(ConfigHelper.store[`${configPath}-${node}`]));
+            return ConfigHelper.store[`${configPath}-${node}`];
         }
-        const configPath = Path.resolve(`./${configName}`);
         log.info("confighelper privateGet configPath: ", configPath);
         try {
             const content = fs.readFileSync(configPath, "utf8");
@@ -62,20 +65,21 @@ export class ConfigHelper {
             log.info("ConfigHelper.get raise an error: ", key + " -> " + error.message);
         }
         if (result === null) {
-            const msg = `ConfigHelper > 未能获取到缺省和默认配置,${configName},${node}。`;
+            const msg = `ConfigHelper > 未能获取到缺省和默认配置,${configPath},${node}。`;
             throw new Error(msg);
         }
         log.info("ConfigHelper.get", key + "->" + JSON.stringify(result));
-        ConfigHelper.store[`${configName}-${node}`] = result;
+        ConfigHelper.store[`${configPath}-${node}`] = result;
         return result;
     }
+
     public static store: any = {};
 
-    public static set(node, value) {
-        ConfigHelper.store[`${configName}-${node}`] = value;
+    public static set(node, value, configPath = configureJSON) {
+        ConfigHelper.store[`${configPath}-${node}`] = value;
     }
-    public static get(node: string, defaultValue = null) {
-        return ConfigHelper.privateGet(`${cuzConf}.${node}`, defaultValue);
+    public static get(node: string, defaultValue = null, configPath = configureJSON) {
+        return ConfigHelper.privateGet(node, defaultValue, configPath);
     }
     public static getPackageVersion() {
         let patchVer = 0;
@@ -89,17 +93,17 @@ export class ConfigHelper {
         return version.slice(0, 3).join(".");
     }
     public static getPackageName() {
-        return ConfigHelper.privateGet("name");
+        return ConfigHelper.get("name", null, appConfJSON);
     }
     public static getAssetsPathPrefix() {
-        let prefix = ConfigHelper.get("assetsPathPrefix", "");
+        let prefix = ConfigHelper.get("assetsPathPrefix", "", appConfJSON);
         if (prefix && !prefix.endsWith("/")) {
             prefix += "/";
         }
         return prefix;
     }
     public static getCDN() {
-        return ConfigHelper.get("cdn", "");
+        return ConfigHelper.get("cdn", "", appConfJSON);
     }
     public static getPublicPath() {
         return `${ConfigHelper.getAssetsPathPrefix()}`; // ${ConfigHelper.getPackageName()}/`;

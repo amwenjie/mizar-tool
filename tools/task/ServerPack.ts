@@ -287,11 +287,7 @@ export class ServerPack extends WebpackTaskBase {
     protected async doneCallback() {
         console.log(green(`${this.taskName}, success`));
         if (this.autoRun === true && this.watchModel === true) {
-            // const pkgName = ConfigHelper.getPackageName();
             let serverEntry = "index";
-            // if (pkgName) {
-            //     serverEntry = `${pkgName}/index`;
-            // }
             RunServer(serverEntry, this.debug);
         }
     }

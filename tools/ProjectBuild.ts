@@ -3,6 +3,7 @@ import { green } from "colorette";
 import ora from "ora";
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
+import { CopyTask } from "./task/CopyTask";
 import { HelperTask } from "./task/HelperTask";
 import { IsomorphicPack } from "./task/IsomorphicPack";
 import { PublishTask } from "./task/PublishTask";
@@ -55,10 +56,12 @@ export class ProjectBuild {
         task.start();
         spinner.succeed();
         try {
-            spinner = ora("process target directory & packageInfo...\r\n").start();
+            spinner = ora("process config & packageInfo ...\r\n").start();
             // 1 clean
             await task.cleanAsync();
             await new PackageInfo().setWatchModel(true).run();
+            await new CopyTask("./config", "./config").run();
+            await new CopyTask("./config", "./config").run();
             spinner.succeed();
             // await new PublicAsset().run();
             // 2. 生成样式

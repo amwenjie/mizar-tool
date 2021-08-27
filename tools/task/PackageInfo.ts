@@ -29,26 +29,6 @@ export class PackageInfo {
     public replacePackage() {
         let packageJson: any = fs.readFileSync(this.rootPath + "/package.json", "utf8");
         packageJson = JSON.parse(packageJson);
-        packageJson.scripts = undefined;
-        packageJson.scriptOperation = undefined;
-        packageJson.devDependencies = undefined;
-        const cuzConf = packageJson.appConfig || {};
-        const customConfig: {
-            port: number;
-            logger?: string;
-            assetsPathPrefix?: string;
-            cdn?: string;
-            debugPort?: number;
-        } = {
-            port: cuzConf.port,
-            logger: cuzConf.logger,
-            assetsPathPrefix: cuzConf.assetsPathPrefix,
-            cdn: cuzConf.cdn,
-        };
-        if (this.watchModel) {
-            customConfig.debugPort = cuzConf.debugPort
-        }
-        packageJson.appConfig = customConfig;
         packageJson = ObjectUtil.sort(packageJson);
         return packageJson;
     }
