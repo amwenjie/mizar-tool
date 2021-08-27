@@ -39,7 +39,7 @@ function gatherPageComDeps(file, assetsKeys: string[]) {
         const depsMap = {};
         let regexp;
         // 单个依赖的按需加载路由组件
-        const singleDepRegexp = /component\:[^\[]+loader\:[^"]+"([^"]+)"\)\.then\([\s\S]*?name\:\s*"([^"]+)"/g;
+        const singleDepRegexp = /component\:[\s\S]+?loader\:[\s\S]+?"?([^"\)\(]+)"?\)\.then\([\s\S]*?name\:\s*"([^"]+)"/g;
         // 多个依赖的按需加载路由组件
         const depRegexp = /component\:[^\[]+loader\:[^\[]+Promise\.all\([^\[]*?\[([^\]]+)\][\s\S]*?name\:\s*"([^"]+)"/g;
         regexp = depRegexp;
