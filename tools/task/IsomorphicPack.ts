@@ -85,7 +85,8 @@ export class IsomorphicPack extends WebpackTaskBase {
         const stylelintPath = Path.resolve(`${this.rootPath}.stylelintrc.json`);
         const defaultConfig = {
             configFile: fs.existsSync(stylelintPath) ? stylelintPath : undefined,
-            files: "**/*.(le|s(a|c)|c)ss",
+            extensions: ["css", "less", "scss", "sass"],
+            // files: "**/*.(le|s(a|c)|c)ss",
         };
         const config = ConfigHelper.get("stylelint");
         if (typeof config === "boolean") {
@@ -197,7 +198,14 @@ export class IsomorphicPack extends WebpackTaskBase {
 
     private clientEntryScan() {
         return new Promise((resolve, reject) => {
-            const react16Depends = ["core-js/features/map", "core-js/features/set", "raf/polyfill"];
+            const esDepends = [
+                "core-js/features/object",
+                "core-js/features/array",
+                "core-js/features/map",
+                "core-js/features/set",
+                "core-js/features/promise",
+                "raf/polyfill",
+            ];
             const entries: any = {};
             const entryDir = this.rootPath + this.clientEntrySrc;
             if (!fs.existsSync(entryDir)) {
@@ -218,7 +226,7 @@ export class IsomorphicPack extends WebpackTaskBase {
                     //     .replace(".ts", "")
                     //     .replace(/\\/g, "/")
                     //     .replace("/" + this.src + "/", "");
-                    entries[fileObj.name] = [src];
+                    entries[fileObj.name] = esDepends.concat(src);
                 }
             });
             walk.on("end", () => {
@@ -453,11 +461,6 @@ export class IsomorphicPack extends WebpackTaskBase {
             use: [
                 {
                     loader: MiniCssExtractPlugin.loader,
-                    options: {
-                        modules: {
-                            namedExport: true,
-                        },
-                    },
                 },
                 {
                     loader: "css-loader",
@@ -475,13 +478,10 @@ export class IsomorphicPack extends WebpackTaskBase {
                 {
                     loader: "postcss-loader",
                     options: {
-                        postcssOptions: () => {
-                            return {
-                                plugins: [
-                                    require("precss"),
-                                    require("autoprefixer"),
-                                ],
-                            };
+                        postcssOptions: {
+                            plugins: [
+                                "postcss-preset-env",
+                            ],
                         },
                     },
                 },
@@ -493,18 +493,12 @@ export class IsomorphicPack extends WebpackTaskBase {
             use: [
                 {
                     loader: MiniCssExtractPlugin.loader,
-                    options: {
-                        modules: {
-                            namedExport: true,
-                        },
-                    },
                 },
                 {
                     loader: "css-loader",
                     options: {
                         importLoaders: 2,
                         sourceMap,
-                        esModule: true,
                         modules: {
                             auto: this.shouldSourceModuled,
                             localIdentName: localIdentName,
@@ -515,13 +509,10 @@ export class IsomorphicPack extends WebpackTaskBase {
                 {
                     loader: "postcss-loader",
                     options: {
-                        postcssOptions: () => {
-                            return {
-                                plugins: [
-                                    require("precss"),
-                                    require("autoprefixer"),
-                                ],
-                            };
+                        postcssOptions: {
+                            plugins: [
+                                "postcss-preset-env",
+                            ],
                         },
                     },
                 },
@@ -539,18 +530,12 @@ export class IsomorphicPack extends WebpackTaskBase {
             use: [
                 {
                     loader: MiniCssExtractPlugin.loader,
-                    options: {
-                        modules: {
-                            namedExport: true,
-                        },
-                    },
                 },
                 {
                     loader: "css-loader",
                     options: {
                         importLoaders: 2,
                         sourceMap,
-                        esModule: true,
                         modules: {
                             auto: this.shouldSourceModuled,
                             localIdentName: localIdentName,
@@ -561,13 +546,10 @@ export class IsomorphicPack extends WebpackTaskBase {
                 {
                     loader: "postcss-loader",
                     options: {
-                        postcssOptions: () => {
-                            return {
-                                plugins: [
-                                    require("precss"),
-                                    require("autoprefixer"),
-                                ],
-                            };
+                        postcssOptions: {
+                            plugins: [
+                                "postcss-preset-env",
+                            ],
                         },
                     },
                 },

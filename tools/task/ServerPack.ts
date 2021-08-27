@@ -156,13 +156,10 @@ export class ServerPack extends WebpackTaskBase {
                             {
                                 loader: "postcss-loader",
                                 options: {
-                                    postcssOptions: () => {
-                                        return {
-                                            plugins: [
-                                                require("precss"),
-                                                require("autoprefixer"),
-                                            ],
-                                        };
+                                    postcssOptions: {
+                                        plugins: [
+                                            "postcss-preset-env",
+                                        ],
                                     },
                                 },
                             },
@@ -192,13 +189,10 @@ export class ServerPack extends WebpackTaskBase {
                             {
                                 loader: "postcss-loader",
                                 options: {
-                                    postcssOptions: () => {
-                                        return {
-                                            plugins: [
-                                                require("precss"),
-                                                require("autoprefixer"),
-                                            ],
-                                        };
+                                    postcssOptions: {
+                                        plugins: [
+                                            "postcss-preset-env",
+                                        ],
                                     },
                                 },
                             },
@@ -219,7 +213,6 @@ export class ServerPack extends WebpackTaskBase {
                                 options: {
                                     importLoaders: 2,
                                     sourceMap,
-                                    esModule: true,
                                     modules: {
                                         auto: this.shouldSourceModuled,
                                         localIdentName: localIdentName,
@@ -230,13 +223,10 @@ export class ServerPack extends WebpackTaskBase {
                             {
                                 loader: "postcss-loader",
                                 options: {
-                                    postcssOptions: () => {
-                                        return {
-                                            plugins: [
-                                                require("precss"),
-                                                require("autoprefixer"),
-                                            ],
-                                        };
+                                    postcssOptions: {
+                                        plugins: [
+                                            "postcss-preset-env",
+                                        ],
                                     },
                                 },
                             },
