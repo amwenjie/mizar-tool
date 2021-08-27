@@ -353,8 +353,8 @@ export class IsomorphicPack extends WebpackTaskBase {
         return {
             optimization: {
                 minimize: !this.watchModel,
-                chunkIds: "deterministic",
-                moduleIds: "deterministic",
+                chunkIds: this.watchModel ? "named" : "deterministic",
+                moduleIds: this.watchModel ? "named" : "deterministic",
                 runtimeChunk: {
                     name: "runtime",
                 },
@@ -381,9 +381,6 @@ export class IsomorphicPack extends WebpackTaskBase {
                             minChunks: 2,
                             chunks: "initial",
                             reuseExistingChunk: true,
-                            // minSize: 10000,
-                            // maxSize: 100000,
-                            // maxSize: 204800,
                         },
                         // ...this.getEntryPageModuleStyle(entry),
                     },

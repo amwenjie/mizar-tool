@@ -10,9 +10,17 @@ export default function (source) {
     }
     const options = this.getOptions();
     if (options.IS_SERVER_RUNTIME) {
-        return source.replace(/component\:\s*(?:\()?("|')(.+pages\/([^"']+))\1(?:\))?/g, "component: require(\"$2\").default, name: \"$3\"");
+        // 替换component: ()=>"xxxxx"或component:function(){return "xxxx";}或component: "xxxxx"形式的引用方式为同步引用
+        return source.replace(
+            /component\:\s*(?:(?:\(\s*\)\s*=>\s*)|(?:function\s*\(\s*\)\s*\{\s*return\s*))?("|')(.+pages\/([^"']+))\1(?:(?:\s*;)?\s*\})?/g,
+            "component: require(\"$2\").default, name: \"$3\""
+        );
     } else {
-        let returnSource = source.replace(/component\:\s*("|')(.+pages\/([^"']+))\1/g, "component: require(\"$2\").default");;
+        // 替换component: "xxxxx"形式的引用方式为同步引用
+        let returnSource = source.replace(
+            /component\:\s*("|')(.+pages\/([^"']+))\1/g,
+            "component: require(\"$2\").default"
+        );
         const injectArr = `import "core-js/features/map";
         import "core-js/features/set";
         import "core-js/features/promise";
@@ -21,7 +29,8 @@ export default function (source) {
         import Loadable from "react-loadable";
         import { bootstrap } from "mizar/iso/bootstrap";
         `;
-        const regexp = /component\:\s*(?:\()("|')(.+pages\/([^"']+))\1(?:\))/g;
+        // 替换component: ()=>"xxxxx"或component:function(){return "xxxx";}形式的引用方式为异步引用
+        const regexp = /component\:\s*(?:(?:\(\s*\)\s*=>\s*)|(?:function\s*\(\s*\)\s*\{\s*return\s*))?("|')(.+pages\/([^"']+))\1(?:(?:\s*;)?\s*\})?/g;
         let matched = regexp.exec(source);
         while (matched  !== null) {
             // const compName = `loadable${matched[3]}`;
@@ -30,8 +39,9 @@ export default function (source) {
             if (fs.existsSync(Path.resolve(process.cwd(), "src/isomorphic/pages/", skeleton))) {
                 loading = `require("../pages/${skeleton}").default`;
             }
+            // /* webpackChunkName: "page/${matched[3]}" */ 
             const loadableComp = `Loadable({
-                loader: () => import(/* webpackChunkName: "page/${matched[3]}" */ '${matched[2]}'),
+                loader: () => import('${matched[2]}'),
                 loading: ${loading},
             })`;
             // injectArr.push(`const ${compName} = ${loadableComp};`);

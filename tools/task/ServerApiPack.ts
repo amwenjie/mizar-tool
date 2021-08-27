@@ -29,7 +29,7 @@ export class ServerApiPack extends WebpackTaskBase {
             const entry = {};
             const entryDir = this.rootPath + this.apiSrc;
             if (!fs.existsSync(entryDir)) {
-                log.warn("isomorphic pack build入口目录不存在：", entryDir);
+                log.warn("ServerApiPack pack build 入口目录不存在：", entryDir);
                 resolve({});
                 return;
             }
