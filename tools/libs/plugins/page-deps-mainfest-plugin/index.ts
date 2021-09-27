@@ -3,6 +3,7 @@ import Path from "path";
 import { getCompilerHooks } from "webpack-manifest-plugin";
 
 interface IOptions {
+    entry: object;
     clientPath: string;
     buildPath: string;
     assetsFilename: string;
@@ -31,26 +32,38 @@ function gatherDeps(bundleId, assetsKeys: string[]) {
     return deps;
 }
 
-function gatherPageComDeps(file, assetsKeys: string[]) {
+function gatherPageComDeps(file: string, assetsKeys: string[], entryKey: string) {
     try {
         let fileContent = fs.readFileSync(file, {
             encoding: "utf-8"
         });
+        const pageRouterContentMatch = /\bpageRouter\b([\s\S]+)\(pageRouter\)/.exec(fileContent);
         const depsMap = {};
-        let regexp;
-        // 单个依赖的按需加载路由组件
-        const singleDepRegexp = /component\:[\s\S]+?loader\:[\s\S]+?"?([^"\)\(]+)"?\)\.then\([\s\S]*?name\:\s*"([^"]+)"/g;
-        // 多个依赖的按需加载路由组件
-        const depRegexp = /component\:[^\[]+loader\:[^\[]+Promise\.all\([^\[]*?\[([^\]]+)\][\s\S]*?name\:\s*"([^"]+)"/g;
-        regexp = depRegexp;
-        let dependencies = regexp.exec(fileContent);
-        if (!dependencies) {
-            regexp = singleDepRegexp;
-            dependencies = regexp.exec(fileContent);
-        }
-        while (dependencies) {
-            depsMap["page/" + dependencies[2]] = gatherDeps(dependencies[1], assetsKeys);
-            dependencies = regexp.exec(fileContent);
+        if (pageRouterContentMatch) {
+            const pageRouterContent = pageRouterContentMatch[1];
+            let regexp;
+            // 单个依赖的按需加载路由组件
+            const singleDepRegexp = /component\:[\s\S]+?loader\:[\s\S]+?"?([^"\)\(]+)"?\)\.then\([\s\S]*?name\:\s*"([^"]+)"/g;
+            // 多个依赖的按需加载路由组件
+            const depRegexp = /component\:[^\[]+loader\:[^\[]+Promise\.all\([^\[]*?\[([^\]]+)\][\s\S]*?name\:\s*"([^"]+)"/g;
+            regexp = depRegexp;
+            let dependencies = regexp.exec(pageRouterContent);
+            if (!dependencies) {
+                regexp = singleDepRegexp;
+                dependencies = regexp.exec(pageRouterContent);
+            }
+            while (dependencies) {
+                // dependencies[1]代表模块id， dependencies[2]代表路由配置组件name
+                depsMap["page/" + dependencies[2]] = [entryKey].concat(gatherDeps(dependencies[1], assetsKeys));
+                dependencies = regexp.exec(pageRouterContent);
+            }
+            // 再遍历不是按需加载路由组件
+            const nameRegExp = /\bname\b[^"]+"([^"]+)"/g;
+            dependencies = nameRegExp.exec(pageRouterContent);
+            while (dependencies && !(("page/" + dependencies[1]) in depsMap)) {
+                depsMap["page/" + dependencies[1]] = [entryKey];
+                dependencies = nameRegExp.exec(pageRouterContent);
+            }
         }
         return depsMap;
     } catch (e) {
@@ -66,14 +79,23 @@ export default class GatherPageDepsPlugin {
         compiler.hooks.done.tap('GatherPageDepsPlugin', (stats, callback = () => {}) => {
             const assetsMap = fs.readJsonSync(`${this.options.buildPath}/${this.options.assetsFilename}`);
             const assetKeys = Object.keys(assetsMap);
-            // 下面这个index文件名，是因为客户端资源打包入口（pageRouter或其他）的文件是index.tsx，如果打包入口变动，这里需要一起变动
-            const index = assetKeys.filter(k => /index(?:_.{8})?\.js$/.test(k));
-            if (assetsMap[index[0]]) {
-                const map = gatherPageComDeps(Path.resolve(this.options.buildPath + assetsMap[index[0]]), assetKeys);
-                if (map && JSON.stringify(map) !== "{}") {
-                    fs.writeJsonSync(this.options.buildPath + "/pageAssetsDeps.json", map, { spaces: "  " });
+            const entryKeys = Object.keys(this.options.entry || {
+                index: ""
+            });
+            const depsMap = {};
+            // 遍历客户端打包入口，查找依赖
+            entryKeys.forEach(entryKey => {
+                const index = assetKeys.filter(k => (new RegExp(`${entryKey}(?:_.{8})?\.js$`)).test(k));
+                const assetPath = assetsMap[index[0]];
+                if (assetPath) {
+                    const map = gatherPageComDeps(Path.resolve(this.options.buildPath + assetPath), assetKeys, entryKey);
+                    Object.assign(depsMap, map);
                 }
+            });
+            if (JSON.stringify(depsMap) !== "{}") {
+                fs.writeJsonSync(this.options.buildPath + "/pageAssetsDeps.json", depsMap, { spaces: "  " });
             }
+            
             callback();
         });
     }

@@ -335,7 +335,7 @@ export class IsomorphicPack extends WebpackTaskBase {
                 rules: this.getRules(),
             },
             name: "IsomorphicPack",
-            plugins: this.getPlugins(),
+            plugins: this.getPlugins({entry}),
             resolve: {
                 extensions: [".ts", ".tsx", ".js", ".css", ".png", ".jpg", ".gif", ".less", "sass", "scss", "..."],
                 modules: [
@@ -569,7 +569,7 @@ export class IsomorphicPack extends WebpackTaskBase {
         return rules;
     }
 
-    private getPlugins() {
+    private getPlugins({entry}) {
         const defineOption = {
             IS_SERVER_RUNTIME: JSON.stringify(false),
             IS_DEBUG_MODE: JSON.stringify(!!this.watchModel),
@@ -596,6 +596,7 @@ export class IsomorphicPack extends WebpackTaskBase {
             fileName: Path.resolve(this.globalConfig.rootOutput, this.globalConfig.assetsMainfest),
         }));
         plugins.push(new GatherPageDepsPlugin({
+            entry,
             clientPath: this.globalConfig.clientOutput,
             buildPath: this.globalConfig.rootOutput,
             assetsFilename: this.globalConfig.assetsMainfest,
