@@ -596,6 +596,7 @@ export class IsomorphicPack extends WebpackTaskBase {
             fileName: Path.resolve(this.globalConfig.rootOutput, this.globalConfig.assetsMainfest),
         }));
         plugins.push(new GatherPageDepsPlugin({
+            isDebug: !!this.watchModel,
             entry,
             clientPath: this.globalConfig.clientOutput,
             buildPath: this.globalConfig.rootOutput,

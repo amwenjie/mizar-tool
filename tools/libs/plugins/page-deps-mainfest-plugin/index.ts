@@ -3,6 +3,7 @@ import Path from "path";
 import { getCompilerHooks } from "webpack-manifest-plugin";
 
 interface IOptions {
+    isDebug: boolean;
     entry: object;
     clientPath: string;
     buildPath: string;
@@ -32,38 +33,41 @@ function gatherDeps(bundleId, assetsKeys: string[]) {
     return deps;
 }
 
-function gatherPageComDeps(file: string, assetsKeys: string[], entryKey: string) {
+function gatherPageComDeps(file: string, assetsKeys: string[], entryKey: string, isDebug = false) {
     try {
         let fileContent = fs.readFileSync(file, {
             encoding: "utf-8"
         });
-        const pageRouterContentMatch = /\bpageRouter\b([\s\S]+)\(pageRouter\)/.exec(fileContent);
+        let pageRouterContent = fileContent;
+        if (isDebug) {
+            const pageRouterContentMatch = /\bpageRouter\b([\s\S]+)\(pageRouter\)/.exec(fileContent);
+            if (pageRouterContentMatch) {
+                pageRouterContent = pageRouterContentMatch[1];
+            }
+        }
         const depsMap = {};
-        if (pageRouterContentMatch) {
-            const pageRouterContent = pageRouterContentMatch[1];
-            let regexp;
-            // 单个依赖的按需加载路由组件
-            const singleDepRegexp = /component\:[\s\S]+?loader\:[\s\S]+?"?([^"\)\(]+)"?\)\.then\([\s\S]*?name\:\s*"([^"]+)"/g;
-            // 多个依赖的按需加载路由组件
-            const depRegexp = /component\:[^\[]+loader\:[^\[]+Promise\.all\([^\[]*?\[([^\]]+)\][\s\S]*?name\:\s*"([^"]+)"/g;
-            regexp = depRegexp;
-            let dependencies = regexp.exec(pageRouterContent);
-            if (!dependencies) {
-                regexp = singleDepRegexp;
-                dependencies = regexp.exec(pageRouterContent);
-            }
-            while (dependencies) {
-                // dependencies[1]代表模块id， dependencies[2]代表路由配置组件name
-                depsMap["page/" + dependencies[2]] = [entryKey].concat(gatherDeps(dependencies[1], assetsKeys));
-                dependencies = regexp.exec(pageRouterContent);
-            }
-            // 再遍历不是按需加载路由组件
-            const nameRegExp = /\bname\b[^"]+"([^"]+)"/g;
+        let regexp;
+        // 单个依赖的按需加载路由组件
+        const singleDepRegexp = /component\:[\s\S]+?loader\:[\s\S]+?"?([^"\)\(]+)"?\)\.then\([\s\S]*?name\:\s*"([^"]+)"/g;
+        // 多个依赖的按需加载路由组件
+        const depRegexp = /component\:[^\[]+loader\:[^\[]+Promise\.all\([^\[]*?\[([^\]]+)\][\s\S]*?name\:\s*"([^"]+)"/g;
+        regexp = depRegexp;
+        let dependencies = regexp.exec(pageRouterContent);
+        if (!dependencies) {
+            regexp = singleDepRegexp;
+            dependencies = regexp.exec(pageRouterContent);
+        }
+        while (dependencies) {
+            // dependencies[1]代表模块id， dependencies[2]代表路由配置组件name
+            depsMap["page/" + dependencies[2]] = gatherDeps(dependencies[1], assetsKeys).concat(entryKey);
+            dependencies = regexp.exec(pageRouterContent);
+        }
+        // 再遍历不是按需加载路由组件
+        const nameRegExp = /\bname\b[^"]+"([^"]+)"/g;
+        dependencies = nameRegExp.exec(pageRouterContent);
+        while (dependencies && !(("page/" + dependencies[1]) in depsMap)) {
+            depsMap["page/" + dependencies[1]] = [entryKey];
             dependencies = nameRegExp.exec(pageRouterContent);
-            while (dependencies && !(("page/" + dependencies[1]) in depsMap)) {
-                depsMap["page/" + dependencies[1]] = [entryKey];
-                dependencies = nameRegExp.exec(pageRouterContent);
-            }
         }
         return depsMap;
     } catch (e) {
@@ -88,7 +92,7 @@ export default class GatherPageDepsPlugin {
                 const index = assetKeys.filter(k => (new RegExp(`${entryKey}(?:_.{8})?\.js$`)).test(k));
                 const assetPath = assetsMap[index[0]];
                 if (assetPath) {
-                    const map = gatherPageComDeps(Path.resolve(this.options.buildPath + assetPath), assetKeys, entryKey);
+                    const map = gatherPageComDeps(Path.resolve(this.options.buildPath + assetPath), assetKeys, entryKey, this.options.isDebug);
                     Object.assign(depsMap, map);
                 }
             });
