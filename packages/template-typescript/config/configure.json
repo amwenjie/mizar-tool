@@ -1,0 +1,16 @@
+{
+    "debugPort": 9026,
+    "tslint": {
+        "disable": true
+    },
+    "stylelint": true,
+    "postcss-loader": {
+
+    },
+    "less-loader": {
+
+    },
+    "sass-loader": {
+        
+    }
+}

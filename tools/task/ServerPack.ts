@@ -50,6 +50,10 @@ export class ServerPack extends WebpackTaskBase {
         // log.warn('/components?|pages?/i.test(resourcePath): ', /components?|pages?/i.test(resourcePath));
         return /components?|pages?/i.test(resourcePath);
     }
+    
+    private getStyleRuleLoaderOption(loaderName) {
+        return ConfigHelper.get(loaderName, {});
+    }
 
     public async pack(entry) {
         const tslintPath = Path.resolve(`${this.rootPath}tslint.json`);
@@ -155,13 +159,13 @@ export class ServerPack extends WebpackTaskBase {
                             },
                             {
                                 loader: "postcss-loader",
-                                options: {
+                                options: Object.assign({
                                     postcssOptions: {
                                         plugins: [
                                             "postcss-preset-env",
                                         ],
                                     },
-                                },
+                                }, this.getStyleRuleLoaderOption("postcss-loader")),
                             },
                         ],
                         type: "javascript/auto",
@@ -188,19 +192,19 @@ export class ServerPack extends WebpackTaskBase {
                             },
                             {
                                 loader: "postcss-loader",
-                                options: {
+                                options: Object.assign({
                                     postcssOptions: {
                                         plugins: [
                                             "postcss-preset-env",
                                         ],
                                     },
-                                },
+                                }, this.getStyleRuleLoaderOption("postcss-loader")),
                             },
                             {
                                 loader: "less-loader",
-                                options: {
+                                options: Object.assign({
                                     sourceMap,
-                                },
+                                }, this.getStyleRuleLoaderOption("less-loader")),
                             },
                         ],
                         type: "javascript/auto",
@@ -222,19 +226,19 @@ export class ServerPack extends WebpackTaskBase {
                             },
                             {
                                 loader: "postcss-loader",
-                                options: {
+                                options: Object.assign({
                                     postcssOptions: {
                                         plugins: [
                                             "postcss-preset-env",
                                         ],
                                     },
-                                },
+                                }, this.getStyleRuleLoaderOption("postcss-loader")),
                             },
                             {
                                 loader: "sass-loader",
-                                options: {
+                                options: Object.assign({
                                     sourceMap,
-                                },
+                                }, this.getStyleRuleLoaderOption("sass-loader")),
                             },
                         ],
                         type: "javascript/auto",

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import ora from "ora";
-import yargs  from "yargs";
+import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 import { HelperTask } from "./tools/task/HelperTask";
 import { PublishTask } from "./tools/task/PublishTask";

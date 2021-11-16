@@ -111,6 +111,10 @@ export class IsomorphicPack extends WebpackTaskBase {
         return defaultConfig;
     }
 
+    private getStyleRuleLoaderOption(loaderName) {
+        return ConfigHelper.get(loaderName, {});
+    }
+
     private async styleScan() {
         return new Promise((resolve, reject) => {
             const entries = {};
@@ -477,13 +481,13 @@ export class IsomorphicPack extends WebpackTaskBase {
                 },
                 {
                     loader: "postcss-loader",
-                    options: {
+                    options: Object.assign({
                         postcssOptions: {
                             plugins: [
                                 "postcss-preset-env",
                             ],
                         },
-                    },
+                    }, this.getStyleRuleLoaderOption("postcss-loader")),
                 },
             ],
             type: "javascript/auto",
@@ -508,19 +512,19 @@ export class IsomorphicPack extends WebpackTaskBase {
                 },
                 {
                     loader: "postcss-loader",
-                    options: {
+                    options: Object.assign({
                         postcssOptions: {
                             plugins: [
                                 "postcss-preset-env",
                             ],
                         },
-                    },
+                    }, this.getStyleRuleLoaderOption("postcss-loader")),
                 },
                 {
                     loader: "less-loader",
-                    options: {
+                    options: Object.assign({
                         sourceMap,
-                    },
+                    }, this.getStyleRuleLoaderOption("less-loader")),
                 },
             ],
             type: "javascript/auto",
@@ -545,19 +549,19 @@ export class IsomorphicPack extends WebpackTaskBase {
                 },
                 {
                     loader: "postcss-loader",
-                    options: {
+                    options: Object.assign({
                         postcssOptions: {
                             plugins: [
                                 "postcss-preset-env",
                             ],
                         },
-                    },
+                    }, this.getStyleRuleLoaderOption("postcss-loader")),
                 },
                 {
                     loader: "sass-loader",
-                    options: {
+                    options: Object.assign({
                         sourceMap,
-                    },
+                    }, this.getStyleRuleLoaderOption("sass-loader")),
                 },
             ],
             type: "javascript/auto",
@@ -606,7 +610,7 @@ export class IsomorphicPack extends WebpackTaskBase {
             plugins.push(new BundleAnalyzerPlugin({
                 analyzerMode: this.watchModel ? "server" : "disabled",
                 generateStatsFile: !this.watchModel,
-                openAnalyzer: false,
+                openAnalyzer: !!this.watchModel,
             }));
         }
         return plugins;

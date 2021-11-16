@@ -1,0 +1,6 @@
+{
+    "name": "alcor-template-app",
+    "port": 8889,
+    "cdn": "/",
+    "assetsPathPrefix": "static/"
+}

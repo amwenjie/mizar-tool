@@ -10,48 +10,39 @@
     "license": "MIT",
     "scripts": {
         "build": "alcor build",
-        "debug": "alcor build -ds"
+        "debug": "alcor build -ds",
+        "report": "webpack-bundle-analyzer --port 8888 build/static/client/stats.json"
     },
     "dependencies": {
-        "core-js": "^3.8.2",
-        "mizar": "~0.0.8",
-        "react": "~17.0.1",
-        "react-dom": "~17.0.1",
+        "mizar": "~0.0.29",
+        "react": "~17.0.2",
+        "react-dom": "~17.0.2",
         "react-loadable": "~5.5.0",
-        "react-redux": "~7.2.2",
-        "react-router": "~5.2.0",
+        "react-redux": "~7.2.6",
+        "react-router": "~6.0.2",
         "react-router-config": "~5.1.1",
-        "react-router-dom": "~5.2.0",
-        "redux": "~4.0.5",
-        "redux-thunk": "~2.3.0",
-        "tslib": "~2.2.0"
+        "react-router-dom": "~6.0.2",
+        "redux": "~4.1.2",
+        "redux-thunk": "~2.4.0",
+        "tslib": "~2.3.1"
     },
     "devDependencies": {
-        "@types/react": "~17.0.0",
-        "@types/react-dom": "~17.0.0",
-        "@types/react-redux": "~7.1.15",
-        "@types/react-router": "~5.1.11",
-        "@types/react-router-config": "~5.0.2",
-        "@types/react-router-dom": "~5.1.7",
-        "alcor": "~0.1.0"
+        "@types/react": "~17.0.34",
+        "@types/react-dom": "~17.0.11",
+        "@types/react-redux": "~7.1.20",
+        "@types/react-router": "~5.1.17",
+        "@types/react-router-config": "~5.0.3",
+        "@types/react-router-dom": "~5.3.2",
+        "alcor": "~0.1.32"
     },
     "browserslist": [
-      "Android 2.3",
-      "Android >= 4",
-      "Chrome >= 20",
-      "Firefox >= 24",
-      "Explorer >= 8",
-      "iOS >= 6",
-      "Opera >= 12",
-      "Safari >= 6"
-    ],
-    "appConfig": {
-      "cdn": "/",
-      "assetsPathPrefix": "static/",
-      "debugPort": 9026,
-      "port": 8889,
-      "tslint": {
-        "disable": false
-      }
-    }
+        "Android 2.3",
+        "Android >= 4",
+        "Chrome >= 20",
+        "Firefox >= 24",
+        "Explorer >= 8",
+        "iOS >= 6",
+        "Opera >= 12",
+        "Safari >= 6"
+    ]
 }

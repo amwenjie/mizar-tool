@@ -1,6 +1,6 @@
 import fs from "fs-extra";
 import Path from "path";
-import { getCompilerHooks } from "webpack-manifest-plugin";
+// import { getCompilerHooks } from "webpack-manifest-plugin";
 
 interface IOptions {
     isDebug: boolean;
