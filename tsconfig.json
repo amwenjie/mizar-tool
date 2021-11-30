@@ -2,14 +2,7 @@
     "compilerOptions": {
         "target": "ES2021",
         "traceResolution": false,
-        "lib": [
-            "ES2015",
-            "ES2016",
-            "ES2017",
-            "ES2019",
-            "ES2020",
-            "ES2021"
-        ],
+        "lib": ["ES2021"],
         "importHelpers": true,
         "allowJs": false,
         "baseUrl": "src",
@@ -22,6 +15,8 @@
         "noImplicitAny": false,
         "noFallthroughCasesInSwitch": false,
         "esModuleInterop": true,
+        "skipLibCheck": true,
+        "forceConsistentCasingInFileNames": true,
         "typeRoots": [
             "node_modules/@types",
             "typings"
