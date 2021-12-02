@@ -14,3 +14,5 @@ npm install -g alcor
    * alcor build --analyz  产出webpack stats模块分析文件，如果联合--debug使用，会启动分析服务器并自动用默认浏览器打开分析页面
    * 可以组合使用比如 alcor build -ds 表示编译开发环境编译并启动开发调试服务器，
    * 仅debug、server可使用缩写，其他选项不可缩写，必须使用--的形式
+
+3. 0.1.32(含)以前connect用法：connect()()()，0.1.33(含)以后用法：connect()()，会对第二次调用的中间两个缺省参数注入默认值

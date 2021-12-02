@@ -78,6 +78,17 @@ export class ServerPack extends WebpackTaskBase {
             });
         }
         rules.push({
+            test: /\/src\/isomorphic\/.+\/index\.tsx?$/,
+            use: [
+                {
+                    loader: Path.resolve(__dirname, "../libs/loaders/connect-default-param-loader"),
+                    options: {
+                        IS_SERVER_RUNTIME: true,
+                    }
+                },
+            ],
+        });
+        rules.push({
             test: /\/pageRouters\//,
             use: [
                 {
