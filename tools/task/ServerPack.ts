@@ -64,7 +64,7 @@ export class ServerPack extends WebpackTaskBase {
             localIdentName = devLocalIdentName;
             sourceMap = true;
         }
-        const rules = [];
+        let rules = [];
         if (!this.tslintConfig.disable) {
             rules.push({
                 exclude: /node_modules/,
@@ -77,6 +77,20 @@ export class ServerPack extends WebpackTaskBase {
                 },
             });
         }
+        rules.push({
+            test: /\.tsx?$/i,
+            exclude: /node_modules|\.d\.ts$/i,
+            use: [
+                {
+                    loader: "ts-loader",
+                    options: {
+                        compilerOptions: {
+                            declaration: false,
+                        },
+                    },
+                },
+            ],
+        });
         rules.push({
             test: /\/src\/isomorphic\/.+\/index\.tsx?$/,
             use: [
@@ -98,6 +112,122 @@ export class ServerPack extends WebpackTaskBase {
                     }
                 },
             ],
+        });
+        rules.push({
+            test: /\.(ico|jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2)(\?.*)?$/i,
+            type: "asset",
+            generator: {
+                filename: Path.resolve(
+                    this.globalConfig.clientOutput,
+                    "assets/[name]_[contenthash][ext][query]",
+                ),
+            },
+        });
+        rules.push({
+            test: /\.css$/i,
+            use: [
+                // {
+                //     loader: "isomorphic-style-loader",
+                // },
+                {
+                    loader: "css-loader",
+                    options: {
+                        importLoaders: 1,
+                        sourceMap,
+                        // modules: true,
+                        modules: {
+                            auto: this.shouldSourceModuled,
+                            localIdentName: localIdentName,
+                            namedExport: true,
+                            exportOnlyLocals: true
+                        },
+                    },
+                },
+                {
+                    loader: "postcss-loader",
+                    options: Object.assign({
+                        postcssOptions: {
+                            plugins: [
+                                "postcss-preset-env",
+                            ],
+                        },
+                    }, this.getStyleRuleLoaderOption("postcss-loader")),
+                },
+            ],
+            type: "javascript/auto",
+        });
+        rules.push({
+            test: /\.less$/i,
+            use: [
+                // {
+                //     loader: "isomorphic-style-loader",
+                // },
+                {
+                    loader: "css-loader",
+                    options: {
+                        importLoaders: 2,
+                        sourceMap,
+                        // modules: true,
+                        modules: {
+                            auto: this.shouldSourceModuled,
+                            localIdentName: localIdentName,
+                            namedExport: true,
+                            exportOnlyLocals: true
+                        },
+                    },
+                },
+                {
+                    loader: "postcss-loader",
+                    options: Object.assign({
+                        postcssOptions: {
+                            plugins: [
+                                "postcss-preset-env",
+                            ],
+                        },
+                    }, this.getStyleRuleLoaderOption("postcss-loader")),
+                },
+                {
+                    loader: "less-loader",
+                    options: Object.assign({
+                        sourceMap,
+                    }, this.getStyleRuleLoaderOption("less-loader")),
+                },
+            ],
+            type: "javascript/auto",
+        });
+        rules.push({
+            test: /\.s[ac]ss$/i,
+            use: [
+                {
+                    loader: "css-loader",
+                    options: {
+                        importLoaders: 2,
+                        sourceMap,
+                        modules: {
+                            auto: this.shouldSourceModuled,
+                            localIdentName: localIdentName,
+                            namedExport: true,
+                        },
+                    },
+                },
+                {
+                    loader: "postcss-loader",
+                    options: Object.assign({
+                        postcssOptions: {
+                            plugins: [
+                                "postcss-preset-env",
+                            ],
+                        },
+                    }, this.getStyleRuleLoaderOption("postcss-loader")),
+                },
+                {
+                    loader: "sass-loader",
+                    options: Object.assign({
+                        sourceMap,
+                    }, this.getStyleRuleLoaderOption("sass-loader")),
+                },
+            ],
+            type: "javascript/auto",
         });
         
         const mode = this.watchModel ? "development" : "production"; // this.watchModel ? JSON.stringify("development") : JSON.stringify("production");
@@ -123,138 +253,7 @@ export class ServerPack extends WebpackTaskBase {
                         commonjsMagicComments: true,
                     },
                 },
-                rules: rules.concat([
-                    {
-                        test: /\.tsx?$/i,
-                        exclude: /node_modules|\.d\.ts$/i,
-                        use: [
-                            {
-                                loader: "ts-loader",
-                                options: {
-                                    compilerOptions: {
-                                        declaration: false,
-                                    },
-                                },
-                            },
-                        ],
-                    },
-                    {
-                        test: /\.(ico|jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2)(\?.*)?$/i,
-                        type: "asset",
-                        generator: {
-                            filename: Path.resolve(
-                                this.globalConfig.clientOutput,
-                                "assets/[name]_[contenthash][ext][query]",
-                            ),
-                        },
-                    },
-                    {
-                        test: /\.css$/i,
-                        use: [
-                            // {
-                            //     loader: "isomorphic-style-loader",
-                            // },
-                            {
-                                loader: "css-loader",
-                                options: {
-                                    importLoaders: 1,
-                                    sourceMap,
-                                    // modules: true,
-                                    modules: {
-                                        auto: this.shouldSourceModuled,
-                                        localIdentName: localIdentName,
-                                        namedExport: true,
-                                        exportOnlyLocals: true
-                                    },
-                                },
-                            },
-                            {
-                                loader: "postcss-loader",
-                                options: Object.assign({
-                                    postcssOptions: {
-                                        plugins: [
-                                            "postcss-preset-env",
-                                        ],
-                                    },
-                                }, this.getStyleRuleLoaderOption("postcss-loader")),
-                            },
-                        ],
-                        type: "javascript/auto",
-                    },
-                    {
-                        test: /\.less$/i,
-                        use: [
-                            // {
-                            //     loader: "isomorphic-style-loader",
-                            // },
-                            {
-                                loader: "css-loader",
-                                options: {
-                                    importLoaders: 2,
-                                    sourceMap,
-                                    // modules: true,
-                                    modules: {
-                                        auto: this.shouldSourceModuled,
-                                        localIdentName: localIdentName,
-                                        namedExport: true,
-                                        exportOnlyLocals: true
-                                    },
-                                },
-                            },
-                            {
-                                loader: "postcss-loader",
-                                options: Object.assign({
-                                    postcssOptions: {
-                                        plugins: [
-                                            "postcss-preset-env",
-                                        ],
-                                    },
-                                }, this.getStyleRuleLoaderOption("postcss-loader")),
-                            },
-                            {
-                                loader: "less-loader",
-                                options: Object.assign({
-                                    sourceMap,
-                                }, this.getStyleRuleLoaderOption("less-loader")),
-                            },
-                        ],
-                        type: "javascript/auto",
-                    },
-                    {
-                        test: /\.s[ac]ss$/i,
-                        use: [
-                            {
-                                loader: "css-loader",
-                                options: {
-                                    importLoaders: 2,
-                                    sourceMap,
-                                    modules: {
-                                        auto: this.shouldSourceModuled,
-                                        localIdentName: localIdentName,
-                                        namedExport: true,
-                                    },
-                                },
-                            },
-                            {
-                                loader: "postcss-loader",
-                                options: Object.assign({
-                                    postcssOptions: {
-                                        plugins: [
-                                            "postcss-preset-env",
-                                        ],
-                                    },
-                                }, this.getStyleRuleLoaderOption("postcss-loader")),
-                            },
-                            {
-                                loader: "sass-loader",
-                                options: Object.assign({
-                                    sourceMap,
-                                }, this.getStyleRuleLoaderOption("sass-loader")),
-                            },
-                        ],
-                        type: "javascript/auto",
-                    },
-                ]),
+                rules: rules.concat(),
             },
             name: this.taskName,
             output: {

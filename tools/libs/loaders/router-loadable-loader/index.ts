@@ -8,41 +8,57 @@ export default function (source) {
     ) {
         return source;
     }
+    let returnSource = "";
     const options = this.getOptions();
+    const hasReactImported = /\s+from\s+("|')react\1/.test(source);
+
     if (options.IS_SERVER_RUNTIME) {
-        // 替换component: ()=>"xxxxx"或component:function(){return "xxxx";}或component: "xxxxx"形式的引用方式为同步引用
-        return source.replace(
-            /component\:\s*(?:(?:\(\s*\)\s*=>\s*)|(?:function\s*\(\s*\)\s*\{\s*return\s*))?("|')(.+pages\/([^"']+))\1(?:(?:\s*;)?\s*\})?/g,
-            "component: require(\"$2\").default, name: \"$3\""
+        // 替换element: ()=>"xxxxx"或element:function(){return "xxxx";}或element: "xxxxx"形式的引用方式为同步引用
+        returnSource = source.replace(
+            /element\:\s*(?:(?:\(\s*\)\s*=>\s*)|(?:function\s*\(\s*\)\s*\{\s*return\s*))?("|')(.+\/pages\/([^"']+))\1(?:(?:\s*;)?\s*\})?/g,
+            "element: (comPath => {const $3 = require($1$2$1).default; return (<$3 />);})($1$2$1), name: $1$3$1"
+            // "element: require($1$2$1).default, name: $1$3$1"
         );
     } else {
-        // 替换component: "xxxxx"形式的引用方式为同步引用
-        let returnSource = source.replace(
-            /component\:\s*("|')(.+pages\/([^"']+))\1/g,
-            "component: require(\"$2\").default, name: \"$3\""
+        // 替换element: "xxxxx"形式的引用方式为同步引用
+        returnSource = source.replace(
+            /element\:\s*("|')(.+pages\/([^"']+))\1/g,
+            "element: (comPath => {const $3 = require($1$2$1).default; return (<$3 />);})($1$2$1), name: $1$3$1"
         );
-        // 替换component: ()=>"xxxxx"或component:function(){return "xxxx";}形式的引用方式为异步引用
-        const regexp = /component\:\s*(?:(?:\(\s*\)\s*=>\s*)|(?:function\s*\(\s*\)\s*\{\s*return\s*))?("|')(.+pages\/([^"']+))\1(?:(?:\s*;)?\s*\})?/g;
+
+        // 替换element: ()=>"xxxxx"或element:function(){return "xxxx";}形式的引用方式为异步引用
+        const regexp = /element\:\s*(?:(?:\(\s*\)\s*=>\s*)|(?:function\s*\(\s*\)\s*\{\s*return\s*))?("|')(.+\/pages\/([^"']+))\1(?:(?:\s*;)?\s*\})?/g;
         let matched;
         while (matched = regexp.exec(source)) {
             const skeleton = `${matched[3].replace(/(\/index(\.tsx)?)?$/, "")}/skeleton.tsx`;
             let loading = "function () { return <div>loading...</div>;}";
+            const quote = matched[1];
             if (fs.existsSync(Path.resolve(process.cwd(), "src/isomorphic/pages/", skeleton))) {
-                loading = `require("../pages/${skeleton}").default`;
+                loading = `require(${quote}../pages/${skeleton}${quote}).default`;
             }
             // /* webpackChunkName: "page/${matched[3]}" */ 
-            const loadableComp = `Loadable({
-                loader: () => import('${matched[2]}'),
-                loading: ${loading},
-            })`
-            returnSource = returnSource.replace(matched[0], `component: ${loadableComp}, name: "${matched[3]}"`);
+            // render: (loaded, props) => {
+            //     const ${matched[3]} = loaded.default;
+            //     return (<${matched[3]} />);
+            // },
+            const loadableComp = `(() => {
+                const LoadableComp = Loadable({
+                    loader: () => import(${quote}${matched[2]}${quote}),
+                    loading: ${loading},
+                });
+                return (<LoadableComp />);
+            })()`;
+
+            returnSource = returnSource.replace(matched[0], `element: ${loadableComp}, name: ${quote}${matched[3]}${quote}`);
         }
-        const injectArr = `import React from "react";
-        import Loadable from "react-loadable";
-        import { bootstrap } from "mizar/iso/bootstrap";
-        `;
+        const injectArr = `import Loadable from "react-loadable";import { bootstrap } from "mizar/iso/bootstrap";`;
+        
         returnSource = injectArr + returnSource.replace(/export\s+default\s+([^;\s]+)/, "bootstrap($1)('app');");
         // console.log("returnSource: ", returnSource);
-        return returnSource;
+        // return returnSource;
     }
+    if (!hasReactImported) {
+        returnSource = `import React from "react";` + returnSource;
+    }
+    return returnSource
 }

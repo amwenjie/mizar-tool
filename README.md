@@ -1,5 +1,5 @@
 # mizar-tool
-a mizar-based react project compile\pack cli tool
+a mizar-based react project compile cli tool
 
 npm install -g alcor
 
@@ -16,3 +16,5 @@ npm install -g alcor
    * 仅debug、server可使用缩写，其他选项不可缩写，必须使用--的形式
 
 3. 0.1.32(含)以前connect用法：connect()()()，0.1.33(含)以后用法：connect()()，会对第二次调用的中间两个缺省参数注入默认值
+
+4. 0.1.33(含)以前支持应用路由配置语法为react-router-config v5语法，0.1.34(含)以后**只支持**react-router v6 useRoutes语法，[两个配置区别点击此处](https://reactrouter.com/docs/en/v6/upgrading/v5#use-useroutes-instead-of-react-router-config)。

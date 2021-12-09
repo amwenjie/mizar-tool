@@ -1,14 +1,30 @@
 import Component from "mizar/iso/Component";
 import { connect } from "mizar/iso/connect";
+import getLogger from "mizar/iso/utils/logger";
 import React from "react";
-import ReactDOM from "react-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import Page from "../../common/components/Page";
 import { IProps, IVideoPlayerParam } from "./interface";
-import { videoDetailReducer } from "./reducer";
 import { showVideoPlayer } from "./action";
 import cssStyle from "./index.less";
+const logger = getLogger().getLogger("videodetail component");
+
+function JumpTo({url, text}) {
+    const navigate = useNavigate();
+    return (<a href="#" onClick={(e) => {
+        e.preventDefault();
+        navigate(url);
+    }}>{text}</a>);
+}
+
+function ShowParam () {
+    const {id} = useParams();
+    return (<h4 className={(cssStyle as any).title}>这是video detail {id} 页面</h4>)
+}
 class VideoDetail extends Component<IProps, {}> {
     public static async getInitialData(serverFetch, query, params) {
+        logger.log("videodetail page server data okokokok. loader done");
+
         return {
             title: "video page",
             data: "video getInitialData ,time is : " + (new Date()).toLocaleString() + " , query: " + query.ad,
@@ -25,15 +41,13 @@ class VideoDetail extends Component<IProps, {}> {
     }
 
     public render() {
-        const id = this.props.match.params.id;
         return (<Page>
             <div>这是每秒更新的新text：<span>{this.props.text}</span></div>
-            <h4 className={(cssStyle as any).title}>这是video detail 页面</h4>
+            <h4 className={(cssStyle as any).title}>
+                <ShowParam />
+            </h4>
             <i>{this.props.data}</i>
-            <a href="#" onClick={(e) => {
-                e.preventDefault();
-                this.props.history.push("/detail/article/1111");
-            }}>去往article detail</a>
+            <JumpTo url="/detail/article/1111" text="去往article detail" />
         </Page>);
     }
 
@@ -47,4 +61,4 @@ class VideoDetail extends Component<IProps, {}> {
     }
 }
 
-export default connect()(videoDetailReducer, "videoDetail")(VideoDetail);
+export default connect()(VideoDetail);

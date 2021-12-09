@@ -1,12 +1,21 @@
 import Component from "mizar/iso/Component";
 import { connect } from "mizar/iso/connect";
+import getLogger from "mizar/iso/utils/logger";
 import React from "react";
-import ReactDOM from "react-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import Page from "../../common/components/Page";
 import { IProps, IVideoPlayerParam } from "./interface";
-import { articleDetailReducer } from "./reducer";
 import css from "./index.less";
 
+const logger = getLogger().getLogger("article component");
+
+function Jump ({text}) {
+    const navigate = useNavigate();
+    return (<a href="#" onClick={(e) => {
+        e.preventDefault();
+        navigate("/detail/video/1111?ad=video"+ 4444444);
+    }}>{text}</a>);
+}
 class ArticleDetail extends Component<IProps, {}> {
     public static async getInitialData(serverFetch, query, params) {
         // const a = await serverFetch({
@@ -14,6 +23,7 @@ class ArticleDetail extends Component<IProps, {}> {
         //     params: { articleId: params.id },
         // });
         // console.log(a);
+        logger.log("article server data okokokok. loader done");
         return {
             title: "article page hahaha",
             data: "article server data",
@@ -30,16 +40,13 @@ class ArticleDetail extends Component<IProps, {}> {
     }
 
     public render() {
-        const id = this.props.match.params.id;
+
         return (<Page>
             <h5 className={(css as any).articleName}>这是aritcle detail 页面</h5>
             <i>{this.props.data}</i>
-            <a href="#" onClick={(e) => {
-                e.preventDefault();
-                this.props.history.push("/detail/video/1111?ad=detail");
-            }}>去往video detail </a>
+            <Jump text="去往video detail " />
         </Page>);
     }
 }
 
-export default connect()(articleDetailReducer, "articleDetail")(ArticleDetail);
+export default connect()(ArticleDetail);

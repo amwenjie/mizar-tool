@@ -48,9 +48,9 @@ function gatherPageComDeps(file: string, assetsKeys: string[], entryKey: string,
         const depsMap = {};
         let regexp;
         // 单个依赖的按需加载路由组件
-        const singleDepRegexp = /component\:[\s\S]+?loader\:[\s\S]+?"?([^"\)\(]+)"?\)\.then\([\s\S]*?name\:\s*"([^"]+)"/g;
+        const singleDepRegexp = /element\:[\s\S]+?loader\:[\s\S]+?"?([^"\)\(]+)"?\)\.then\([\s\S]*?name\:\s*"([^"]+)"/g;
         // 多个依赖的按需加载路由组件
-        const depRegexp = /component\:[^\[]+loader\:[^\[]+Promise\.all\([^\[]*?\[([^\]]+)\][\s\S]*?name\:\s*"([^"]+)"/g;
+        const depRegexp = /element\:[^\[]+loader\:[^\[]+Promise\.all\([^\[]*?\[([^\]]+)\][\s\S]*?name\:\s*"([^"]+)"/g;
         regexp = depRegexp;
         let dependencies = regexp.exec(pageRouterContent);
         if (!dependencies) {

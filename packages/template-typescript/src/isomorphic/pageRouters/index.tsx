@@ -1,20 +1,15 @@
-import ArticleDetail from "../pages/ArticleDetail";
-import VideoDetail from "../pages/VideoDetail";
-import NotFound from "../pages/NotFound";
-
 const pageRouter = [
     {
         path: "/detail/video/:id",
-        exact: true,
-        component: VideoDetail,
+        element: () => "../pages/VideoDetail",
     },
     {
         path: "/detail/article/:id",
-        exact: true,
-        component: ArticleDetail,
+        element: "../pages/ArticleDetail",
     },
     {
-        component: NotFound,
+        path: "*",
+        element: "../pages/NotFound",
     },
 ];
 

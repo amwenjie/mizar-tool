@@ -6,10 +6,7 @@ import meta from "./meta";
 
 (async () => {
     try {
-        await bootstrap()([{
-            path: "/detail/*",
-            clientRouter,
-        }], meta);
+        await bootstrap()(clientRouter, meta);
     } catch (e) {
         console.log("启动错误", e);
     }
