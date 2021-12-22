@@ -14,13 +14,13 @@
         "report": "webpack-bundle-analyzer --port 8888 build/static/client/stats.json"
     },
     "dependencies": {
-        "mizar": "~0.0.31",
+        "mizar": "~0.0.32",
         "react": "~17.0.2",
         "react-dom": "~17.0.2",
         "react-loadable": "~5.5.0",
         "react-redux": "~7.2.6",
-        "react-router": "~6.0.2",
-        "react-router-dom": "~6.0.2",
+        "react-router": "~6.2.1",
+        "react-router-dom": "~6.2.1",
         "redux": "~4.1.2",
         "redux-thunk": "~2.4.0",
         "tslib": "~2.3.1"
