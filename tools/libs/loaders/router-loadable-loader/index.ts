@@ -53,7 +53,7 @@ export default function (source) {
         }
         const injectArr = `import Loadable from "react-loadable";import { bootstrap } from "mizar/iso/bootstrap";`;
         
-        returnSource = injectArr + returnSource.replace(/export\s+default\s+([^;\s]+)/, "bootstrap($1)('app');");
+        returnSource = injectArr + returnSource.replace(/export\s+default\s+([^;\s]+)/, "export default $1; bootstrap($1)('app');");
         // console.log("returnSource: ", returnSource);
         // return returnSource;
     }

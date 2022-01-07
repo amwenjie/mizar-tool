@@ -11,6 +11,7 @@ import { PackageInfo } from "./task/PackageInfo";
 // import { PublicAsset } from "./task/PublicAsset";
 import { ServerApiPack } from "./task/ServerApiPack";
 import { ServerPack } from "./task/ServerPack";
+import { StandalonePack } from "./task/StandalonePack";
 // import { StylePack } from "./task/StylePack";
 import Logger from "./libs/Logger";
 
@@ -80,7 +81,6 @@ export class ProjectBuild {
             isomorphicClientPack
                 .setWatchModel(this.watchModel)
                 .setAnalyzMode(this.analyzMode);
-            // isomorphicClientPack.setVendorModel(vendor);
             await isomorphicClientPack.run();
             spinner.succeed();
             // 5. 生成ServerApiPack
@@ -96,6 +96,12 @@ export class ProjectBuild {
                 .setAutoRun(this.runServerModel)
                 .setWatchModel(this.watchModel);
             await serverPack.run();
+            spinner.succeed();
+            // 7. 生成standalone文件
+            spinner = ora("standalone pack...\r\n").start();
+            const standalonePack = new StandalonePack();
+            standalonePack.setWatchModel(this.watchModel);
+            await standalonePack.run();
             spinner.succeed();
             console.log(green("build success"));
         } catch (e) {

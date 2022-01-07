@@ -12,5 +12,11 @@
     },
     "sass-loader": {
         
+    },
+    "standalone": {
+        "externals": {
+            "react": "React",
+            "react-dom": "ReactDOM"
+        }
     }
 }

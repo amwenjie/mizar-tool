@@ -4,6 +4,7 @@ export interface IGlobalConfig {
     assetsMainfest: string;
     rootOutput: string;
     publicPath: string;
+    staticOutput: string;
     clientOutput: string;
 }
 
@@ -14,6 +15,7 @@ export default (): IGlobalConfig  => {
         assetsMainfest: "assetsMainfest.json",
         rootOutput,
         publicPath,
+        staticOutput: `${rootOutput}/${publicPath}`,
         clientOutput: `${rootOutput}/${publicPath}client`,
     };
 };

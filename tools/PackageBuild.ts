@@ -8,6 +8,7 @@ import { PublishTask } from "./task/PublishTask";
 import { PackageInfo } from "./task/PackageInfo";
 import { PublicAsset } from "./task/PublicAsset";
 import { ShellTask } from "./task/ShellTask";
+import { StandalonePack } from "./task/StandalonePack";
 import Logger from "./libs/Logger";
 
 const log = Logger("PackageBuild");
@@ -42,6 +43,9 @@ class PackageBuild {
             spinner.succeed();
             spinner = ora("transform typescript file...\r\n").start();
             await new ShellTask("./src").setWatchModel(this.watchModel).run("tsc", "-p");
+            spinner.succeed();
+            spinner = ora("standalone pack...\r\n").start();
+            await new StandalonePack().setWatchModel(this.watchModel).run();
             spinner.succeed();
             console.log(green("build success"));
             if (this.publishModel) {

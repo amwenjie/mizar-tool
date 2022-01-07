@@ -23,7 +23,6 @@ export class IsomorphicPack extends WebpackTaskBase {
     private clientEntrySrc = "src/isomorphic/pageRouters";
     private pageSrc = "src/isomorphic/pages";
     private styleSrc = "src/isomorphic/styleEntries";
-    private vendorModel: boolean = false;
     private analyzMode = false;
     private eslintConfig = null;
     private stylelintConfig = null;
@@ -46,14 +45,6 @@ export class IsomorphicPack extends WebpackTaskBase {
         return path;
     }
 
-    // public setWatchModel(watchModel: boolean) {
-    //     this.watchModel = watchModel;
-    //     return this;
-    // }
-    public setVendorModel(vendorModel: boolean) {
-        this.vendorModel = vendorModel;
-        return this;
-    }
     public setAnalyzMode(analyzMode) {
         this.analyzMode = analyzMode;
         return this;
@@ -424,13 +415,13 @@ export class IsomorphicPack extends WebpackTaskBase {
         const rules = [];
         if (!this.tslintConfig.disable) {
             rules.push({
-                test: /\.ts(x?)$/,
+                test: /\.tsx?$/,
                 enforce: "pre",
                 loader: "tslint-loader",
                 options: {
                     configFile: fs.existsSync(tslintPath) ? tslintPath : "",
                     tsConfigFile: fs.existsSync(tsConfigPath) ? tsConfigPath : "",
-                    // 仅在调试时以error的形式提示错误信息，正式build时以warning的形式提示，主要考虑到兼容已有项目
+                    // lint错误仅在生产build时影响编译，主要考虑到兼容老旧项目
                     emitErrors: this.watchModel === true,
                 },
             });
