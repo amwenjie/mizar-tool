@@ -19,12 +19,12 @@ npm install -g alcor
 
 4. 版本0.1.33(含)以前支持应用路由配置语法为react-router-config v5语法，0.1.34(含)以后**只支持**react-router v6 useRoutes语法，[两个配置区别点击此处](https://reactrouter.com/docs/en/v6/upgrading/v5#use-useroutes-instead-of-react-router-config)。
 
-5. 版本0.1.36开始支持standalone形式编译产出，standalone代表每个standalone的文件之间没有公共文件，即哪怕在standalone中的文件有很多共同的内容也不会提取runtime、vendor这种公共文件，他们是各自独立的，可以想象成每个standalone的文件就是一个第三方库，可以放在cdn，然后直接在html中以```<script>```的形式引入。
+5. 版本0.1.38开始支持standalone形式编译产出(ProjectBuild和PackageBuild都支持)，standalone代表每个standalone的文件之间没有公共文件，即哪怕在standalone中的文件有很多共同的内容也不会提取runtime、vendor这种公共文件，他们是各自独立的，可以想象成每个standalone的文件就是一个第三方库，可以放在cdn，然后直接在html中以```<script>```的形式引入。
    * 在config/configure.json中增加standalone配置，value支持true、object。
    * true，表示会自动寻找src/standalone目录中的ts、js文件，每个文件分别作为入口，然后入口打包编译后的导出会赋值给用项目名命名的变量
    * object，里面的key是standalone/目录中的文件路径，value是object，可以配置导出内容的名称、导出类型等
    * 支持对standalone形式输出时，指定导入内容的排除，不会打包进最后的编译输出文件中，采用externals的形式支持。
-   * 举例：
+   * 举例 1：
 ```
     config/configure.json:
 
@@ -34,29 +34,43 @@ npm install -g alcor
     ...
     }
     这个表示会将src/standalone目录中的ts、js文件作为入口，每个入口就是一个单独文件。每个独立文件导出的内容会被设置在项目名称命名的变量上。
-
-    或
-    {
-    ...
-        "standalone": {
-            "component/login": {
-               "name": "login",
-               "type": "this"
-            },
-            "logic/ui/component/render": {
-               "name": "adRender"
-            },
-            "externals": {
-               "react": "React",
-               "react-dom": "ReactDOM",
-               "jquery": "jQuery"
-            }
-        }
-    ...
-    }
-    这个表示会先自动将src/standalone目录中的ts、js文件作为入口，然后来和这个standalone对象中的key进行比对，如果自动获取的入口在standalone中存在，则将该配置设置为此入口文件的配置
-    会在build目录中存在一个standalone目录，里面存在standalone/component/login.js、standalone/logic/ui/component/render.js文件，两个文件中包含各自的所有依赖，
-    因为component/login配置了type，因此component/login的导出会挂载到运行时环境的this上，形式为this['login'],如果在浏览器端this就是window即window['login']，
-    而logic/ui/component/render没有配置type，内部的所有导出会挂载到一个叫做adRender的变量上
-    同时因为存在externals，会影响所有standalone的入口文件，编译过程中引用的react、jquery都会被排除，不会打进最终文件中，react、jquery可以在html中直接引入
 ```
+   * 举例 2：
+    存在下面这个目录结构 
+```
+      -src/standalone
+         -component
+            -login.tsx
+         -logic
+            -ui
+               -component
+                  -render.tsx
+                  -loading.tsx
+      -config
+         -configure.json
+      
+      configure.json中有如下配置：
+
+      "standalone": {
+         "component/login": {
+            "name": "login",
+            "type": "this"
+         },
+         "logic/ui/component/render": {
+            "name": "adRender",
+            "type": "assign"
+         },
+         "externals": {
+            "react": "React",
+            "react-dom": "ReactDOM",
+            "jquery": "jQuery"
+         }
+      }
+```
+   1. 会先自动收集standalone目录中的文件作为入口，因此此配置的standalone编译产出的入口文件有component/login、logic/ui/component/render、logic/ui/component/loading；
+   2. 然后来和配置中standalone对象中的key进行比对，如果自动收集的入口在standalone中存在，则将该配置设置为此入口文件的配置，如果不在配置中存在，则入口的内容**不会被导出**。
+   3. 编译时会在产出目录build目录中创建一个standalone目录，生成component/login.js、logic/ui/component/render.js、logic/ui/component/loading.js文件，三个文件中包含各自的所有依赖，
+   4. component/login配置了type:this，login的导出会挂载到运行时环境的this上，形式为this['login'],如果在浏览器端this就是window即window['login']，
+   5. logic/ui/component/render配置了type:assign，render的导出会挂载到一个叫做adRender的变量上，
+   6. 而logic/ui/component/loading没有standalone的配置，因此loading的导出的内容在最后的产出文件中不会有导出语句导出，此形式可用来编译web项目(即ProjectBuild）的standalone，因为web项目只需要被引用后执行内容，可以不具有导出。
+   7. 同时因为存在externals，会影响所有standalone的入口文件，编译过程中引用的react、jquery都会被排除，不会打进最终文件中，react、jquery需要在html中直接引入，否则standalone的产出文件在运行时会报错。
