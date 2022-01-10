@@ -14,6 +14,7 @@ import { ServerPack } from "./task/ServerPack";
 import { StandalonePack } from "./task/StandalonePack";
 // import { StylePack } from "./task/StylePack";
 import Logger from "./libs/Logger";
+import { ConfigHelper } from "./libs/ConfigHelper";
 
 const log = Logger("ProjectBuild");
 
@@ -97,12 +98,15 @@ export class ProjectBuild {
                 .setWatchModel(this.watchModel);
             await serverPack.run();
             spinner.succeed();
-            // 7. 生成standalone文件
-            spinner = ora("standalone pack...\r\n").start();
-            const standalonePack = new StandalonePack();
-            standalonePack.setWatchModel(this.watchModel);
-            await standalonePack.run();
-            spinner.succeed();
+            const shouldStandaloneBuild = ConfigHelper.get("standalone", false);
+            if (shouldStandaloneBuild) {
+                // 7. 生成standalone文件
+                spinner = ora("standalone pack...\r\n").start();
+                const standalonePack = new StandalonePack();
+                standalonePack.setWatchModel(this.watchModel);
+                await standalonePack.run();
+                spinner.succeed();
+            }
             console.log(green("build success"));
         } catch (e) {
             spinner.fail();

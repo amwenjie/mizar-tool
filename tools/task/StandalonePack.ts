@@ -365,18 +365,17 @@ export class StandalonePack extends WebpackTaskBase {
         if (!config) {
             return returnedConfig;
         }
-        returnedConfig.output.library = {
-            name: ConfigHelper.getPackageName(),
-            type: "assign",
-        };
-        // if (config === true) {
-        //     // 需要standalone build，但是没有每个入口的配置，则采用output.library的配置
-        //     returnedConfig.output.library = {
-        //         name: ConfigHelper.getPackageName(),
-        //         type: "assign",
-        //     };
-        // } else 
-        if (typeof config === "object") {
+        // returnedConfig.output.library = {
+        //     name: ConfigHelper.getPackageName(),
+        //     type: "assign",
+        // };
+        if (config === true) {
+            // 需要standalone build，但是没有每个入口的配置，则采用output.library的配置
+            returnedConfig.output.library = {
+                name: ConfigHelper.getPackageName(),
+                type: "assign",
+            };
+        } else if (typeof config === "object") {
             // 进行简单判断，typeof是object就认为是对象
             const entryKeys = Object.keys(entry);
             const returnedEntry = {};
