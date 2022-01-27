@@ -35,26 +35,26 @@ class Logger {
     private suffix: string = "";
     private supportMethods = ["log", "info", "warn", "error"];
     constructor(suffix) {
-        this.suffix = suffix;
+        this.suffix = "[" + suffix + "]";
     }
 
-    public debug(...args: any[]) {
+    public debug(...args: any[]): void {
         if (argv.verbose || argv.debug) {
             console.debug(this.suffix, ...args);
         }
     }
-    public log(...args: any[]) {
+    public log(...args: any[]): void {
         if (argv.verbose || argv.debug) {
             console.log(this.suffix, ...args);
         }
     }
-    public info(...args: any[]) {
+    public info(...args: any[]): void {
         this.log(...args);
     }
-    public warn(...args: any[]) {
+    public warn(...args: any[]): void {
         console.warn(this.suffix, ...args);
     }
-    public error(...args: any[]) {
+    public error(...args: any[]): void {
         console.error(this.suffix, ...args);
     }
 }

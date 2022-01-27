@@ -1,22 +1,18 @@
 import { exec, execSync } from "child_process";
-import Path from "path";
-import { HelperTask } from "./HelperTask";
 import * as chokidar from "chokidar";
+import Path from "path";
 import Logger from "../libs/Logger";
+import TaskBase from "../libs/TaskBase";
+import { HelperTask } from "./HelperTask";
+
 const log = Logger("ShellTask");
-export class ShellTask {
-    constructor(src: string) {
+export class ShellTask extends TaskBase {
+    constructor(src: string = ".", taskName = "ShellTask") {
+        super(taskName);
         this.src = src;
     }
 
-    private rootPath = Path.resolve("./");
-    private src = ".";
-    private watcher;
-    
-    public taskName = "ShellTask";
-    public watchModel: boolean = false;
-
-    private exec(cli) {
+    private exec(cli): void|Error {
         try {
             const output = execSync(cli, {
                 cwd: this.rootPath,
@@ -30,22 +26,16 @@ export class ShellTask {
         }
     }
 
-    public setWatchModel(watchModel) {
-        this.watchModel = watchModel;
-        return this;
-    }
-
-    public async run(cmd: string, ...args) {
+    public async run(...args): Promise<void> {
         log.info("->", this.taskName, HelperTask.taking());
         const cli = [
-            cmd,
             ...args,
             this.src
         ].join(" ");
         log.info(this.taskName, "start", "cwd:", this.rootPath, "cli:", cli);
         this.exec(cli);
         
-        if (this.watchModel) {
+        if (this.isWatchMode) {
             this.watcher = chokidar.watch(this.src)
                 .on('change', path => {
                     log.info(this.taskName, " file change: ", path, " re-run shell");
@@ -55,4 +45,5 @@ export class ShellTask {
         }
     }
 }
+
 export default ShellTask;

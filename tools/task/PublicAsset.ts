@@ -1,69 +1,61 @@
-import gulp from "gulp";
+import gulp, { task } from "gulp";
 import plumber from "gulp-plumber";
 import Path from "path";
 import Logger from "../libs/Logger";
+import TaskBase from "../libs/TaskBase";
 import { HelperTask } from "./HelperTask";
 import getGlobalConfig from "../getGlobalConfig";
 
 const log = Logger("PublicAsset");
-export class PublicAsset {
-    public taskName = "PublicAsset";
-    public watchModel: boolean = false;
-    private rootPath: string = "./";
-    private count = 1;
+export class PublicAsset extends TaskBase {
     private ext = "{js,less,css,sass,scss,txt,ico,ttf,gif,png,jpeg,jpg,swf,woff,woff2,webp,mp4,avi,flv}";
-    private src = Path.resolve(this.rootPath, `src/public/**/*.${this.ext}`);
-    private dest: string; // = Path.resolve(getGlobalConfig().rootOutput, "public");
 
-    private copy(src) {
-        log.info(this.taskName, " src: ", src, " dest: ", this.dest);
+    constructor(src?: string, taskName: string = "PublicAsset") {
+        super(taskName);
+        this.dist = Path.resolve(getGlobalConfig().clientOutput);
+        this.src = Path.resolve(this.rootPath, `src/public/**/*.${this.ext}`);
+        if (src) {
+            this.src = Path.resolve(this.rootPath, `src/${src}/**/*.${this.ext}`);
+            this.dist = Path.resolve(getGlobalConfig().rootOutput, src);
+        }
+    }
+    
+    private copy(src): NodeJS.ReadWriteStream {
+        log.info(this.taskName, " src: ", src, " dist: ", this.dist);
         return gulp.src(src)
             .pipe(plumber())
             // .pipe(rev())
             // .pipe(gulp.dest(this.dest))
             // .pipe(rev.mainfest())
-            .pipe(gulp.dest(this.dest));
+            .pipe(gulp.dest(this.dist));
     }
 
-    constructor(src?: string, taskName?: string) {
-        this.dest = Path.resolve(getGlobalConfig().clientOutput);
-        if (src) {
-            this.src = Path.resolve(this.rootPath, `src/${src}/**/*.${this.ext}`);
-            this.dest = Path.resolve(getGlobalConfig().rootOutput, src);
-        }
-        if (taskName) {
-            this.taskName = taskName;
-        }
-    }
-
-    public setWatchModel(watchModel: boolean) {
-        this.watchModel = watchModel;
-        return this;
-    }
-
-    public async run() {
+    public async run(): Promise<void|Error> {
         return new Promise((resolve, reject) => {
             log.info("->", this.taskName, HelperTask.taking());
             log.info(this.taskName, ' src: ', this.src);
-            this.copy(this.src).on("end", e => {
-                if (e) {
+            this.copy(this.src)
+                .on("end", e => {
+                    if (e) {
+                        reject(e);
+                        return;
+                    }
+                    if (this.isWatchMode) {
+                        const watcher = gulp.watch(this.src);
+                        watcher.on("change", (eventType: string, filename: string) => {
+                            log.info(this.taskName, " file " + filename + " was " + eventType + ", running tasks...");
+                            this.copy(this.src);
+                        });
+                    }
+                    log.info(this.taskName, " done ", this.count++);
+                    resolve();
+                })
+                .on("error", e => {
+                    log.info(this.taskName, " error ", e);
                     reject(e);
-                    return;
-                }
-                if (this.watchModel) {
-                    const watcher = gulp.watch(this.src);
-                    watcher.on("change", (eventType: string, filename: string) => {
-                        log.info(this.taskName, " file " + filename + " was " + eventType + ", running tasks...");
-                        this.copy(this.src);
-                    });
-                }
-                log.info(this.taskName, " done ", this.count++);
-                resolve("done");
-            }).on("error", e => {
-                log.info(this.taskName, " error ", e);
-                reject(e);
-            });
+                });
         });
     }
 }
+
 export default PublicAsset;

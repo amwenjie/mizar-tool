@@ -1,16 +1,13 @@
 import fs from "fs-extra";
 import Path from "path";
+import getGlobalConfig from "../../../getGlobalConfig";
 // import { getCompilerHooks } from "webpack-manifest-plugin";
 
 interface IOptions {
     isDebug: boolean;
-    entry: object;
-    clientPath: string;
-    buildPath: string;
-    assetsFilename: string;
 }
 
-function gatherDeps(bundleId, assetsKeys: string[]) {
+function gatherDeps(bundleId: string, assetsKeys: string[]): string[] {
     const deps = [];
     // 遍历所有依赖bundle id
     if (bundleId.indexOf("(") > -1) {
@@ -33,12 +30,13 @@ function gatherDeps(bundleId, assetsKeys: string[]) {
     return deps;
 }
 
-function gatherPageComDeps(file: string, assetsKeys: string[], entryKey: string, isDebug = false) {
+function gatherPageComDeps(file: string, assetsKeys: string[], entryKey: string, isDebug = false): any {
     try {
         let fileContent = fs.readFileSync(file, {
             encoding: "utf-8"
         });
         let pageRouterContent = fileContent;
+        // debug|dev模式变量名不会被混淆压缩，可以更精确的筛选后续匹配所需的内容
         if (isDebug) {
             const pageRouterContentMatch = /\bpageRouter\b([\s\S]+)\(pageRouter\)/.exec(fileContent);
             if (pageRouterContentMatch) {
@@ -77,29 +75,41 @@ function gatherPageComDeps(file: string, assetsKeys: string[], entryKey: string,
 }
 
 export default class GatherPageDepsPlugin {
+    entryKeys: string[];
+    buildPath:string;
+    assetsMainfest: string;
     constructor(protected readonly options: IOptions) {
+        const conf = getGlobalConfig();
+        this.buildPath = conf.rootOutput;
+        this.assetsMainfest = conf.assetsMainfest;
     }
     apply(compiler) {
-        compiler.hooks.done.tap('GatherPageDepsPlugin', (stats, callback = () => {}) => {
-            const assetsMap = fs.readJsonSync(`${this.options.buildPath}/${this.options.assetsFilename}`);
-            const assetKeys = Object.keys(assetsMap);
-            const entryKeys = Object.keys(this.options.entry || {
+        compiler.hooks.entryOption.tap('GatherPageDepsPlugin', (context, entry) => {
+            this.entryKeys = Object.keys(entry || {
                 index: ""
             });
-            const depsMap = {};
-            // 遍历客户端打包入口，查找依赖
-            entryKeys.forEach(entryKey => {
-                const index = assetKeys.filter(k => (new RegExp(`${entryKey}(?:_.{8})?\.js$`)).test(k));
-                const assetPath = assetsMap[index[0]];
-                if (assetPath) {
-                    const map = gatherPageComDeps(Path.resolve(this.options.buildPath + assetPath), assetKeys, entryKey, this.options.isDebug);
-                    Object.assign(depsMap, map);
+        });
+        compiler.hooks.done.tap('GatherPageDepsPlugin', (stats, callback = () => {}) => {
+            try {
+                const assetsMap = fs.readJsonSync(`${this.buildPath}/${this.assetsMainfest}`);
+                const assetKeys = Object.keys(assetsMap);
+                const depsMap = {};
+                // 遍历客户端打包入口，查找依赖
+                this.entryKeys.forEach(entryKey => {
+                    const index = assetKeys.filter(k => (new RegExp(`${entryKey}(?:_.{8})?\.js$`)).test(k));
+                    const assetPath = assetsMap[index[0]];
+                    if (assetPath) {
+                        const map = gatherPageComDeps(Path.resolve(this.buildPath + assetPath), assetKeys, entryKey, this.options.isDebug);
+                        Object.assign(depsMap, map);
+                    }
+                });
+                if (JSON.stringify(depsMap) !== "{}") {
+                    fs.writeJsonSync(this.buildPath + "/pageAssetsDeps.json", depsMap, { spaces: "  " });
                 }
-            });
-            if (JSON.stringify(depsMap) !== "{}") {
-                fs.writeJsonSync(this.options.buildPath + "/pageAssetsDeps.json", depsMap, { spaces: "  " });
+            } catch (e) {
+                console.error(e);
             }
-            
+
             callback();
         });
     }

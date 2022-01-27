@@ -25,7 +25,8 @@ alcor
     .command('build')
     .description('build the project')
     .usage(`build [options]`)
-    .option('-d, --debug', 'development mode watch files change')
+    .option('-d, --debug', 'development mode')
+    .option('-w, --watch', 'watch files change')
     .option('-s, --server', 'run a development server')
     // .option('-p, --publish', 'publish the package')
     .option('--verbose', 'print additional logs')
@@ -37,6 +38,9 @@ alcor
             Path.resolve(__dirname, '../tools/ProjectBuild'),
         ];
         if (options.debug) {
+            args.push('--debug');
+        }
+        if (options.watch) {
             args.push('--watch');
         }
         if (options.server) {
@@ -63,7 +67,8 @@ alcor
     .command('pack')
     .description('pack the pakcage')
     .usage(`pack [options]`)
-    .option('-d, --debug', 'development mode watch files change')
+    .option('-d, --debug', 'development mode')
+    .option('-w, --watch', 'watch files change')
     .option('-p, --publish', 'publish the package')
     .option('--verbose', 'print additional logs')
     .allowUnknownOption()
@@ -73,6 +78,9 @@ alcor
             Path.resolve(__dirname, '../tools/PackageBuild'),
         ];
         if (options.debug) {
+            args.push('--debug');
+        }
+        if (options.watch) {
             args.push('--watch');
         }
         if (options.publish) {

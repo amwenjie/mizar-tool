@@ -14,34 +14,30 @@ const log = Logger("ServerApiPack");
 export class ServerApiPack extends WebpackTaskBase {
     private globalConfig: IGlobalConfig;
     private tslintConfig;
-    private apiSrc: string = "src/server/apis";
-    public constructor() {
-        super("ServerApiPack");
-        this.taskName = "ServerApiPack";
-    }
-    // public setWatchModel(watchModel: boolean) {
-    //     this.watchModel = watchModel;
-    //     return this;
-    // }
 
-    public async scan() {
+    constructor(taskName = "ServerApiPack") {
+        super(taskName);
+        this.globalConfig = getGlobalConfig();
+        this.src = Path.resolve("./src/server/apis");
+        this.dist = Path.resolve(`${this.globalConfig.rootOutput}`);
+    }
+
+    public async scan(): Promise<object> {
         return new Promise(resolve => {
             const entry = {};
-            const entryDir = this.rootPath + this.apiSrc;
-            if (!fs.existsSync(entryDir)) {
-                log.warn("ServerApiPack pack build 入口目录不存在：", entryDir);
+            if (!fs.existsSync(this.src)) {
+                log.warn("ServerApiPack pack build 入口目录不存在：", this.src);
                 resolve({});
                 return;
             }
-            const walk = klaw(entryDir);
+            const walk = klaw(this.src);
             walk.on("data", (state) => {
                 const src = state.path;
                 if (/\.ts?/.test(src)) {
-                    const dirName = src.replace(Path.resolve(this.rootPath), "")
+                    const dirName = src.replace(this.src + "/", "")
                         .replace(".tsx", "")
                         .replace(".ts", "")
-                        .replace(/\\/g, "/")
-                        .replace("/" + this.apiSrc + "/", "");
+                        .replace(/\\/g, "/");
                     entry["apis/" + dirName] = src;
                 }
             });
@@ -52,8 +48,8 @@ export class ServerApiPack extends WebpackTaskBase {
             });
         });
     }
-    public async run() {
-        this.globalConfig = getGlobalConfig();
+
+    public async run(): Promise<void|Error> {
         this.tslintConfig = ConfigHelper.get("tslint", { disable: false });
         log.info("->", this.taskName, HelperTask.taking());
         try {
@@ -69,12 +65,12 @@ export class ServerApiPack extends WebpackTaskBase {
         }
     }
 
-    public async pack(entry) {
+    public async pack(entry): Promise<void|Error> {
         const tslintPath = Path.resolve(`${this.rootPath}tslint.json`);
         const tsConfigPath = Path.resolve(`${this.rootPath}tsconfig.json`);
         let localIdentName = prodLocalIdentName;
         let sourceMap = false;
-        if (this.watchModel) {
+        if (this.isDebugMode) {
             localIdentName = devLocalIdentName;
             sourceMap = true;
         }
@@ -92,16 +88,16 @@ export class ServerApiPack extends WebpackTaskBase {
             });
         }
         
-        const mode = this.watchModel ? "development" : "production";
-        // const NODE_ENV = this.watchModel ? JSON.stringify("development") : JSON.stringify("production");
+        const mode = this.isDebugMode ? "development" : "production";
+        // const NODE_ENV = this.isDebugMode ? JSON.stringify("development") : JSON.stringify("production");
         const defineOption = {
             IS_SERVER_RUNTIME: JSON.stringify(true),
-            IS_DEBUG_MODE: JSON.stringify(!!this.watchModel),
+            IS_DEBUG_MODE: JSON.stringify(!!this.isDebugMode),
         };
         const config: webpack.Configuration = {
             mode,
             // cache: true,
-            devtool: this.watchModel ? "source-map" : undefined,
+            devtool: this.isDebugMode ? "source-map" : undefined,
             entry,
             externals: [
                 nodeExternals({
@@ -131,7 +127,7 @@ export class ServerApiPack extends WebpackTaskBase {
             name: this.taskName,
             output: {
                 filename: "[name].js",
-                path: Path.resolve(`${this.globalConfig.rootOutput}`),
+                path: this.dist,
                 library: {
                     type: "commonjs2",
                 },

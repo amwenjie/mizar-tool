@@ -1,7 +1,7 @@
+import Path from "path";
 import { blue, green } from "colorette";
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
-import { HelperTask } from "../task/HelperTask";
 import Logger from "./Logger";
 
 const log = Logger("TaskBase");
@@ -14,36 +14,44 @@ export class TaskBase {
     protected count = 1;
     protected index: number = -1;
     protected taskName = "TaskBase";
-    protected watchModel = false;
-    protected helperTask = new HelperTask();
+    protected isWatchMode = false;
+    protected isDebugMode = false;
+    protected isAnalyzMode = false;
     protected rootPath = "./";
+    protected src = "";
+    protected dist = "";
     protected state = false;
 
     constructor(name) {
         this.taskName = name;
+        this.src = Path.resolve("./src");
+        this.dist = Path.resolve("./build");
     }
 
-    protected setTaskName(taskName: string) {
-        this.taskName = taskName;
-        return this;
-    }
-
-    protected async compile(config?): Promise<string | Error> {
+    protected async compile(config?): Promise<void|Error> {
         log.warn(`${this.taskName} 未重写compile方法`);
-        return "";
     }
 
-    protected async doneCallback() {
+    protected async doneCallback(): Promise<void> {
         console.log(green(`${this.taskName}, success`));
     }
     
-    public setWatchModel(watchModel) {
-        this.watchModel = watchModel;
+    public setWatchMode(isWatchMode: boolean): TaskBase {
+        this.isWatchMode = isWatchMode;
         return this;
     }
 
-    public async run() {
-        log.info(this.taskName, " run ", HelperTask.taking());
+    public setDebugMode(isDebugMode: boolean): TaskBase {
+        this.isDebugMode = isDebugMode;
+        return this;
+    }
+
+    public setAnalyzMode(isAnalyzMode: boolean): TaskBase {
+        this.isAnalyzMode = isAnalyzMode;
+        return this;
+    }
+
+    public async run(...args): Promise<void|Error> {
         try {
             await this.compile();
         } catch (error) {
@@ -54,4 +62,5 @@ export class TaskBase {
         }
     }
 }
+
 export default TaskBase;

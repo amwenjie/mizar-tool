@@ -1,5 +1,4 @@
 export class DateUtil {
-
     /**
      * @param Date date
      * @param format "yyyy-MM-dd hh:mm:ss.uuu"

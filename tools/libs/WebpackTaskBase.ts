@@ -1,9 +1,10 @@
 import { green, red, yellow } from "colorette";
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
-import webpack from "webpack";
+import webpack, { type WebpackError } from "webpack";
 import Logger from "./Logger";
 import TaskBase from "./TaskBase";
+import HelperTask from "../task/HelperTask";
 
 const argv: any = yargs(hideBin(process.argv)).argv  as any;
 
@@ -11,10 +12,11 @@ const log = Logger("WebpackTaskBase");
 
 export class WebpackTaskBase extends TaskBase {
     protected shouldRestartDevServer = true;
-    protected taskName = "WebpackTaskBase";
-    constructor(name) {
+    private helperTask: HelperTask;
+
+    constructor(name = "WebpackTaskBase") {
         super(name);
-        this.taskName = name;
+        this.helperTask = new HelperTask();
     }
 
     private compileInvalid(fileName, changeTime) {
@@ -55,9 +57,9 @@ export class WebpackTaskBase extends TaskBase {
         });
     }
 
-    protected async compile(config): Promise<string | Error> {
+    protected async compile(config: webpack.Configuration): Promise<void|Error> {
         return new Promise(async (resolve, reject) => {
-            const callback = (error, stats) => {
+            const callback = (error: WebpackError|null|undefined, stats): void => {
                 if (this.done(error, stats)) {
                     if (this.isAllCompileDone()) {
                         WebpackTaskBase.compileQueue.forEach(async (context) => {
@@ -72,7 +74,7 @@ export class WebpackTaskBase extends TaskBase {
                         }
                         WebpackTaskBase.changedQueue = [];
                     }
-                    resolve("succeess");
+                    resolve();
                 } else {
                     reject(error);
                 }
@@ -106,11 +108,11 @@ export class WebpackTaskBase extends TaskBase {
             //     log.info("++++++", this.taskName, "watchClose");
             //     // this.compileDone(stats);
             // });
-            if (this.watchModel) {
+            if (this.isWatchMode) {
                 this.watcher = compiler.watch({}, callback);
             } else {
-                compiler.run(async (error, stats) => {
-                    await callback(error, stats);
+                compiler.run(async (error?: WebpackError, stats?): Promise<void> => {
+                    callback(error, stats);
                     compiler.close(error => {
                         if (error) {
                             log.error(this.taskName, " compile close error: ");
@@ -124,7 +126,7 @@ export class WebpackTaskBase extends TaskBase {
         });
     }
 
-    protected done(webpackSelfError, stats) {
+    protected done(webpackSelfError: WebpackError|null|undefined, stats): boolean {
         try {
             if (webpackSelfError) {
                 log.error(this.taskName, "> error:");
@@ -151,7 +153,7 @@ export class WebpackTaskBase extends TaskBase {
                 // const firstError = errors[0];
                 this.helperTask.sendMessage(this.taskName, "代码有错误");
                 // 非watch模式直接抛异常
-                if (this.watchModel === false) {
+                if (this.isDebugMode === false) {
                     const message = this.taskName + ".fail";
                     throw new Error(message);
                 }
@@ -159,11 +161,11 @@ export class WebpackTaskBase extends TaskBase {
 
             if (stats.hasWarnings()) {
                 // 有警告
-                if (this.watchModel === true) {
+                if (this.isDebugMode === true) {
                     log.warn(yellow(`${this.taskName} has warnings: `));
                     log.warn(info.warnings);
                 }
-                // if (this.watchModel === true) {
+                // if (this.isDebugMode === true) {
                 //     warnings.forEach((warning) => {
                 //         log.warn(`WebpackTaskBase ${this.taskName} warning : ${warning}`);
                 //     });
@@ -188,4 +190,5 @@ export class WebpackTaskBase extends TaskBase {
         }
     }
 }
+
 export default WebpackTaskBase;

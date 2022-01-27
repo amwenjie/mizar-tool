@@ -1,17 +1,23 @@
 import fs from "fs-extra";
 import { HelperTask } from "./HelperTask";
 import Logger from "../libs/Logger";
+import TaskBase from "../libs/TaskBase";
 
 const log = Logger("CleanTask");
-export class CleanTask {
+export class CleanTask extends TaskBase {
+    constructor(taskName = "CleanTask") {
+        super(taskName);
+    }
+
     public start() {
-        log.info("->", "CleanTask", HelperTask.taking());
+        log.info("->", this.taskName, HelperTask.taking());
         try {
             fs.removeSync("build");
-            log.info("CleanTask.remove.build");
+            log.info(`${this.taskName}.remove.build`);
         } catch (error) {
-            log.error("CleanTask.build.error", error.message);
+            log.error(`${this.taskName}.remove.error`, error.message);
         }
     }
 }
+
 export default CleanTask;

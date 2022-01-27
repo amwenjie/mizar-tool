@@ -1,47 +1,45 @@
 import { execSync } from "child_process";
 import Notifier from "node-notifier";
-import ora from "ora";
 import yargs  from "yargs";
 import { hideBin } from "yargs/helpers";
-import { CleanTask } from "./CleanTask";
+import TaskBase from "../libs/TaskBase";
 import Logger from "../libs/Logger";
+import { CleanTask } from "./CleanTask";
 
 const log = Logger("HelperTask");
 
-export class HelperTask {
-    constructor() {
-        // this.spinner = ora("running task...");
-    }
+export class HelperTask extends TaskBase {
+    private static prevDateTime = new Date();
+
     public static taking() {
         const now = new Date();
         const taking = now.getTime() - HelperTask.prevDateTime.getTime();
         HelperTask.prevDateTime = now;
         return `${taking / 1000} s`;
     }
-    private static prevDateTime = new Date();
-    private watchModel = false;
-    private spinner;
-    public startDateTime;
-    public endDateTime;
-    public init() {
+
+    constructor(taskName: string = "HelperTask") {
+        super(taskName);
         this.showVersion();
         process.once("SIGINT", () => {
             log.info("安全退出");
             process.exit();
         });
     }
-    public setWatchModel(watchModel = true) {
-        this.watchModel = watchModel;
-        return this;
-    }
-    public showVersion() {
+
+    public startDateTime;
+    public endDateTime;
+
+    public showVersion(): HelperTask {
         log.info("->", "showVersion",
             "node@" + execSync("node -v").toString().replace(/\r|\n/g, ""),
             "npm@v" + execSync("npm -v").toString().replace(/\r|\n/g, ""),
             "typescipt@" + execSync("tsc -v").toString().replace(/\r|\n/g, ""),
         );
+        return this;
     }
-    public async sendMessage(titleStr: string, messageStr: string) {
+
+    public async sendMessage(titleStr: string, messageStr: string): Promise<void> {
         const argv = yargs(hideBin(process.argv)).argv  as any;
         if (argv["no-notify"]) {
             return;
@@ -54,19 +52,21 @@ export class HelperTask {
         }
         log[logMethod]("sendMessage", titleStr, messageStr);
         const msg = {
-            message: messageStr.substr(0, 100),
+            message: messageStr.slice(0, 100),
             title: titleStr,
             wait: false,
         };
         Notifier.notify(msg);
     }
-    public start() {
+
+    public start(): void {
         this.startDateTime = new Date();
         // this.spinner.start();
         // console.log();
         log.info("-------------------------------编译详细信息-------------------------------------");
     }
-    public end() {
+
+    public end(): void {
         this.endDateTime = new Date();
         // this.spinner.stop();
         log.info("-------------------------------编译信息结束-------------------------------------");
@@ -77,8 +77,9 @@ export class HelperTask {
         // this.spinner = null;
     }
 
-    public async cleanAsync() {
+    public async cleanAsync(): Promise<HelperTask> {
         await new CleanTask().start();
+        return this;
     }
 }
 

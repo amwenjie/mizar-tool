@@ -8,102 +8,107 @@ import { HelperTask } from "./task/HelperTask";
 import { IsomorphicPack } from "./task/IsomorphicPack";
 import { PublishTask } from "./task/PublishTask";
 import { PackageInfo } from "./task/PackageInfo";
-// import { PublicAsset } from "./task/PublicAsset";
 import { ServerApiPack } from "./task/ServerApiPack";
 import { ServerPack } from "./task/ServerPack";
 import { StandalonePack } from "./task/StandalonePack";
-// import { StylePack } from "./task/StylePack";
 import Logger from "./libs/Logger";
 import { ConfigHelper } from "./libs/ConfigHelper";
 
 const log = Logger("ProjectBuild");
 
 export class ProjectBuild {
-    private watchModel = false;
-    private runServerModel = false;
-    private publishModel = false;
-    private analyzMode = false;
+    private isDebugMode = false;
+    private isWatchMode = false;
+    private isRunServerMode = false;
+    private isPublishMode = false;
+    private isAnalyzMode = false;
+
     public async start() {
         try {
             await this.build();
-            if (this.publishModel) {
+            if (this.isPublishMode) {
                 await this.publish();
             }
         } catch (e) {
             log.error("ProjectBuild", e);
         }
     }
-    public setAnalyzMode(analyzMode) {
-        this.analyzMode = analyzMode;
+
+    public setAnalyzMode(isAnalyzMode) {
+        this.isAnalyzMode = isAnalyzMode;
     }
-    public setWatchModel(watchModel) {
-        this.watchModel = watchModel;
+
+    public setDebugMode(isDebugMode) {
+        this.isDebugMode = isDebugMode;
     }
-    public setPublishModel(publishModel) {
-        this.publishModel = publishModel;
+
+    public setWatchMode(isWatchMode) {
+        this.isWatchMode = isWatchMode;
     }
-    public setRunServer(runServerModel) {
-        this.runServerModel = runServerModel;
+
+    public setPublishModel(isPublishMode) {
+        this.isPublishMode = isPublishMode;
     }
+
+    public setRunServerMode(isRunServerMode) {
+        this.isRunServerMode = isRunServerMode;
+    }
+
     private async publish() {
-        await new PublishTask().start();
+        await new PublishTask().run();
     }
+
     private async build() {
         let spinner;
         spinner = ora("prepare the environment...\r\n").start();
         // 环境准备
         const task = new HelperTask();
-        task.setWatchModel(this.watchModel);
-        task.init();
         task.start();
         spinner.succeed();
         try {
             spinner = ora("process config & packageInfo ...\r\n").start();
             // 1 clean
             await task.cleanAsync();
-            await new PackageInfo().setWatchModel(true).run();
+            const packageInfo = new PackageInfo();
+            packageInfo.setWatchMode(this.isWatchMode);
+            await packageInfo.run();
             await new CopyTask("./config", "./config").run();
             await new CopyTask("./config", "./config").run();
             spinner.succeed();
-            // await new PublicAsset().run();
-            // 2. 生成样式
-            // spinner = ora("style pack...\r\n").start();
-            // await new StylePack()
-            //     .setWatchModel(this.watchModel)
-            //     .run();
-            // spinner.succeed();
-            // 3. 生成ClientPack
-            // const vendor = await new VendorPack()
-            //     .setWatchModel(this.watchModel)
-            //     .run();
-            // 4. 生成同构下的ClientPack
+            // 2. 生成同构下的ClientPack
             spinner = ora("client assets pack...\r\n").start();
             const isomorphicClientPack = new IsomorphicPack();
             isomorphicClientPack
-                .setWatchModel(this.watchModel)
-                .setAnalyzMode(this.analyzMode);
+                .setDebugMode(this.isDebugMode)
+                .setWatchMode(this.isWatchMode)
+                .setAnalyzMode(this.isAnalyzMode);
             await isomorphicClientPack.run();
             spinner.succeed();
-            // 5. 生成ServerApiPack
+            // 3. 生成ServerApiPack
             spinner = ora("server api assets pack...\r\n").start();
             const serverApiPack = new ServerApiPack();
-            serverApiPack.setWatchModel(this.watchModel);
+            serverApiPack
+                .setWatchMode(this.isWatchMode)
+                .setDebugMode(this.isDebugMode);
             await serverApiPack.run();
             spinner.succeed();
-            // 6. 生成ServerPack
+            // 4. 生成ServerPack
             spinner = ora("server assets pack...\r\n").start();
             const serverPack = new ServerPack();
             serverPack
-                .setAutoRun(this.runServerModel)
-                .setWatchModel(this.watchModel);
+                .setAutoRun(this.isRunServerMode)
+                .setDebugMode(this.isDebugMode)
+                .setWatchMode(this.isWatchMode);
             await serverPack.run();
             spinner.succeed();
             const shouldStandaloneBuild = ConfigHelper.get("standalone", false);
             if (shouldStandaloneBuild) {
-                // 7. 生成standalone文件
+                // 5. 生成standalone文件
                 spinner = ora("standalone pack...\r\n").start();
                 const standalonePack = new StandalonePack();
-                standalonePack.setWatchModel(this.watchModel);
+                standalonePack
+                    .setDebugMode(this.isDebugMode)
+                    .setWatchMode(this.isWatchMode);
                 await standalonePack.run();
                 spinner.succeed();
             }
@@ -119,11 +124,14 @@ export class ProjectBuild {
 (async () => {
     const projectBuild = new ProjectBuild();
     const argv = yargs(hideBin(process.argv)).argv  as any;
+    if (argv.debug) {
+        projectBuild.setDebugMode(true);
+    }
     if (argv.watch) {
-        projectBuild.setWatchModel(true);
+        projectBuild.setWatchMode(true);
     }
     if (argv.runServer) {
-        projectBuild.setRunServer(true);
+        projectBuild.setRunServerMode(true);
     }
     if (argv.analyz) {
         projectBuild.setAnalyzMode(true);

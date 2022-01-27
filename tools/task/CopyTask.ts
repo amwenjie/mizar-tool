@@ -1,30 +1,21 @@
 import fs from "fs-extra";
 import Path from "path";
-import { HelperTask } from "./HelperTask";
-import Logger from "../libs/Logger";
 import getGlobalConfig from "../getGlobalConfig";
+import Logger from "../libs/Logger";
+import TaskBase from "../libs/TaskBase";
+import { HelperTask } from "./HelperTask";
 
 const log = Logger("CopyTask");
-export class CopyTask {
-    public taskName = "CopyTask";
-    public watchModel: boolean = false;
-    private rootPath: string = "./";
-    private src = "";
-    private dest = Path.resolve(getGlobalConfig().rootOutput);
-
-    constructor(src: string, dest?: string, taskName?: string) {
+export class CopyTask extends TaskBase {
+    constructor(src: string, dist: string = "", taskName: string = "CopyTask") {
+        super(taskName);
         this.src = Path.resolve(this.rootPath, src);
-        if (dest) {
-            this.dest = Path.resolve(getGlobalConfig().rootOutput, dest);
-        }
-        if (taskName) {
-            this.taskName = taskName;
-        }
+        this.dist = Path.resolve(getGlobalConfig().rootOutput, dist);
     }
 
-    public run() {
-        log.info("->", "CopyTask", HelperTask.taking());
-        return fs.copy(this.src, this.dest);
+    public async run(): Promise<void> {
+        log.info("->", this.taskName, HelperTask.taking());
+        return fs.copy(this.src, this.dist);
     }
 }
 export default CopyTask;

@@ -14,32 +14,29 @@ const log = Logger("ServerPack");
 export class ServerPack extends WebpackTaskBase {
     private globalConfig: IGlobalConfig;
     private tslintConfig;
-    private src: string = "src/server/index";
     private autoRun: boolean = false;
-    private debug: number = 0;
+    private debugPort: number = 0;
 
-    public constructor() {
-        super("ServerPack");
-        this.taskName = "ServerPack";
+    constructor(taskName = "ServerPack") {
+        super(taskName);
         this.shouldRestartDevServer = false;
+        this.globalConfig = getGlobalConfig();
+        this.src = Path.resolve("./src/server/index");
+        this.dist = Path.resolve(`${this.globalConfig.rootOutput}`);
     }
-    public setAutoRun(autoRun: boolean = true) {
+
+    public setAutoRun(autoRun: boolean = true): ServerPack {
         this.autoRun = autoRun;
-        this.debug = ConfigHelper.get("debugPort", 0);
-        log.info("debugPort", this.debug);
+        this.debugPort = ConfigHelper.get("debugPort", 0);
+        log.info("debugPort", this.debugPort);
         return this;
     }
-    // public setWatchModel(watchModel: boolean) {
-    //     this.watchModel = watchModel;
-    //     return this;
-    // }
 
-    public async run() {
-        this.globalConfig = getGlobalConfig();
+    public async run(): Promise<void|Error> {
         this.tslintConfig = ConfigHelper.get("tslint", { disable: false });
         log.info("->", this.taskName, HelperTask.taking());
         try {
-            await this.pack({"index": Path.resolve(`${this.rootPath}${this.src}`)});
+            await this.pack({"index": this.src});
         } catch (e) {
             log.error(this.taskName, " run into an error: ", e);
         }
@@ -51,16 +48,16 @@ export class ServerPack extends WebpackTaskBase {
         return /components?|pages?/i.test(resourcePath);
     }
     
-    private getStyleRuleLoaderOption(loaderName) {
+    private getStyleRuleLoaderOption(loaderName): object {
         return ConfigHelper.get(loaderName, {});
     }
 
-    public async pack(entry) {
+    public async pack(entry): Promise<void|Error> {
         const tslintPath = Path.resolve(`${this.rootPath}tslint.json`);
         const tsConfigPath = Path.resolve(`${this.rootPath}tsconfig.json`);
         let localIdentName = prodLocalIdentName;
         let sourceMap = false;
-        if (this.watchModel) {
+        if (this.isDebugMode) {
             localIdentName = devLocalIdentName;
             sourceMap = true;
         }
@@ -230,15 +227,15 @@ export class ServerPack extends WebpackTaskBase {
             type: "javascript/auto",
         });
         
-        const mode = this.watchModel ? "development" : "production"; // this.watchModel ? JSON.stringify("development") : JSON.stringify("production");
+        const mode = this.isDebugMode ? "development" : "production"; // this.isDebugMode ? JSON.stringify("development") : JSON.stringify("production");
         const defineOption = {
             IS_SERVER_RUNTIME: JSON.stringify(true),
-            IS_DEBUG_MODE: JSON.stringify(!!this.watchModel),
+            IS_DEBUG_MODE: JSON.stringify(!!this.isDebugMode),
         };
         const config: webpack.Configuration = {
             mode,
             // cache: false,
-            devtool: this.watchModel ? "source-map" : undefined,
+            devtool: this.isDebugMode ? "source-map" : undefined,
             entry,
             externals: [
                 nodeExternals({
@@ -258,7 +255,7 @@ export class ServerPack extends WebpackTaskBase {
             name: this.taskName,
             output: {
                 filename: "[name].js",
-                path: Path.resolve(`${this.globalConfig.rootOutput}`),
+                path: this.dist,
                 library: {
                     type: "commonjs2",
                 },
@@ -288,11 +285,11 @@ export class ServerPack extends WebpackTaskBase {
             log.error(this.taskName, " webpacking raised an error: ", e);
         }
     }
-    protected async doneCallback() {
+    protected async doneCallback(): Promise<void> {
         console.log(green(`${this.taskName}, success`));
-        if (this.autoRun === true && this.watchModel === true) {
+        if (this.autoRun === true && this.isDebugMode === true) {
             let serverEntry = "index";
-            RunServer(serverEntry, this.debug);
+            RunServer(serverEntry, this.debugPort);
         }
     }
 }

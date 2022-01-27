@@ -15,22 +15,26 @@ import { ConfigHelper } from "./libs/ConfigHelper";
 const log = Logger("PackageBuild");
 
 class PackageBuild {
-    private watchModel = false;
-    private publishModel = false;
+    private isDebugMode = false;
+    private isWatchMode = false;
+    private isPublishMode = false;
 
-    public setWatchModel(watchModel) {
-        this.watchModel = watchModel;
+    public setDebugMode(isDebugMode) {
+        this.isDebugMode = isDebugMode;
     }
 
-    public setPublishModel(publishModel) {
-        this.publishModel = publishModel;
+    public setWatchMode(isWatchMode) {
+        this.isWatchMode = isWatchMode;
+    }
+
+    public setPublishMode(isPublishMode) {
+        this.isPublishMode = isPublishMode;
     }
 
     public async startup() {
         let spinner;
         spinner = ora("prepare the environment...\r\n").start();
         const task = new HelperTask();
-        task.init();
         task.start();
         spinner.succeed();
         try {
@@ -39,22 +43,22 @@ class PackageBuild {
             await new PackageInfo().run();
             spinner.succeed();
             spinner = ora("public assets pack...\r\n").start();
-            await new PublicAsset().setWatchModel(this.watchModel).run();
-            await new PublicAsset("iso", "PublicAsset iso ").setWatchModel(this.watchModel).run();
+            await new PublicAsset().setWatchMode(this.isWatchMode).setDebugMode(this.isDebugMode).run();
+            await new PublicAsset("iso", "PublicAsset iso ").setWatchMode(this.isWatchMode).setDebugMode(this.isDebugMode).run();
             spinner.succeed();
             spinner = ora("transform typescript file...\r\n").start();
-            await new ShellTask("./src").setWatchModel(this.watchModel).run("tsc", "-p");
+            await new ShellTask("./src").setWatchMode(this.isWatchMode).setDebugMode(this.isDebugMode).run("tsc", "-p");
             spinner.succeed();
             const shouldStandaloneBuild = ConfigHelper.get("standalone", false);
             if (shouldStandaloneBuild) {
                 spinner = ora("standalone pack...\r\n").start();
-                await new StandalonePack().setWatchModel(this.watchModel).run();
+                await new StandalonePack().setWatchMode(this.isWatchMode).setDebugMode(this.isDebugMode).run();
                 spinner.succeed();
             }
             console.log(green("build success"));
-            if (this.publishModel) {
+            if (this.isPublishMode) {
                 // 开始发布任务
-                await new PublishTask().start();
+                await new PublishTask().run();
             }
         } catch (e) {
             spinner.fail();
@@ -68,11 +72,14 @@ class PackageBuild {
     try {
         const packageBuild = new PackageBuild();
         const argv = yargs(hideBin(process.argv)).argv as any;
+        if (argv.debug) {
+            packageBuild.setDebugMode(true);
+        }
         if (argv.watch) {
-            packageBuild.setWatchModel(true);
+            packageBuild.setWatchMode(true);
         }
         if (argv.publish) {
-            packageBuild.setPublishModel(true);
+            packageBuild.setPublishMode(true);
         }
         await packageBuild.startup();
     } catch (error) {

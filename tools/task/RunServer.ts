@@ -22,7 +22,7 @@ let server;
 export function RunServer(serverPath, debug, cb: any = false) {
     let cbIsPending = !!cb;
 
-    function onStdOut(data) {
+    function onStdOut(data): void {
         const time = new Date().toTimeString();
         const match = data.toString("utf8").match(RUNNING_REGEXP);
         // process.stdout.write(time.replace(/.*(\d{2}:\d{2}:\d{2}).*/, "[$1]") + " [INFO] server  - ");
@@ -32,7 +32,7 @@ export function RunServer(serverPath, debug, cb: any = false) {
         if (match) {
             server.stdout.removeListener("data", onStdOut);
             console.log(bold(green("server start successful, listen at port: " + match[1])));
-            server.stdout.on("data", (x) => process.stdout.write(x));
+            server.stdout.on("data", data => process.stdout.write(data));
             if (cb) {
                 cbIsPending = false;
                 cb(null, match[1]);
@@ -72,7 +72,7 @@ export function RunServer(serverPath, debug, cb: any = false) {
     }
 
     server.stdout.on("data", onStdOut);
-    server.stderr.on("data", (x) => process.stderr.write(x));
+    server.stderr.on("data", data => process.stderr.write(data));
     return server;
 }
 

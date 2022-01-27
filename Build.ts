@@ -17,8 +17,6 @@ class Build {
     public async startup() {
         const taskSpinner = ora("prepare the environment...\r\n").start();
         const task = new HelperTask();
-        // 清理及数据准备工作
-        task.init();
         task.start();
         taskSpinner.succeed();
         const packageInfoSpinner = ora("process build target directory & packageInfo...\r\n").start();
@@ -41,7 +39,7 @@ class Build {
         }
         if (argv.publish) {
             // 开始发布任务
-            await new PublishTask().start();
+            await new PublishTask().run();
         }
         task.end();
     }

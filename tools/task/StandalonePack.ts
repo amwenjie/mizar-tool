@@ -7,7 +7,11 @@ import { BundleAnalyzerPlugin } from "webpack-bundle-analyzer";
 import fs from "fs-extra";
 import klaw from "klaw";
 import Path from "path";
-import webpack from "webpack";
+import webpack, {
+    type Compiler,
+    type RuleSetRule,
+    type WebpackPluginInstance,
+} from "webpack";
 import getGlobalConfig, { IGlobalConfig, devLocalIdentName, prodLocalIdentName } from "../getGlobalConfig";
 import { ConfigHelper } from "../libs/ConfigHelper";
 import Logger from "../libs/Logger";
@@ -16,26 +20,20 @@ import { HelperTask } from "./HelperTask";
 
 const log = Logger("StandalonePack");
 export class StandalonePack extends WebpackTaskBase {
-    private standaloneEntrySrc = "src/standalone";
-    private analyzMode = false;
     private globalConfig: IGlobalConfig;
-    private outputPath = "";
-    constructor() {
-        super("StandalonePack");
-        this.setTaskName("StandalonePack");
+
+    constructor(taskName = "StandalonePack") {
+        super(taskName);
+        this.globalConfig = getGlobalConfig();
+        this.src = Path.resolve("./src/standalone");
+        this.dist = Path.resolve(`${this.rootPath}${this.globalConfig.staticOutput}/standalone`);
     }
 
-    public setAnalyzMode(analyzMode) {
-        this.analyzMode = analyzMode;
-        return this;
-    }
-    public async run() {
+    public async run(): Promise<void|Error> {
         const shouldStandaloneBuild = ConfigHelper.get("standalone", false);
         if (!shouldStandaloneBuild) {
             return;
         }
-        this.globalConfig = getGlobalConfig();
-        this.outputPath = `${this.rootPath}${this.globalConfig.staticOutput}/standalone`;
 
         log.info("->", "StandalonePack", HelperTask.taking());
         try {
@@ -52,25 +50,24 @@ export class StandalonePack extends WebpackTaskBase {
         }
     }
 
-    private getStyleRuleLoaderOption(loaderName) {
+    private getStyleRuleLoaderOption(loaderName: string) {
         return ConfigHelper.get(loaderName, {});
     }
 
     private entryScan() {
         return new Promise((resolve, reject) => {
             const entries: any = {};
-            const entryDir = this.rootPath + this.standaloneEntrySrc;
-            if (!fs.existsSync(entryDir)) {
-                log.warn(yellow(`standalone pack build 入口目录不存在：, ${entryDir}`));
+            if (!fs.existsSync(this.src)) {
+                log.warn(yellow(`standalone pack build 入口目录不存在：, ${this.src}`));
                 resolve({});
                 return;
             }
-            const walk = klaw(entryDir);
+            const walk = klaw(this.src);
             walk.on("data", (state) => {
                 const src = state.path;
                 const isFile = state.stats.isFile();
                 if (isFile && /\.ts$|\.tsx$|\.js$/i.test(src)) {
-                    const entryKey = src.replace(Path.resolve(entryDir), "")
+                    const entryKey = src.replace(Path.resolve(this.src), "")
                         .replace(".tsx", "")
                         .replace(".ts", "")
                         .replace(".js", "")
@@ -114,23 +111,23 @@ export class StandalonePack extends WebpackTaskBase {
         return /components?|pages?/i.test(resourcePath);
     }
 
-    private async pack(entry) {
+    private async pack(entry): Promise<void|Error> {
         // log.info("StandalonePack.pack.run", entry);
-        const mode = this.watchModel ? "development" : "production";
-        // const mode = this.watchModel ? JSON.stringify("development") : JSON.stringify("production");
+        const mode = this.isDebugMode ? "development" : "production";
+        // const mode = this.isDebugMode ? JSON.stringify("development") : JSON.stringify("production");
             
         const config: webpack.Configuration = {
             mode,
             // cache: false,
             // debug: true,
-            devtool: this.watchModel ? "source-map" : undefined,
+            devtool: this.isDebugMode ? "source-map" : undefined,
             ...this.getEntryAndOutputConfig(entry),
             externals: this.getExternalConfig(),
             module: {
                 rules: this.getRules(),
             },
             name: "StandalonePack",
-            plugins: this.getPlugins({entry}),
+            plugins: this.getPlugins(),
             resolve: {
                 extensions: [".ts", ".tsx", ".js", ".css", ".png", ".jpg", ".gif", ".less", "sass", "scss", "..."],
                 modules: [
@@ -155,9 +152,9 @@ export class StandalonePack extends WebpackTaskBase {
     private getOptimization(): webpack.Configuration {
         return {
             optimization: {
-                minimize: !this.watchModel,
-                chunkIds: this.watchModel ? "named" : "deterministic",
-                moduleIds: this.watchModel ? "named" : "deterministic",
+                minimize: !this.isDebugMode,
+                chunkIds: this.isDebugMode ? "named" : "deterministic",
+                moduleIds: this.isDebugMode ? "named" : "deterministic",
                 minimizer: [
                     new TerserJSPlugin({
                         terserOptions: {
@@ -173,10 +170,10 @@ export class StandalonePack extends WebpackTaskBase {
         };
     }
 
-    private getRules() {
+    private getRules(): (RuleSetRule | "...")[]  {
         let localIdentName = prodLocalIdentName;
         let sourceMap = false;
-        if (this.watchModel) {
+        if (this.isDebugMode) {
             localIdentName = devLocalIdentName;
             sourceMap = true;
         }
@@ -330,10 +327,13 @@ export class StandalonePack extends WebpackTaskBase {
         return rules;
     }
 
-    private getPlugins({entry}) {
+    private getPlugins(): (
+		| ((this: Compiler, compiler: Compiler) => void)
+		| WebpackPluginInstance
+	)[] {
         const defineOption = {
             IS_SERVER_RUNTIME: JSON.stringify(false),
-            IS_DEBUG_MODE: JSON.stringify(!!this.watchModel),
+            IS_DEBUG_MODE: JSON.stringify(!!this.isDebugMode),
         };
 
         const plugins = [];
@@ -342,23 +342,23 @@ export class StandalonePack extends WebpackTaskBase {
             filename: "[name].css",
             // chunkFilename: "[name]-chunk-[id]_[contenthash:8].css",
         }));
-        if (this.analyzMode) {
+        if (this.isAnalyzMode) {
             plugins.push(new BundleAnalyzerPlugin({
-                analyzerMode: this.watchModel ? "server" : "disabled",
-                generateStatsFile: !this.watchModel,
-                openAnalyzer: !!this.watchModel,
+                analyzerMode: this.isDebugMode ? "server" : "disabled",
+                generateStatsFile: !this.isDebugMode,
+                openAnalyzer: !!this.isDebugMode,
             }));
         }
         return plugins;
     }
 
-    private getEntryAndOutputConfig(entry) {
+    private getEntryAndOutputConfig(entry): any {
         const config = ConfigHelper.get("standalone", false);
         const returnedConfig: any = {
             entry,
             output: {
                 filename: "[name].js",
-                path: Path.resolve(this.outputPath),
+                path: this.dist,
                 assetModuleFilename: "assets/[name][ext][query]",
             }
         };
@@ -396,7 +396,7 @@ export class StandalonePack extends WebpackTaskBase {
         return returnedConfig;
     }
 
-    private getExternalConfig() {
+    private getExternalConfig(): any {
         const config = ConfigHelper.get("standalone.externals", false);
         const serverExternal = ({ context, request }, callback) => {
             const isExternal = /\/server\//i.test(request);

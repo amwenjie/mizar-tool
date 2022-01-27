@@ -8,18 +8,20 @@ npm install -g alcor
 
 2. 编译、打包、调试一个应用
    * alcor build  产出production环境的编译产出
-   * alcor build --debug  产出development环境的编译产出，并启动watch进程监听文件变更重新编译
+   * alcor build --debug  产出development环境的编译产出
    * alcor build --verbose  编译过程在终端中打印出详细的编译过程、编译状态的信息
    * alcor build --server  会启动开发调试服务器，启动并连接node inspector用于调试node端代码
    * alcor build --analyz  产出webpack stats模块分析文件，如果联合--debug使用，会启动分析服务器并自动用默认浏览器打开分析页面
+   * alcor build --watch  启动watch进程监听文件变更重新编译
    * 可以组合使用比如 alcor build -ds 表示编译开发环境编译并启动开发调试服务器，
-   * 仅debug、server可使用缩写，其他选项不可缩写，必须使用--的形式
+   * 0.1.39开始将debug能力拆解，debug不在默认监听文件变化，新增watch用于监听文件变化
+   * 仅debug、watch、server可使用缩写，其他选项不可缩写，必须使用--的形式
 
 3. 版本0.1.32(含)以前connect用法：connect()()()，0.1.33(含)以后用法：connect()()，会对第二次调用的中间两个缺省参数注入默认值
 
 4. 版本0.1.33(含)以前支持应用路由配置语法为react-router-config v5语法，0.1.34(含)以后**只支持**react-router v6 useRoutes语法，[两个配置区别点击此处](https://reactrouter.com/docs/en/v6/upgrading/v5#use-useroutes-instead-of-react-router-config)。
 
-5. 版本0.1.38开始支持standalone形式编译产出(ProjectBuild和PackageBuild都支持)，standalone代表每个standalone的文件之间没有公共文件，即哪怕在standalone中的文件有很多共同的内容也不会提取runtime、vendor这种公共文件，他们是各自独立的，可以想象成每个standalone的文件就是一个第三方库，可以放在cdn，然后直接在html中以```<script>```的形式引入。
+5. 版本0.1.38开始支持standalone形式编译产出(ProjectBuild和PackageBuild都支持)，standalone代表每个standalone的文件之间没有公共文件，即哪怕在standalone中的文件有很多共同的内容也不会提取runtime、lib这种公共文件，他们是各自独立的，可以想象成每个standalone的文件就是一个第三方库，可以放在cdn，然后直接在html中以```<script>```的形式引入。
    * 在config/configure.json中增加standalone配置，value支持true、object。
    * true，表示会自动寻找src/standalone目录中的ts、js文件，每个文件分别作为入口，然后入口打包编译后的导出会赋值给用项目名命名的变量
    * object，里面的key是standalone/目录中的文件路径，value是object，可以配置导出内容的名称、导出类型等

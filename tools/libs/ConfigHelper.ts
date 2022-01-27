@@ -7,9 +7,7 @@ import { hideBin } from "yargs/helpers";
 import Logger from "../libs/Logger";
 
 const argv:any = yargs(hideBin(process.argv)).argv  as any;
-
 const log = Logger("ConfigHelper");
-
 const configureJSON = Path.resolve("./config/configure.json");
 const appConfJSON = Path.resolve("./config/app.json");
 
@@ -30,7 +28,9 @@ export interface IConfigure {
 }
 
 export class ConfigHelper {
-    private static privateGet(node: string, defaultValue = null, configPath = configureJSON) {
+    public static store: any = {};
+
+    private static privateGet(node: string, defaultValue = null, configPath = configureJSON): any {
         let result = defaultValue;
         const key = `${configPath}->${node}`;
         log.info("ConfigHelper privateGet key: ", key);
@@ -73,15 +73,15 @@ export class ConfigHelper {
         return result;
     }
 
-    public static store: any = {};
-
-    public static set(node, value, configPath = configureJSON) {
+    public static set(node: string, value, configPath = configureJSON): void {
         ConfigHelper.store[`${configPath}-${node}`] = value;
     }
-    public static get(node: string, defaultValue = null, configPath = configureJSON) {
+
+    public static get(node: string, defaultValue = null, configPath = configureJSON): any {
         return ConfigHelper.privateGet(node, defaultValue, configPath);
     }
-    public static getPackageVersion() {
+
+    public static getPackageVersion(): string {
         let patchVer = 0;
         // log.info(argv);
         if (argv.patchVer && argv.patchVer !== true) {
@@ -92,21 +92,26 @@ export class ConfigHelper {
         version[2] = patchVer;
         return version.slice(0, 3).join(".");
     }
-    public static getPackageName() {
+
+    public static getPackageName(): any {
         return ConfigHelper.get("name", null, appConfJSON);
     }
-    public static getAssetsPathPrefix() {
+
+    public static getAssetsPathPrefix(): string {
         let prefix = ConfigHelper.get("assetsPathPrefix", "", appConfJSON);
         if (prefix && !prefix.endsWith("/")) {
             prefix += "/";
         }
         return prefix;
     }
-    public static getCDN() {
+
+    public static getCDN(): string {
         return ConfigHelper.get("cdn", "", appConfJSON);
     }
-    public static getPublicPath() {
+
+    public static getPublicPath(): string {
         return `${ConfigHelper.getAssetsPathPrefix()}`; // ${ConfigHelper.getPackageName()}/`;
     }
 }
+
 export default ConfigHelper;

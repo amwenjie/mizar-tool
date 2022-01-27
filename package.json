@@ -90,5 +90,5 @@
     "Test-ProjectBuild": "ts-node tools/ProjectBuild",
     "build": "ts-node ./Build"
   },
-  "version": "0.1.38"
+  "version": "0.1.39"
 }
