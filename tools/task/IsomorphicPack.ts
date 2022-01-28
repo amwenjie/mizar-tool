@@ -193,9 +193,6 @@ export class IsomorphicPack extends WebpackTaskBase {
                 "core-js/features/promise",
                 "raf/polyfill",
             ];
-            if (this.isDebugMode) {
-                esDepends.push("webpack-hot-middleware/client");
-            }
             const entries: any = {};
             const entryDir = this.rootPath + this.clientEntrySrc;
             if (!fs.existsSync(entryDir)) {
