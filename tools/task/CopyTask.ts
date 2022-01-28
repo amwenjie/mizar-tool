@@ -1,5 +1,5 @@
 import fs from "fs-extra";
-import Path from "path";
+import path from "path";
 import getGlobalConfig from "../getGlobalConfig";
 import Logger from "../libs/Logger";
 import TaskBase from "../libs/TaskBase";
@@ -9,8 +9,8 @@ const log = Logger("CopyTask");
 export class CopyTask extends TaskBase {
     constructor(src: string, dist: string = "", taskName: string = "CopyTask") {
         super(taskName);
-        this.src = Path.resolve(this.rootPath, src);
-        this.dist = Path.resolve(getGlobalConfig().rootOutput, dist);
+        this.src = path.resolve(this.rootPath, src);
+        this.dist = path.resolve(getGlobalConfig().rootOutput, dist);
     }
 
     public async run(): Promise<void> {

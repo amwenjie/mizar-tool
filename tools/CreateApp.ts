@@ -2,20 +2,20 @@
 
 'use strict';
 
-const https = require('https');
-const chalk = require('chalk');
-const commander = require('commander');
-const dns = require('dns');
-const envinfo = require('envinfo');
-const execSync = require('child_process').execSync;
-const fs = require('fs-extra');
-const path = require('path');
-const semver = require('semver');
-const spawn = require('cross-spawn');
-const url = require('url');
-const validateProjectName = require('validate-npm-package-name');
-
+import { blue, bold, cyan, green, red, yellow } from 'colorette';
+import https from 'https';
+import commander from 'commander';
+import dns from 'dns';
+import envinfo from 'envinfo';
+import { execSync } from 'child_process';
+import fs from 'fs-extra';
+import path from 'path';
+import semver from 'semver';
+import spawn from 'cross-spawn';
+import url from 'url';
+import validateProjectName from 'validate-npm-package-name';
 import Logger from "./libs/Logger";
+
 const log = Logger("CreateApp");
 
 const packageJson = require('../package.json');
@@ -24,17 +24,17 @@ let projectName;
 
 function getDependencies() {
     return Object.keys({
-        "core-js": "^3.8.2",
-        "mizar": "~0.0.8",
-        "react": "~17.0.1",
-        "react-dom": "~17.0.1",
-        "react-redux": "~7.2.2",
-        "react-router": "~5.2.0",
-        "react-router-config": "~5.1.1",
-        "react-router-dom": "~5.2.0",
-        "redux": "~4.0.5",
-        "redux-thunk": "~2.3.0",
-        "tslib": "~2.2.0"
+        "core-js": "~3.20.3",
+        "mizar": "~0.0.34",
+        "raf": "~3.4.1",
+        "react": "~17.0.2",
+        "react-dom": "~17.0.2",
+        "react-redux": "~7.2.6",
+        "react-router": "~6.2.1",
+        "react-router-dom": "~6.210",
+        "redux": "~4.1.2",
+        "redux-thunk": "~2.4.1",
+        "tslib": "~2.3.1"
     }).sort();
 }
 
@@ -42,7 +42,7 @@ function init() {
     const createApp = new commander.Command('create')
         // .version(packageJson.version)
         .arguments('<project-directory>')
-        // .usage(`${chalk.green('<project-directory>')} [options]`)
+        // .usage(`${green('<project-directory>')} [options]`)
         .action(name => {
             projectName = name;
         })
@@ -53,14 +53,14 @@ function init() {
         .allowUnknownOption()
         // .on('--help', () => {
         //     log.info(
-        //         `    Only ${chalk.green('<project-directory>')} is required.`
+        //         `    Only ${green('<project-directory>')} is required.`
         //     );
         //     console.log();
         //     log.info(
         //         `    If you have any problems, do not hesitate to file an issue:`
         //     );
         //     log.info(
-        //         `      ${chalk.cyan(
+        //         `      ${cyan(
         //             'https://github.com/amwenjie/alcor/issues/new'
         //         )}`
         //     );
@@ -71,7 +71,7 @@ function init() {
     const cmdOpts = createApp.opts();
 
     if (cmdOpts.info) {
-        log.info(chalk.bold('\nEnvironment Info:'));
+        log.info(bold('\nEnvironment Info:'));
         log.info(
             `\n  current version of ${packageJson.name}: ${packageJson.version}`
         );
@@ -104,16 +104,16 @@ function init() {
     if (typeof projectName === 'undefined') {
         log.error('Please specify the project directory:');
         log.info(
-            `  ${chalk.cyan(createApp.name())} ${chalk.green('<project-directory>')}`
+            `  ${cyan(createApp.name())} ${green('<project-directory>')}`
         );
         console.log();
         log.info('For example:');
         log.info(
-            `  ${chalk.cyan(createApp.name())} ${chalk.green('my-mizar-app')}`
+            `  ${cyan(createApp.name())} ${green('my-mizar-app')}`
         );
         console.log();
         log.info(
-            `Run ${chalk.cyan(`${createApp.name()} --help`)} to see all options.`
+            `Run ${cyan(`${createApp.name()} --help`)} to see all options.`
         );
         process.exit(1);
     }
@@ -132,11 +132,11 @@ function init() {
                 return null;
             }
         })
-        .then(latest => {
+        .then((latest: string) => {
             if (latest && semver.lt(packageJson.version, latest)) {
                 console.log();
                 log.error(
-                    chalk.yellow(
+                    yellow(
                         `You are running \`alcor\` ${packageJson.version}, which is behind the latest release (${latest}).\n\n`
                     )
                 );
@@ -152,7 +152,7 @@ function init() {
             }
         })
         .catch(e => {
-            chalk.red("Run 'checkForLatestVersion.then' raising an error: ");
+            red("Run 'checkForLatestVersion.then' raising an error: ");
             log.error(e);
         });
 }
@@ -161,7 +161,7 @@ function createMizarApp(name, verbose, useYarn, usePnp) {
     const unsupportedNodeVersion = !semver.satisfies(process.version, packageJson.engines.node);
     if (unsupportedNodeVersion) {
         log.info(
-            chalk.yellow(
+            yellow(
                 `You are using Node ${process.version} so the project will be bootstrapped with an old unsupported version of tools.\n\n` +
                 `Please update to Node 10 or higher for a better, fully supported experience.\n`
             )
@@ -178,7 +178,7 @@ function createMizarApp(name, verbose, useYarn, usePnp) {
     }
     console.log();
 
-    log.info(`Creating a new mizar app in ${chalk.green(root)}.`);
+    log.info(`Creating a new mizar app in ${green(root)}.`);
     console.log();
 
     const canUseYarn = useYarn && shouldUseYarn();
@@ -193,7 +193,7 @@ function createMizarApp(name, verbose, useYarn, usePnp) {
         if (!npmInfo.hasMinNpm) {
             if (npmInfo.npmVersion) {
                 log.info(
-                    chalk.yellow(
+                    yellow(
                         `You are using npm ${npmInfo.npmVersion} so the project will be bootstrapped with an old unsupported version of tools.\n\n` +
                         `Please update to npm 6 or higher for a better, fully supported experience.\n`
                     )
@@ -205,7 +205,7 @@ function createMizarApp(name, verbose, useYarn, usePnp) {
         if (yarnInfo.yarnVersion) {
             if (!yarnInfo.hasMinYarnPnp) {
                 log.info(
-                    chalk.yellow(
+                    yellow(
                         `You are using Yarn ${yarnInfo.yarnVersion} together with the --use-pnp flag, but Plug'n'Play is only supported starting from the 1.12 release.\n\n` +
                         `Please update to Yarn 1.12 or higher for a better, fully supported experience.\n`
                     )
@@ -215,7 +215,7 @@ function createMizarApp(name, verbose, useYarn, usePnp) {
             }
             if (!yarnInfo.hasMaxYarnPnp) {
                 log.info(
-                    chalk.yellow(
+                    yellow(
                         'The --use-pnp flag is no longer necessary with yarn 2 and will be deprecated and removed in a future release.\n'
                     )
                 );
@@ -286,8 +286,8 @@ function install(root, canUseYarn, usePnp, dependencies, verbose, isOnline) {
             args.push(root);
 
             if (!isOnline) {
-                log.info(chalk.yellow('You appear to be offline.'));
-                log.info(chalk.yellow('Falling back to the local Yarn cache.'));
+                log.info(yellow('You appear to be offline.'));
+                log.info(yellow('Falling back to the local Yarn cache.'));
                 console.log();
             }
         } else {
@@ -304,8 +304,8 @@ function install(root, canUseYarn, usePnp, dependencies, verbose, isOnline) {
             ];
 
             if (usePnp) {
-                log.info(chalk.yellow("NPM doesn't support PnP."));
-                log.info(chalk.yellow('Falling back to the regular installs.'));
+                log.info(yellow("NPM doesn't support PnP."));
+                log.info(yellow('Falling back to the regular installs.'));
                 console.log();
             }
         }
@@ -323,7 +323,7 @@ function install(root, canUseYarn, usePnp, dependencies, verbose, isOnline) {
                 return;
             }
             log.info(
-                `The app ${chalk.green(path.basename(root))} is initialized success`
+                `The app ${green(path.basename(root))} is initialized success`
             );
             resolve(void 0);
         });
@@ -359,10 +359,10 @@ function run(
             console.log();
             log.info('Aborting installation.');
             if (reason.command) {
-                log.info(`  ${chalk.cyan(reason.command)} has failed.`);
+                log.info(`  ${cyan(reason.command)} has failed.`);
             } else {
                 log.info(
-                    chalk.red('Unexpected error. Please report it as a bug:')
+                    red('Unexpected error. Please report it as a bug:')
                 );
                 log.info(reason);
             }
@@ -379,7 +379,7 @@ function run(
                 knownGeneratedFiles.forEach(fileToMatch => {
                     // This removes all knownGeneratedFiles.
                     if (file === fileToMatch) {
-                        log.info(`Deleting generated file... ${chalk.cyan(file)}`);
+                        log.info(`Deleting generated file... ${cyan(file)}`);
                         fs.removeSync(path.join(root, file));
                     }
                 });
@@ -388,7 +388,7 @@ function run(
             if (!remainingFiles.length) {
                 // Delete target folder if empty
                 log.info(
-                    `Deleting ${chalk.cyan(`${appName}/`)} from ${chalk.cyan(
+                    `Deleting ${cyan(`${appName}/`)} from ${cyan(
                         path.resolve(root, '..')
                     )}`
                 );
@@ -451,8 +451,8 @@ function checkAppName(appName) {
     const validationResult = validateProjectName(appName);
     if (!validationResult.validForNewPackages) {
         log.error(
-            chalk.red(
-                `Cannot create a project named ${chalk.green(
+            red(
+                `Cannot create a project named ${green(
                     `"${appName}"`
                 )} because of npm naming restrictions:\n`
             )
@@ -461,23 +461,23 @@ function checkAppName(appName) {
             ...(validationResult.errors || []),
             ...(validationResult.warnings || []),
         ].forEach(error => {
-            log.error(chalk.red(`  * ${error}`));
+            log.error(red(`  * ${error}`));
         });
-        log.error(chalk.red('\nPlease choose a different project name.'));
+        log.error(red('\nPlease choose a different project name.'));
         process.exit(1);
     }
 
     const dependencies = getDependencies();
     if (dependencies.includes(appName)) {
         log.error(
-            chalk.red(
-                `Cannot create a project named ${chalk.green(
+            red(
+                `Cannot create a project named ${green(
                     `"${appName}"`
                 )} because a dependency with the same name exists.\n` +
                 `Due to the way npm works, the following names are not allowed:\n\n`
             ) +
-            chalk.cyan(dependencies.map(depName => `  ${depName}`).join('\n')) +
-            chalk.red('\n\nPlease choose a different project name.')
+            cyan(dependencies.map(depName => `  ${depName}`).join('\n')) +
+            red('\n\nPlease choose a different project name.')
         );
         process.exit(1);
     }
@@ -528,14 +528,14 @@ function isSafeToCreateProjectIn(root, name) {
 
     if (conflicts.length > 0) {
         log.info(
-            `The directory ${chalk.green(name)} contains files that could conflict:`
+            `The directory ${green(name)} contains files that could conflict:`
         );
         console.log();
         for (const file of conflicts) {
             try {
                 const stats = fs.lstatSync(path.join(root, file));
                 if (stats.isDirectory()) {
-                    log.info(`  ${chalk.blue(`${file}/`)}`);
+                    log.info(`  ${blue(`${file}/`)}`);
                 } else {
                     log.info(`  ${file}`);
                 }
@@ -609,10 +609,10 @@ function checkThatNpmCanReadCwd() {
         return true;
     }
     log.error(
-        chalk.red(
+        red(
             `Could not start an npm process in the right directory.\n\n` +
-            `The current directory is: ${chalk.bold(cwd)}\n` +
-            `However, a newly started npm process runs in: ${chalk.bold(
+            `The current directory is: ${bold(cwd)}\n` +
+            `However, a newly started npm process runs in: ${bold(
                 npmCWD
             )}\n\n` +
             `This is probably caused by a misconfigured system terminal shell.`
@@ -620,15 +620,15 @@ function checkThatNpmCanReadCwd() {
     );
     if (process.platform === 'win32') {
         log.error(
-            chalk.red(`On Windows, this can usually be fixed by running:\n\n`) +
-            `  ${chalk.cyan(
+            red(`On Windows, this can usually be fixed by running:\n\n`) +
+            `  ${cyan(
                 'reg'
             )} delete "HKCU\\Software\\Microsoft\\Command Processor" /v AutoRun /f\n` +
-            `  ${chalk.cyan(
+            `  ${cyan(
                 'reg'
             )} delete "HKLM\\Software\\Microsoft\\Command Processor" /v AutoRun /f\n\n` +
-            chalk.red(`Try to run the above two lines in the terminal.\n`) +
-            chalk.red(
+            red(`Try to run the above two lines in the terminal.\n`) +
+            red(
                 `To learn more about this problem, read: https://blogs.msdn.microsoft.com/oldnewthing/20071121-00/?p=24433/`
             )
         );
@@ -689,7 +689,7 @@ init();
 //     createApp
 //         // .version(packageJson.version)
 //         .arguments('<project-directory>')
-//         .usage(`${chalk.green('<project-directory>')} [options]`)
+//         .usage(`${green('<project-directory>')} [options]`)
 //         // .action(name => {
 //         //     projectName = name;
 //         // })
@@ -703,7 +703,7 @@ init();
 //             const cmdOpts = options;
 
 //             if (cmdOpts.info) {
-//                 log.info(chalk.bold('\nEnvironment Info:'));
+//                 log.info(bold('\nEnvironment Info:'));
 //                 log.info(
 //                     `\n  current version of ${packageJson.name}: ${packageJson.version}`
 //                 );
@@ -734,16 +734,16 @@ init();
 //             if (typeof projectName === 'undefined') {
 //                 log.error('Please specify the project directory:');
 //                 log.info(
-//                     `  ${chalk.cyan(createApp.name())} ${chalk.green('<project-directory>')}`
+//                     `  ${cyan(createApp.name())} ${green('<project-directory>')}`
 //                 );
 //                 console.log();
 //                 log.info('For example:');
 //                 log.info(
-//                     `  ${chalk.cyan(createApp.name())} ${chalk.green('my-mizar-app')}`
+//                     `  ${cyan(createApp.name())} ${green('my-mizar-app')}`
 //                 );
 //                 console.log();
 //                 log.info(
-//                     `Run ${chalk.cyan(`${createApp.name()} --help`)} to see all options.`
+//                     `Run ${cyan(`${createApp.name()} --help`)} to see all options.`
 //                 );
 //                 process.exit(1);
 //             }
@@ -766,7 +766,7 @@ init();
 //                     if (latest && semver.lt(packageJson.version, latest)) {
 //                         console.log();
 //                         log.error(
-//                             chalk.yellow(
+//                             yellow(
 //                                 `You are running \`alcor\` ${packageJson.version}, which is behind the latest release (${latest}).\n\n`
 //                             )
 //                         );
@@ -782,7 +782,7 @@ init();
 //                     }
 //                 })
 //                 .catch(e => {
-//                     chalk.red("Run 'checkForLatestVersion.then' raising an error: ");
+//                     red("Run 'checkForLatestVersion.then' raising an error: ");
 //                     log.error(e);
 //                 });
 //         });

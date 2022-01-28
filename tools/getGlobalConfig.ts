@@ -10,7 +10,7 @@ export interface IGlobalConfig {
 
 export default (): IGlobalConfig  => {
     const publicPath = ConfigHelper.getPublicPath();
-    const rootOutput = `./build`;
+    const rootOutput = "./build";
     return {
         assetsMainfest: "assetsMainfest.json",
         rootOutput,

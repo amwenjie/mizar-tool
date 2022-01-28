@@ -59,7 +59,7 @@ export class WebpackTaskBase extends TaskBase {
 
     protected async compile(config: webpack.Configuration): Promise<void|Error> {
         return new Promise(async (resolve, reject) => {
-            const callback = (error: WebpackError|null|undefined, stats): void => {
+            const callback = async (error: WebpackError|null|undefined, stats): Promise<void> => {
                 if (this.done(error, stats)) {
                     if (this.isAllCompileDone()) {
                         WebpackTaskBase.compileQueue.forEach(async (context) => {
@@ -70,7 +70,7 @@ export class WebpackTaskBase extends TaskBase {
                         });
                         if (!WebpackTaskBase.changedQueue.some(runServer => runServer === false)) {
                             const task = WebpackTaskBase.compileQueue[WebpackTaskBase.compileQueue.length - 1].task;
-                            task.doneCallback.call(task);
+                            await task.doneCallback.call(task);
                         }
                         WebpackTaskBase.changedQueue = [];
                     }

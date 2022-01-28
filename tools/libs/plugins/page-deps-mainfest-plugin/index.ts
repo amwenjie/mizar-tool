@@ -1,5 +1,5 @@
 import fs from "fs-extra";
-import Path from "path";
+import path from "path";
 import getGlobalConfig from "../../../getGlobalConfig";
 // import { getCompilerHooks } from "webpack-manifest-plugin";
 
@@ -99,7 +99,7 @@ export default class GatherPageDepsPlugin {
                     const index = assetKeys.filter(k => (new RegExp(`${entryKey}(?:_.{8})?\.js$`)).test(k));
                     const assetPath = assetsMap[index[0]];
                     if (assetPath) {
-                        const map = gatherPageComDeps(Path.resolve(this.buildPath + assetPath), assetKeys, entryKey, this.options.isDebug);
+                        const map = gatherPageComDeps(path.resolve(this.buildPath + assetPath), assetKeys, entryKey, this.options.isDebug);
                         Object.assign(depsMap, map);
                     }
                 });
@@ -125,7 +125,7 @@ export default class GatherPageDepsPlugin {
 //             const assetKeys = Object.keys(manifest);
 //             const index = assetKeys.filter(k => /index(?:_.{8})?\.js$/.test(k));
 //             if (manifest[index[0]]) {
-//                 const map = gatheringDeps(Path.resolve(this.options.buildPath + manifest[index[0]]), assetKeys);
+//                 const map = gatheringDeps(path.resolve(this.options.buildPath + manifest[index[0]]), assetKeys);
 //                 if (map && JSON.stringify(map) !== "{}") {
 //                     fs.writeJsonSync(this.options.buildPath + "/pageAssetsDeps.json", map, { spaces: "  " });
 //                 }

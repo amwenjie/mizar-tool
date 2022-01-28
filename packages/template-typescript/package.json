@@ -14,7 +14,7 @@
         "report": "webpack-bundle-analyzer --port 8888 build/static/client/stats.json"
     },
     "dependencies": {
-        "mizar": "~0.0.32",
+        "mizar": "~0.0.34",
         "react": "~17.0.2",
         "react-dom": "~17.0.2",
         "react-loadable": "~5.5.0",
@@ -29,7 +29,7 @@
         "@types/react": "~17.0.34",
         "@types/react-dom": "~17.0.11",
         "@types/react-redux": "~7.1.20",
-        "alcor": "~0.1.38",
+        "alcor": "~0.1.40",
         "postcss-less": "^5.0.0"
     },
     "browserslist": [

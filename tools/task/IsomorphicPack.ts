@@ -5,7 +5,7 @@ import DirectoryNamedWebpackPlugin from "directory-named-webpack-plugin";
 import fs from "fs-extra";
 import klaw from "klaw";
 import MiniCssExtractPlugin from "mini-css-extract-plugin";
-import Path from "path";
+import path from "path";
 import StylelintPlugin, { type Options as StyleLintOptions} from "stylelint-webpack-plugin";
 import TerserJSPlugin from "terser-webpack-plugin";
 import webpack, { type Compiler, type RuleSetRule, type WebpackPluginInstance } from "webpack";
@@ -32,7 +32,7 @@ export class IsomorphicPack extends WebpackTaskBase {
     constructor(taskName = "IsomorphicPack") {
         super(taskName);
         this.globalConfig = getGlobalConfig();
-        this.dist = Path.resolve(`${this.rootPath}${this.globalConfig.clientOutput}`);
+        this.dist = path.resolve(`${this.rootPath}${this.globalConfig.clientOutput}`);
         this.publicPath = this.getPublicPath();
     }
 
@@ -67,7 +67,7 @@ export class IsomorphicPack extends WebpackTaskBase {
     }
 
     private getStylelintConfig(): StyleLintOptions|false {
-        const stylelintPath = Path.resolve(`${this.rootPath}.stylelintrc.json`);
+        const stylelintPath = path.resolve(`${this.rootPath}.stylelintrc.json`);
         const defaultConfig = {
             configFile: fs.existsSync(stylelintPath) ? stylelintPath : undefined,
             extensions: ["css", "less", "scss", "sass"],
@@ -116,8 +116,8 @@ export class IsomorphicPack extends WebpackTaskBase {
                 const src = state.path;
                 const isFile = state.stats.isFile();
                 if (isFile && /\.css$|\.s[ac]ss$|\.less$/i.test(src)) {
-                    const fileObj = Path.parse(src);
-                    // const dirName = src.replace(Path.resolve(this.rootPath), "")
+                    const fileObj = path.parse(src);
+                    // const dirName = src.replace(path.resolve(this.rootPath), "")
                     //     .replace(".css", "")
                     //     .replace(".less", "")
                     //     .replace(".sass", "")
@@ -128,7 +128,7 @@ export class IsomorphicPack extends WebpackTaskBase {
                 }
             });
             walk.on("end", () => {
-                log.debug("IsomorphicPack.styleScan.end", Path.resolve(this.rootPath));
+                log.debug("IsomorphicPack.styleScan.end", path.resolve(this.rootPath));
                 log.debug("IsomorphicPack.styleScan.entries", entries);
                 resolve(entries);
             });
@@ -154,7 +154,7 @@ export class IsomorphicPack extends WebpackTaskBase {
                 const src = state.path;
                 const isDir = state.stats.isDirectory();
                 if (isDir) {
-                    const dirArr = src.split(Path.sep);
+                    const dirArr = src.split(path.sep);
                     const dirName = dirArr[dirArr.length - 1];
                     if (/^[A-Z].+/.test(dirName)) {
                         const sm = [
@@ -173,7 +173,7 @@ export class IsomorphicPack extends WebpackTaskBase {
                 }
             });
             walk.on("end", () => {
-                log.debug("IsomorphicPack.pageScan.end", Path.resolve(this.rootPath));
+                log.debug("IsomorphicPack.pageScan.end", path.resolve(this.rootPath));
                 log.debug("IsomorphicPack.pageScan.entries", entries);
                 resolve(entries);
             });
@@ -193,6 +193,9 @@ export class IsomorphicPack extends WebpackTaskBase {
                 "core-js/features/promise",
                 "raf/polyfill",
             ];
+            if (this.isDebugMode) {
+                esDepends.push("webpack-hot-middleware/client");
+            }
             const entries: any = {};
             const entryDir = this.rootPath + this.clientEntrySrc;
             if (!fs.existsSync(entryDir)) {
@@ -207,8 +210,8 @@ export class IsomorphicPack extends WebpackTaskBase {
                 const src = state.path;
                 const isFile = state.stats.isFile();
                 if (isFile && /\.ts$|\.tsx$|\.js$/i.test(src)) {
-                    const fileObj = Path.parse(src);
-                    // const dirName = src.replace(Path.resolve(this.rootPath), "")
+                    const fileObj = path.parse(src);
+                    // const dirName = src.replace(path.resolve(this.rootPath), "")
                     //     .replace(".tsx", "")
                     //     .replace(".ts", "")
                     //     .replace(/\\/g, "/")
@@ -217,7 +220,7 @@ export class IsomorphicPack extends WebpackTaskBase {
                 }
             });
             walk.on("end", () => {
-                log.debug("IsomorphicPack.clientEntryScan.end", Path.resolve(this.rootPath));
+                log.debug("IsomorphicPack.clientEntryScan.end", path.resolve(this.rootPath));
                 log.debug("IsomorphicPack.clientEntryScan.entries", entries);
                 resolve(entries);
             });
@@ -238,7 +241,7 @@ export class IsomorphicPack extends WebpackTaskBase {
                         // ...entries[0],
                         ...entries[1],
                         // index: {
-                        //     import: Path.resolve(this.rootPath, this.clientEntrySrc, "./index.tsx"),
+                        //     import: path.resolve(this.rootPath, this.clientEntrySrc, "./index.tsx"),
                         //     dependOn: Object.keys(entries[0]),
                         // },
                     };
@@ -325,7 +328,7 @@ export class IsomorphicPack extends WebpackTaskBase {
             resolve: {
                 extensions: [".ts", ".tsx", ".js", ".css", ".png", ".jpg", ".gif", ".less", "sass", "scss", "..."],
                 modules: [
-                    Path.resolve(__dirname, "src"),
+                    path.resolve(__dirname, "src"),
                     "node_modules",
                 ],
                 plugins: [
@@ -356,7 +359,7 @@ export class IsomorphicPack extends WebpackTaskBase {
                     // chunks: "all",
                     cacheGroups: {
                         libBase: {
-                            test: /[\\/](?:core\-js|raf|react(\-(dom|router|router\-config|router\-dom|redux|loadable))?|redux(\-thunk)?)[\\/]/,
+                            test: /[\\/](?:core\-js|raf|react(?:\-[^\\/]+)?|redux(?:\-[^\\/]+)?)[\\/]/,
                             name: "lib",
                             priority: 30,
                             chunks: "all",
@@ -401,8 +404,8 @@ export class IsomorphicPack extends WebpackTaskBase {
             localIdentName = devLocalIdentName;
             sourceMap = true;
         }
-        const tslintPath = Path.resolve(`${this.rootPath}tslint.json`);
-        const tsConfigPath = Path.resolve(`${this.rootPath}tsconfig.json`);
+        const tslintPath = path.resolve(`${this.rootPath}tslint.json`);
+        const tsConfigPath = path.resolve(`${this.rootPath}tsconfig.json`);
         const rules = [];
         if (!this.tslintConfig.disable) {
             rules.push({
@@ -435,7 +438,7 @@ export class IsomorphicPack extends WebpackTaskBase {
             test: /\/src\/isomorphic\/.+\/index\.tsx?$/,
             use: [
                 {
-                    loader: Path.resolve(__dirname, "../libs/loaders/connect-default-param-loader"),
+                    loader: path.resolve(__dirname, "../libs/loaders/connect-default-param-loader"),
                     options: {
                         IS_SERVER_RUNTIME: false,
                     }
@@ -446,7 +449,7 @@ export class IsomorphicPack extends WebpackTaskBase {
             test: /\/pageRouters\/.+\.tsx?$/,
             use: [
                 {
-                    loader: Path.resolve(__dirname, "../libs/loaders/router-loadable-loader"),
+                    loader: path.resolve(__dirname, "../libs/loaders/router-loadable-loader"),
                     options: {
                         IS_SERVER_RUNTIME: false,
                     }
@@ -597,11 +600,14 @@ export class IsomorphicPack extends WebpackTaskBase {
             ]
         }));
         plugins.push(new WebpackManifestPlugin({
-            fileName: Path.resolve(this.globalConfig.rootOutput, this.globalConfig.assetsMainfest),
+            fileName: path.resolve(this.globalConfig.rootOutput, this.globalConfig.assetsMainfest),
         }));
         plugins.push(new GatherPageDepsPlugin({
             isDebug: this.isDebugMode,
         }));
+        if (this.isDebugMode) {
+            plugins.push(new webpack.HotModuleReplacementPlugin());
+        }
         if (this.isAnalyzMode) {
             plugins.push(new BundleAnalyzerPlugin({
                 analyzerMode: this.isDebugMode ? "server" : "disabled",

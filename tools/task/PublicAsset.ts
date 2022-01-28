@@ -1,6 +1,6 @@
 import gulp, { task } from "gulp";
 import plumber from "gulp-plumber";
-import Path from "path";
+import path from "path";
 import Logger from "../libs/Logger";
 import TaskBase from "../libs/TaskBase";
 import { HelperTask } from "./HelperTask";
@@ -12,11 +12,11 @@ export class PublicAsset extends TaskBase {
 
     constructor(src?: string, taskName: string = "PublicAsset") {
         super(taskName);
-        this.dist = Path.resolve(getGlobalConfig().clientOutput);
-        this.src = Path.resolve(this.rootPath, `src/public/**/*.${this.ext}`);
+        this.dist = path.resolve(getGlobalConfig().clientOutput);
+        this.src = path.resolve(this.rootPath, `src/public/**/*.${this.ext}`);
         if (src) {
-            this.src = Path.resolve(this.rootPath, `src/${src}/**/*.${this.ext}`);
-            this.dist = Path.resolve(getGlobalConfig().rootOutput, src);
+            this.src = path.resolve(this.rootPath, `src/${src}/**/*.${this.ext}`);
+            this.dist = path.resolve(getGlobalConfig().rootOutput, src);
         }
     }
     

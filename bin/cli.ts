@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 import commander from 'commander';
 import spawn from 'cross-spawn';
-import chalk from 'chalk';
-import Path from 'path';
+import { cyan, green } from 'colorette';
+import path from 'path';
 
 const packageJson = require('../package.json');
 const alcor = new commander.Command(packageJson.name);
@@ -14,7 +14,7 @@ alcor
             `If you have any problems, do not hesitate to file an issue:`
         );
         console.log(
-            `      ${chalk.cyan(
+            `      ${cyan(
                 'https://github.com/amwenjie/mizar-tool/issues/new'
             )}`
         );
@@ -35,7 +35,7 @@ alcor
     .action(options => {
         const command = 'node';
         const args = [
-            Path.resolve(__dirname, '../tools/ProjectBuild'),
+            path.resolve(__dirname, '../tools/ProjectBuild'),
         ];
         if (options.debug) {
             args.push('--debug');
@@ -75,7 +75,7 @@ alcor
     .action(options => {
         const command = 'node';
         const args = [
-            Path.resolve(__dirname, '../tools/PackageBuild'),
+            path.resolve(__dirname, '../tools/PackageBuild'),
         ];
         if (options.debug) {
             args.push('--debug');
@@ -101,7 +101,7 @@ alcor
     .command('create')
     .description('create a mizar app')
     .arguments('<project-directory>')
-    .usage(`create ${chalk.green('<project-directory>')} [options]`)
+    .usage(`create ${green('<project-directory>')} [options]`)
     .option('--verbose', 'print additional logs')
     .option('--info', 'print environment debug info')
     .option('--use-yarn')
@@ -110,7 +110,7 @@ alcor
     .action((name, options) => {
         const command = 'node';
         const args = [
-            Path.resolve(__dirname, '../tools/CreateApp'),
+            path.resolve(__dirname, '../tools/CreateApp'),
         ];
         if (name) {
             args.push(name);
@@ -134,6 +134,5 @@ alcor
             }
         });
     });
-// alcor.addCommand(makeCreateAppCommand());
     
 alcor.parse(process.argv);

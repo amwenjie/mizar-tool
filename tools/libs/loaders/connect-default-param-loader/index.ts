@@ -1,5 +1,5 @@
 import fs from "fs-extra";
-import Path from "path";
+import path from "path";
 import { green, red, yellow } from "colorette";
 import Logger from "../../Logger";
 
@@ -47,12 +47,12 @@ export default function (source) {
                 || (len === 2 && hasReducerName || hasChildComponent)
                 || hasReducerName && hasChildComponent;
 
-            const parsedPathObj = Path.parse(sourcePath);
-            const basenameArr = parsedPathObj.dir.split(Path.sep);
+            const parsedPathObj = path.parse(sourcePath);
+            const basenameArr = parsedPathObj.dir.split(path.sep);
             const componentName = basenameArr[basenameArr.length - 1];
             if (shouldInjectReducer) {
                 const firstLetterLowerCaseName = `${componentName.slice(0, 1).toLowerCase()}${componentName.slice(1)}`;
-                const reducerPath = `${parsedPathObj.dir}${Path.sep}reducer.ts`;
+                const reducerPath = `${parsedPathObj.dir}${path.sep}reducer.ts`;
 
                 if (fs.existsSync(reducerPath)) {
                     const reducerContent = fs.readFileSync(reducerPath, "utf-8");

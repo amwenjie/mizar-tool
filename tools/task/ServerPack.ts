@@ -1,13 +1,13 @@
 import { green } from "colorette";
 import fs from "fs-extra";
-import Path from "path";
+import path from "path";
 import webpack from "webpack";
 import nodeExternals from "webpack-node-externals";
 import getGlobalConfig, { IGlobalConfig, devLocalIdentName, prodLocalIdentName } from "../getGlobalConfig";
 import { ConfigHelper } from "../libs/ConfigHelper";
 import { WebpackTaskBase } from "../libs/WebpackTaskBase";
 import { HelperTask } from "./HelperTask";
-import { RunServer } from "./RunServer";
+import RunServer from "./RunServer";
 import Logger from "../libs/Logger";
 const log = Logger("ServerPack");
 
@@ -21,8 +21,8 @@ export class ServerPack extends WebpackTaskBase {
         super(taskName);
         this.shouldRestartDevServer = false;
         this.globalConfig = getGlobalConfig();
-        this.src = Path.resolve("./src/server/index");
-        this.dist = Path.resolve(`${this.globalConfig.rootOutput}`);
+        this.src = path.resolve("./src/server/index");
+        this.dist = path.resolve(`${this.globalConfig.rootOutput}`);
     }
 
     public setAutoRun(autoRun: boolean = true): ServerPack {
@@ -53,8 +53,8 @@ export class ServerPack extends WebpackTaskBase {
     }
 
     public async pack(entry): Promise<void|Error> {
-        const tslintPath = Path.resolve(`${this.rootPath}tslint.json`);
-        const tsConfigPath = Path.resolve(`${this.rootPath}tsconfig.json`);
+        const tslintPath = path.resolve(`${this.rootPath}tslint.json`);
+        const tsConfigPath = path.resolve(`${this.rootPath}tsconfig.json`);
         let localIdentName = prodLocalIdentName;
         let sourceMap = false;
         if (this.isDebugMode) {
@@ -92,7 +92,7 @@ export class ServerPack extends WebpackTaskBase {
             test: /\/src\/isomorphic\/.+\/index\.tsx?$/,
             use: [
                 {
-                    loader: Path.resolve(__dirname, "../libs/loaders/connect-default-param-loader"),
+                    loader: path.resolve(__dirname, "../libs/loaders/connect-default-param-loader"),
                     options: {
                         IS_SERVER_RUNTIME: true,
                     }
@@ -103,7 +103,7 @@ export class ServerPack extends WebpackTaskBase {
             test: /\/pageRouters\//,
             use: [
                 {
-                    loader: Path.resolve(__dirname, "../libs/loaders/router-loadable-loader"),
+                    loader: path.resolve(__dirname, "../libs/loaders/router-loadable-loader"),
                     options: {
                         IS_SERVER_RUNTIME: true,
                     }
@@ -114,7 +114,7 @@ export class ServerPack extends WebpackTaskBase {
             test: /\.(ico|jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2)(\?.*)?$/i,
             type: "asset",
             generator: {
-                filename: Path.resolve(
+                filename: path.resolve(
                     this.globalConfig.clientOutput,
                     "assets/[name]_[contenthash][ext][query]",
                 ),
@@ -266,7 +266,7 @@ export class ServerPack extends WebpackTaskBase {
             resolve: {
                 extensions: [".ts", ".tsx", ".js", ".css", ".png", ".jpg", ".gif", ".less", "sass", "scss", "..."],
                 modules: [
-                    Path.resolve(__dirname, "src"),
+                    path.resolve(__dirname, "src"),
                     "node_modules",
                 ],
             },
@@ -288,8 +288,11 @@ export class ServerPack extends WebpackTaskBase {
     protected async doneCallback(): Promise<void> {
         console.log(green(`${this.taskName}, success`));
         if (this.autoRun === true && this.isDebugMode === true) {
+            if (this.debugPort < 1) {
+                return;
+            }
             let serverEntry = "index";
-            RunServer(serverEntry, this.debugPort);
+            await RunServer(serverEntry, this.debugPort);
         }
     }
 }

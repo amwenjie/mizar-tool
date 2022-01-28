@@ -6,7 +6,7 @@ import TerserJSPlugin from "terser-webpack-plugin";
 import { BundleAnalyzerPlugin } from "webpack-bundle-analyzer";
 import fs from "fs-extra";
 import klaw from "klaw";
-import Path from "path";
+import path from "path";
 import webpack, {
     type Compiler,
     type RuleSetRule,
@@ -25,8 +25,8 @@ export class StandalonePack extends WebpackTaskBase {
     constructor(taskName = "StandalonePack") {
         super(taskName);
         this.globalConfig = getGlobalConfig();
-        this.src = Path.resolve("./src/standalone");
-        this.dist = Path.resolve(`${this.rootPath}${this.globalConfig.staticOutput}/standalone`);
+        this.src = path.resolve("./src/standalone");
+        this.dist = path.resolve(`${this.rootPath}${this.globalConfig.staticOutput}/standalone`);
     }
 
     public async run(): Promise<void|Error> {
@@ -67,7 +67,7 @@ export class StandalonePack extends WebpackTaskBase {
                 const src = state.path;
                 const isFile = state.stats.isFile();
                 if (isFile && /\.ts$|\.tsx$|\.js$/i.test(src)) {
-                    const entryKey = src.replace(Path.resolve(this.src), "")
+                    const entryKey = src.replace(path.resolve(this.src), "")
                         .replace(".tsx", "")
                         .replace(".ts", "")
                         .replace(".js", "")
@@ -76,7 +76,7 @@ export class StandalonePack extends WebpackTaskBase {
                 }
             });
             walk.on("end", () => {
-                log.debug("StandalonePack.entryScan.end", Path.resolve(this.rootPath));
+                log.debug("StandalonePack.entryScan.end", path.resolve(this.rootPath));
                 log.debug("StandalonePack.entryScan.entries", entries);
                 resolve(entries);
             });
@@ -131,7 +131,7 @@ export class StandalonePack extends WebpackTaskBase {
             resolve: {
                 extensions: [".ts", ".tsx", ".js", ".css", ".png", ".jpg", ".gif", ".less", "sass", "scss", "..."],
                 modules: [
-                    Path.resolve(__dirname, "src"),
+                    path.resolve(__dirname, "src"),
                     "node_modules",
                 ],
                 plugins: [
@@ -196,7 +196,7 @@ export class StandalonePack extends WebpackTaskBase {
             test: /\/src\/isomorphic\/.+\/index\.tsx?$/,
             use: [
                 {
-                    loader: Path.resolve(__dirname, "../libs/loaders/connect-default-param-loader"),
+                    loader: path.resolve(__dirname, "../libs/loaders/connect-default-param-loader"),
                     options: {
                         IS_SERVER_RUNTIME: false,
                     }
@@ -207,7 +207,7 @@ export class StandalonePack extends WebpackTaskBase {
             test: /\/pageRouters\/.+\.tsx?$/,
             use: [
                 {
-                    loader: Path.resolve(__dirname, "../libs/loaders/router-loadable-loader"),
+                    loader: path.resolve(__dirname, "../libs/loaders/router-loadable-loader"),
                     options: {
                         IS_SERVER_RUNTIME: false,
                     }

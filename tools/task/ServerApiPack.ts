@@ -1,7 +1,7 @@
 import { green } from "colorette";
 import fs from "fs-extra";
 import klaw from "klaw";
-import Path from "path";
+import path from "path";
 import webpack from "webpack";
 import nodeExternals from "webpack-node-externals";
 import getGlobalConfig, { IGlobalConfig, devLocalIdentName, prodLocalIdentName } from "../getGlobalConfig";
@@ -18,8 +18,8 @@ export class ServerApiPack extends WebpackTaskBase {
     constructor(taskName = "ServerApiPack") {
         super(taskName);
         this.globalConfig = getGlobalConfig();
-        this.src = Path.resolve("./src/server/apis");
-        this.dist = Path.resolve(`${this.globalConfig.rootOutput}`);
+        this.src = path.resolve("./src/server/apis");
+        this.dist = path.resolve(`${this.globalConfig.rootOutput}`);
     }
 
     public async scan(): Promise<object> {
@@ -42,7 +42,7 @@ export class ServerApiPack extends WebpackTaskBase {
                 }
             });
             walk.on("end", () => {
-                log.debug(this.taskName, "scan.done", Path.resolve(this.rootPath));
+                log.debug(this.taskName, "scan.done", path.resolve(this.rootPath));
                 log.debug(this.taskName, "pack.keys", Object.keys(entry).join(","));
                 resolve(entry);
             });
@@ -66,8 +66,8 @@ export class ServerApiPack extends WebpackTaskBase {
     }
 
     public async pack(entry): Promise<void|Error> {
-        const tslintPath = Path.resolve(`${this.rootPath}tslint.json`);
-        const tsConfigPath = Path.resolve(`${this.rootPath}tsconfig.json`);
+        const tslintPath = path.resolve(`${this.rootPath}tslint.json`);
+        const tsConfigPath = path.resolve(`${this.rootPath}tsconfig.json`);
         let localIdentName = prodLocalIdentName;
         let sourceMap = false;
         if (this.isDebugMode) {
@@ -138,7 +138,7 @@ export class ServerApiPack extends WebpackTaskBase {
             resolve: {
                 extensions: [".ts", ".tsx", ".js", ".css", ".png", ".jpg", ".gif", ".less", "sass", "scss", "..."],
                 modules: [
-                    Path.resolve(__dirname, "src"),
+                    path.resolve(__dirname, "src"),
                     "node_modules",
                 ],
             },

@@ -1,4 +1,4 @@
-import Path from "path";
+import path from "path";
 import { blue, green } from "colorette";
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
@@ -24,8 +24,8 @@ export class TaskBase {
 
     constructor(name) {
         this.taskName = name;
-        this.src = Path.resolve("./src");
-        this.dist = Path.resolve("./build");
+        this.src = path.resolve("./src");
+        this.dist = path.resolve("./build");
     }
 
     protected async compile(config?): Promise<void|Error> {

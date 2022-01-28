@@ -42,13 +42,16 @@ class PackageBuild {
             await task.cleanAsync();
             await new PackageInfo().run();
             spinner.succeed();
+            console.log();
             spinner = ora("public assets pack...\r\n").start();
             await new PublicAsset().setWatchMode(this.isWatchMode).setDebugMode(this.isDebugMode).run();
             await new PublicAsset("iso", "PublicAsset iso ").setWatchMode(this.isWatchMode).setDebugMode(this.isDebugMode).run();
             spinner.succeed();
+            console.log();
             spinner = ora("transform typescript file...\r\n").start();
             await new ShellTask("./src").setWatchMode(this.isWatchMode).setDebugMode(this.isDebugMode).run("tsc", "-p");
             spinner.succeed();
+            console.log();
             const shouldStandaloneBuild = ConfigHelper.get("standalone", false);
             if (shouldStandaloneBuild) {
                 spinner = ora("standalone pack...\r\n").start();

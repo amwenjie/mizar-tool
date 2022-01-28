@@ -1,5 +1,4 @@
 import fs from "fs-extra";
-import { parse } from "jsonc-parser";
 import Path from "path";
 import { Options } from "stylelint-webpack-plugin";
 import yargs from "yargs";
@@ -40,8 +39,7 @@ export class ConfigHelper {
         }
         log.info("confighelper privateGet configPath: ", configPath);
         try {
-            const content = fs.readFileSync(configPath, "utf8");
-            let store = parse(content);
+            let store = fs.readJSONSync(configPath);
             const info = node.split(".");
             log.info("ConfigHelper.get.info", info);
             for (let item of info) {

@@ -75,6 +75,7 @@ export class ProjectBuild {
             await new CopyTask("./config", "./config").run();
             await new CopyTask("./config", "./config").run();
             spinner.succeed();
+            console.log();
             // 2. 生成同构下的ClientPack
             spinner = ora("client assets pack...\r\n").start();
             const isomorphicClientPack = new IsomorphicPack();
@@ -84,6 +85,7 @@ export class ProjectBuild {
                 .setAnalyzMode(this.isAnalyzMode);
             await isomorphicClientPack.run();
             spinner.succeed();
+            console.log();
             // 3. 生成ServerApiPack
             spinner = ora("server api assets pack...\r\n").start();
             const serverApiPack = new ServerApiPack();
@@ -92,6 +94,7 @@ export class ProjectBuild {
                 .setDebugMode(this.isDebugMode);
             await serverApiPack.run();
             spinner.succeed();
+            console.log();
             // 4. 生成ServerPack
             spinner = ora("server assets pack...\r\n").start();
             const serverPack = new ServerPack();
@@ -101,6 +104,7 @@ export class ProjectBuild {
                 .setWatchMode(this.isWatchMode);
             await serverPack.run();
             spinner.succeed();
+            console.log();
             const shouldStandaloneBuild = ConfigHelper.get("standalone", false);
             if (shouldStandaloneBuild) {
                 // 5. 生成standalone文件

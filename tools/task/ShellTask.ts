@@ -1,6 +1,5 @@
 import { exec, execSync } from "child_process";
 import * as chokidar from "chokidar";
-import Path from "path";
 import Logger from "../libs/Logger";
 import TaskBase from "../libs/TaskBase";
 import { HelperTask } from "./HelperTask";
