@@ -1,3 +1,4 @@
+import { cyan, green, red, yellow } from "colorette";
 import { execSync } from "child_process";
 import Notifier from "node-notifier";
 import yargs  from "yargs";
@@ -7,6 +8,12 @@ import Logger from "../libs/Logger";
 import { CleanTask } from "./CleanTask";
 
 const log = Logger("HelperTask");
+const logColorMap = {
+    info: green,
+    debug: green,
+    error: red,
+    warning: yellow,
+};
 
 export class HelperTask extends TaskBase {
     private static prevDateTime = new Date();
@@ -50,7 +57,7 @@ export class HelperTask extends TaskBase {
         } else if (/警告|warn/.test(messageStr)) {
             logMethod = "warn";
         }
-        log[logMethod]("sendMessage", titleStr, messageStr);
+        log[logMethod](cyan(titleStr), logColorMap[logMethod](messageStr));
         const msg = {
             message: messageStr.slice(0, 100),
             title: titleStr,
@@ -78,7 +85,7 @@ export class HelperTask extends TaskBase {
     }
 
     public async cleanAsync(): Promise<HelperTask> {
-        await new CleanTask().start();
+        await new CleanTask().run();
         return this;
     }
 }

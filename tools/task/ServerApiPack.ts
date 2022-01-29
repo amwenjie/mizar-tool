@@ -1,4 +1,4 @@
-import { green } from "colorette";
+import { cyan, green, red } from "colorette";
 import fs from "fs-extra";
 import klaw from "klaw";
 import path from "path";
@@ -13,7 +13,6 @@ const log = Logger("ServerApiPack");
 
 export class ServerApiPack extends WebpackTaskBase {
     private globalConfig: IGlobalConfig;
-    private tslintConfig;
 
     constructor(taskName = "ServerApiPack") {
         super(taskName);
@@ -22,8 +21,8 @@ export class ServerApiPack extends WebpackTaskBase {
         this.dist = path.resolve(`${this.globalConfig.rootOutput}`);
     }
 
-    public async scan(): Promise<object> {
-        return new Promise(resolve => {
+    private async scan(): Promise<webpack.EntryObject> {
+        return new Promise((resolve, reject) => {
             const entry = {};
             if (!fs.existsSync(this.src)) {
                 log.warn("ServerApiPack pack build 入口目录不存在：", this.src);
@@ -42,30 +41,29 @@ export class ServerApiPack extends WebpackTaskBase {
                 }
             });
             walk.on("end", () => {
-                log.debug(this.taskName, "scan.done", path.resolve(this.rootPath));
-                log.debug(this.taskName, "pack.keys", Object.keys(entry).join(","));
+                log.debug(cyan(this.taskName), "scan.done", path.resolve(this.rootPath));
+                log.debug(cyan(this.taskName), "pack.keys", Object.keys(entry).join(","));
                 resolve(entry);
+            });
+            walk.on("error", e => {
+                log.error(red("scan entry cause an error: "));
+                log.error(e);
+                reject(e);
             });
         });
     }
 
-    public async run(): Promise<void|Error> {
-        this.tslintConfig = ConfigHelper.get("tslint", { disable: false });
-        log.info("->", this.taskName, HelperTask.taking());
+    protected async compile(): Promise<void|Error> {
+        log.info("->", cyan(this.taskName), HelperTask.taking());
+        let entry: webpack.EntryObject;
         try {
-            const entry = await this.scan();
-            if (!entry || Object.keys(entry).length === 0) {
-                log.warn(this.taskName, " scan emtpy entry");
-                return;
-            }
-            log.debug(this.taskName, "run.entry", entry);
-            await this.pack(entry);
-        } catch (e) {
-            log.error(this.taskName, " run into an error: ", e);
+            entry = await this.scan();
+        } catch (e) {}
+        if (!entry || Object.keys(entry).length === 0) {
+            log.warn(cyan(this.taskName), " scan emtpy entry");
+            return;
         }
-    }
-
-    public async pack(entry): Promise<void|Error> {
+        log.info(cyan(this.taskName), "run.entry", entry);
         const tslintPath = path.resolve(`${this.rootPath}tslint.json`);
         const tsConfigPath = path.resolve(`${this.rootPath}tsconfig.json`);
         let localIdentName = prodLocalIdentName;
@@ -75,7 +73,8 @@ export class ServerApiPack extends WebpackTaskBase {
             sourceMap = true;
         }
         const rules = [];
-        if (!this.tslintConfig.disable) {
+        const tslintConfig = ConfigHelper.get("tslint", { disable: false });
+        if (!tslintConfig.disable) {
             rules.push({
                 exclude: /node_modules/,
                 test: /\.ts(x?)$/,
@@ -151,11 +150,7 @@ export class ServerApiPack extends WebpackTaskBase {
             },
         };
         log.info("ServerApiPack.pack", { config: JSON.stringify(config) });
-        try {
-            await this.compile(config);
-        } catch (e) {
-            log.error(this.taskName, " webpacking raised an error: ", e);
-        }
+        await super.compile(config);
     }
 }
 

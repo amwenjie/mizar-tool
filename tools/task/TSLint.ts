@@ -1,14 +1,15 @@
+import { green, yellow } from "colorette";
 import Logger from "../libs/Logger";
+import TaskBase from "../libs/TaskBase";
 import ShellTask from "./ShellTask";
 const log = Logger("TSLint");
-export class TSLint {
-    public async run() {
+export class TSLint extends TaskBase {
+    constructor(taskName = "TSLint") {
+        super(taskName);
+    }
+
+    protected async compile(): Promise<void|Error> {
         log.info("TSLint start");
-        try {
-            await new ShellTask("./src").run("tslint", "-p");
-            log.info("TSLint is ok");
-        } catch (error) {
-            log.warn("代码规范&格式检查未通过，TSLint not ok");
-        }
+        await new ShellTask("./src").run("tslint", "-p");
     }
 }

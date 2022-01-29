@@ -22,7 +22,6 @@
         "sourceMap": true,
         "noImplicitAny": false,
         "noFallthroughCasesInSwitch": false,
-        "allowSyntheticDefaultImports": true,
         "esModuleInterop": true,
         "typeRoots": [
             "node_modules/@types",

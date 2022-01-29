@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 import { green } from "colorette";
-import ora from "ora";
 import yargs  from "yargs";
 import { hideBin } from "yargs/helpers";
 import { HelperTask } from "./task/HelperTask";
@@ -32,31 +31,17 @@ class PackageBuild {
     }
 
     public async startup() {
-        let spinner;
-        spinner = ora("prepare the environment...\r\n").start();
         const task = new HelperTask();
         task.start();
-        spinner.succeed();
         try {
-            spinner = ora("process target directory & packageInfo...\r\n").start();
             await task.cleanAsync();
             await new PackageInfo().run();
-            spinner.succeed();
-            console.log();
-            spinner = ora("public assets pack...\r\n").start();
             await new PublicAsset().setWatchMode(this.isWatchMode).setDebugMode(this.isDebugMode).run();
             await new PublicAsset("iso", "PublicAsset iso ").setWatchMode(this.isWatchMode).setDebugMode(this.isDebugMode).run();
-            spinner.succeed();
-            console.log();
-            spinner = ora("transform typescript file...\r\n").start();
             await new ShellTask("./src").setWatchMode(this.isWatchMode).setDebugMode(this.isDebugMode).run("tsc", "-p");
-            spinner.succeed();
-            console.log();
             const shouldStandaloneBuild = ConfigHelper.get("standalone", false);
             if (shouldStandaloneBuild) {
-                spinner = ora("standalone pack...\r\n").start();
                 await new StandalonePack().setWatchMode(this.isWatchMode).setDebugMode(this.isDebugMode).run();
-                spinner.succeed();
             }
             console.log(green("build success"));
             if (this.isPublishMode) {
@@ -64,7 +49,6 @@ class PackageBuild {
                 await new PublishTask().run();
             }
         } catch (e) {
-            spinner.fail();
             log.error("PackageBuild", e);
         }
         task.end();

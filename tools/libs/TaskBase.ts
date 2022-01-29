@@ -1,5 +1,6 @@
+import { cyan, blue, green, red } from "colorette";
+import ora, { type Ora } from "ora";
 import path from "path";
-import { blue, green } from "colorette";
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 import Logger from "./Logger";
@@ -8,11 +9,8 @@ const log = Logger("TaskBase");
 const argv: any = yargs(hideBin(process.argv)).argv as any;
 
 export class TaskBase {
-    protected static compileQueue = [];
-    protected static changedQueue = [];
     protected watcher;
     protected count = 1;
-    protected index: number = -1;
     protected taskName = "TaskBase";
     protected isWatchMode = false;
     protected isDebugMode = false;
@@ -21,19 +19,21 @@ export class TaskBase {
     protected src = "";
     protected dist = "";
     protected state = false;
+    protected spinner: Ora;
 
     constructor(name) {
         this.taskName = name;
         this.src = path.resolve("./src");
         this.dist = path.resolve("./build");
+        this.spinner = ora({ discardStdin: false });
     }
 
     protected async compile(config?): Promise<void|Error> {
-        log.warn(`${this.taskName} 未重写compile方法`);
+        log.warn(`${cyan(this.taskName)} 未重写compile方法`);
     }
 
-    protected async doneCallback(): Promise<void> {
-        console.log(green(`${this.taskName}, success`));
+    protected async done(): Promise<void> {
+        console.log(green(`${cyan(this.taskName)}, success`));
     }
     
     public setWatchMode(isWatchMode: boolean): TaskBase {
@@ -51,14 +51,17 @@ export class TaskBase {
         return this;
     }
 
-    public async run(...args): Promise<void|Error> {
+    public async run(...args): Promise<void> {
         try {
-            await this.compile();
+            this.spinner.start(`${this.taskName} compile task begin ...\r\n`);
+            await this.compile(...args);
+            this.spinner.succeed(`${this.taskName} compile task end.\r\n`);
         } catch (error) {
-            log.error(this.taskName, ".error: ", error.message);
-            if (argv.verbose || argv.debug) {
-                log.error(error);
-            }
+            this.spinner.fail(`${this.taskName} compile task ${red("fail")}.\r\n`)
+            log.error(cyan(this.taskName), ".error: ", error.message);
+            // if (argv.verbose || argv.debug) {
+            log.error(error);
+            // }
         }
     }
 }

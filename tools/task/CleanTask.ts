@@ -1,3 +1,4 @@
+import { cyan } from "colorette";
 import fs from "fs-extra";
 import { HelperTask } from "./HelperTask";
 import Logger from "../libs/Logger";
@@ -9,14 +10,9 @@ export class CleanTask extends TaskBase {
         super(taskName);
     }
 
-    public start() {
-        log.info("->", this.taskName, HelperTask.taking());
-        try {
-            fs.removeSync("build");
-            log.info(`${this.taskName}.remove.build`);
-        } catch (error) {
-            log.error(`${this.taskName}.remove.error`, error.message);
-        }
+    protected async compile(): Promise<void> {
+        log.info("->", cyan(this.taskName), HelperTask.taking());
+        await fs.remove("build");
     }
 }
 

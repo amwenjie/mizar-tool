@@ -1,4 +1,4 @@
-import { green, red, yellow } from "colorette";
+import { cyan, green, red, yellow } from "colorette";
 import CssMinimizerPlugin from "css-minimizer-webpack-plugin";
 import DirectoryNamedWebpackPlugin from "directory-named-webpack-plugin";
 import MiniCssExtractPlugin from "mini-css-extract-plugin";
@@ -29,25 +29,46 @@ export class StandalonePack extends WebpackTaskBase {
         this.dist = path.resolve(`${this.rootPath}${this.globalConfig.staticOutput}/standalone`);
     }
 
-    public async run(): Promise<void|Error> {
+    protected async compile(): Promise<void|Error> {
         const shouldStandaloneBuild = ConfigHelper.get("standalone", false);
         if (!shouldStandaloneBuild) {
             return;
         }
-
         log.info("->", "StandalonePack", HelperTask.taking());
-        try {
-            const entry = await this.scan();
-            if (!entry || Object.keys(entry).length === 0) {
-                log.warn(yellow(`${this.taskName}, scan emtpy entry`));
-                return;
-            }
-            log.debug(this.taskName, "run.entry", entry);
-            await this.pack(entry);
-        } catch (error) {
-            log.error(this.taskName, "FATAL_ERROR", error.message);
-            throw error;
+        const entry: webpack.EntryObject = await this.scan();
+        if (!entry || Object.keys(entry).length === 0) {
+            log.warn(yellow(`${cyan(this.taskName)}, scan emtpy entry`));
+            return;
         }
+        log.info(cyan(this.taskName), "run.entry", entry);
+        const mode = this.isDebugMode ? "development" : "production";
+        // const mode = this.isDebugMode ? JSON.stringify("development") : JSON.stringify("production");
+        const config: webpack.Configuration = {
+            mode,
+            // cache: false,
+            // debug: true,
+            devtool: this.isDebugMode ? "source-map" : undefined,
+            ...this.getEntryAndOutputConfig(entry),
+            externals: this.getExternalConfig(),
+            module: {
+                rules: this.getRules(),
+            },
+            name: "StandalonePack",
+            plugins: this.getPlugins(),
+            resolve: {
+                extensions: [".ts", ".tsx", ".js", ".css", ".png", ".jpg", ".gif", ".less", "sass", "scss", "..."],
+                modules: [
+                    path.resolve(__dirname, "src"),
+                    "node_modules",
+                ],
+                plugins: [
+                    new DirectoryNamedWebpackPlugin(),
+                ],
+            },
+            optimization: this.getOptimization().optimization,
+        };
+        log.info(cyan(this.taskName), "pack", config);
+        await super.compile(config);
     }
 
     private getStyleRuleLoaderOption(loaderName: string) {
@@ -89,18 +110,22 @@ export class StandalonePack extends WebpackTaskBase {
     /**
      * 入口文件搜寻
      */
-    private async scan() {
-        return new Promise(async (resolve, reject) => {
-            Promise.all([this.entryScan()])
-            .then((entries: [object]) => {
-                const combinedEntries = {
-                    ...entries[0]
-                };
-                log.debug("StandalonePack.pack.keys", Object.keys(combinedEntries).join(","));
-                resolve(combinedEntries);
-            }).catch(e => {
-                reject(e);
-            });
+    private async scan(): Promise<webpack.EntryObject> {
+        return new Promise(async resolve => {
+            Promise
+                .all([this.entryScan()])
+                .then((entries: [object]) => {
+                    const combinedEntries = {
+                        ...entries[0]
+                    };
+                    log.info("StandalonePack.pack.keys", Object.keys(combinedEntries).join(","));
+                    resolve(combinedEntries);
+                })
+                .catch(e => {
+                    log.error(red("scan entry cause an error: "));
+                    log.error(e);
+                    resolve({});
+                });
         });
     }
 
@@ -109,44 +134,6 @@ export class StandalonePack extends WebpackTaskBase {
         // log.debug('!/node_modules/i.test(resourcePath): ', !/node_modules/i.test(resourcePath));
         // log.debug('/components?|pages?/i.test(resourcePath): ', /components?|pages?/i.test(resourcePath));
         return /components?|pages?/i.test(resourcePath);
-    }
-
-    private async pack(entry): Promise<void|Error> {
-        // log.info("StandalonePack.pack.run", entry);
-        const mode = this.isDebugMode ? "development" : "production";
-        // const mode = this.isDebugMode ? JSON.stringify("development") : JSON.stringify("production");
-            
-        const config: webpack.Configuration = {
-            mode,
-            // cache: false,
-            // debug: true,
-            devtool: this.isDebugMode ? "source-map" : undefined,
-            ...this.getEntryAndOutputConfig(entry),
-            externals: this.getExternalConfig(),
-            module: {
-                rules: this.getRules(),
-            },
-            name: "StandalonePack",
-            plugins: this.getPlugins(),
-            resolve: {
-                extensions: [".ts", ".tsx", ".js", ".css", ".png", ".jpg", ".gif", ".less", "sass", "scss", "..."],
-                modules: [
-                    path.resolve(__dirname, "src"),
-                    "node_modules",
-                ],
-                plugins: [
-                    new DirectoryNamedWebpackPlugin(),
-                ],
-            },
-            optimization: this.getOptimization().optimization,
-        };
-        log.info(this.taskName, "pack", config);
-
-        try {
-            await this.compile(config);
-        } catch (e) {
-            log.error(this.taskName, " webpacking raised an error: ", e);
-        }
     }
 
     private getOptimization(): webpack.Configuration {

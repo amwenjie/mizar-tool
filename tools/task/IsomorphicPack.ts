@@ -1,4 +1,4 @@
-import { green, red, yellow } from "colorette";
+import { cyan, green, red, yellow } from "colorette";
 import CopyWebpackPlugin from "copy-webpack-plugin";
 import CssMinimizerPlugin from "css-minimizer-webpack-plugin";
 import DirectoryNamedWebpackPlugin from "directory-named-webpack-plugin";
@@ -23,9 +23,6 @@ export class IsomorphicPack extends WebpackTaskBase {
     private clientEntrySrc = "src/isomorphic/pageRouters";
     private pageSrc = "src/isomorphic/pages";
     private styleSrc = "src/isomorphic/styleEntries";
-    private eslintConfig = null;
-    private stylelintConfig = null;
-    private tslintConfig = null;
     private globalConfig: IGlobalConfig;
     private publicPath = "";
 
@@ -44,26 +41,6 @@ export class IsomorphicPack extends WebpackTaskBase {
         ].join("");
         log.debug("isomorphicPack getPublicPath: ", path);
         return path;
-    }
-
-    public async run(): Promise<void|Error> {
-        this.tslintConfig = ConfigHelper.get("tslint", { disable: false });
-        this.stylelintConfig = this.getStylelintConfig();
-        log.debug("stylelintConfig: ", this.stylelintConfig);
-
-        log.info("->", "IsomorphicPack", HelperTask.taking());
-        try {
-            const entry = await this.scan();
-            if (!entry || Object.keys(entry).length === 0) {
-                log.warn(yellow(`${this.taskName}, scan emtpy entry`));
-                return;
-            }
-            log.debug("run.entry", entry);
-            await this.pack(entry);
-        } catch (error) {
-            log.error("FATAL_ERROR", error.message);
-            throw error;
-        }
     }
 
     private getStylelintConfig(): StyleLintOptions|false {
@@ -230,9 +207,10 @@ export class IsomorphicPack extends WebpackTaskBase {
     /**
      * 入口文件搜寻
      */
-    private async scan(): Promise<object|Error> {
-        return new Promise(async (resolve, reject) => {
-            Promise.all([this.pageScan(), this.clientEntryScan()])
+    private async scan(): Promise<webpack.EntryObject> {
+        return new Promise(async resolve => {
+            Promise
+                .all([this.pageScan(), this.clientEntryScan()])
                 .then((entries: [object, object]) => {
                     const combinedEntries = {
                         // ...entries[0],
@@ -246,7 +224,9 @@ export class IsomorphicPack extends WebpackTaskBase {
                     resolve(combinedEntries);
                 })
                 .catch(e => {
-                    reject(e);
+                    log.error(red("scan entry cause an error: "));
+                    log.error(e);
+                    resolve({});
                 });
         });
     }
@@ -293,7 +273,14 @@ export class IsomorphicPack extends WebpackTaskBase {
         return map;
     }
 
-    private async pack(entry): Promise<void|Error> {
+    protected async compile(): Promise<void|Error> {
+        log.info("->", "IsomorphicPack", HelperTask.taking());
+        const entry: webpack.EntryObject = await this.scan();
+        if (!entry || Object.keys(entry).length === 0) {
+            log.warn(yellow(`${cyan(this.taskName)}, scan emtpy entry`));
+            return;
+        }
+        log.info("run.entry", entry);
         // log.info("IsomorphicPack.pack.run", entry);
         // const mode = this.isDebugMode ? JSON.stringify("development") : JSON.stringify("production");
         const config: webpack.Configuration = {
@@ -301,7 +288,7 @@ export class IsomorphicPack extends WebpackTaskBase {
             // cache: true,
             // debug: true,
             devtool: this.isDebugMode ? "source-map" : undefined,
-            entry: entry,
+            entry,
             output: {
                 chunkFilename: "[name]_[contenthash:8].js",
                 publicPath: this.publicPath,
@@ -335,12 +322,7 @@ export class IsomorphicPack extends WebpackTaskBase {
             optimization: this.getOptimization().optimization,
         };
         log.info("pack", { config: JSON.stringify(config) });
-
-        try {
-            await this.compile(config);
-        } catch (e) {
-            log.error("webpacking raised an error: ", e);
-        }
+        await super.compile(config);
     }
 
     private getOptimization(): webpack.Configuration {
@@ -404,7 +386,8 @@ export class IsomorphicPack extends WebpackTaskBase {
         const tslintPath = path.resolve(`${this.rootPath}tslint.json`);
         const tsConfigPath = path.resolve(`${this.rootPath}tsconfig.json`);
         const rules = [];
-        if (!this.tslintConfig.disable) {
+        const tslintConfig = ConfigHelper.get("tslint", { disable: false });
+        if (!tslintConfig.disable) {
             rules.push({
                 test: /\.tsx?$/,
                 enforce: "pre",
@@ -580,8 +563,10 @@ export class IsomorphicPack extends WebpackTaskBase {
         };
 
         const plugins = [];
-        if (this.stylelintConfig !== false) {
-            plugins.push(new StylelintPlugin(this.stylelintConfig));
+        const stylelintConfig = this.getStylelintConfig();
+        log.debug("stylelintConfig: ", stylelintConfig);
+        if (stylelintConfig !== false) {
+            plugins.push(new StylelintPlugin(stylelintConfig));
         }
         plugins.push(new webpack.DefinePlugin(defineOption));
         plugins.push(new MiniCssExtractPlugin({

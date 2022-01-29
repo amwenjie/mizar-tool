@@ -1,3 +1,4 @@
+import { cyan } from "colorette";
 import gulp, { task } from "gulp";
 import plumber from "gulp-plumber";
 import path from "path";
@@ -20,8 +21,8 @@ export class PublicAsset extends TaskBase {
         }
     }
     
-    private copy(src): NodeJS.ReadWriteStream {
-        log.info(this.taskName, " src: ", src, " dist: ", this.dist);
+    private copy(src: string): NodeJS.ReadWriteStream {
+        log.debug(cyan(this.taskName), " src: ", src, " dist: ", this.dist);
         return gulp.src(src)
             .pipe(plumber())
             // .pipe(rev())
@@ -30,10 +31,10 @@ export class PublicAsset extends TaskBase {
             .pipe(gulp.dest(this.dist));
     }
 
-    public async run(): Promise<void|Error> {
+    protected async compile(): Promise<void|Error> {
         return new Promise((resolve, reject) => {
-            log.info("->", this.taskName, HelperTask.taking());
-            log.info(this.taskName, ' src: ', this.src);
+            log.info("->", cyan(this.taskName), HelperTask.taking());
+            log.debug(cyan(this.taskName), ' src: ', this.src);
             this.copy(this.src)
                 .on("end", e => {
                     if (e) {
@@ -43,15 +44,15 @@ export class PublicAsset extends TaskBase {
                     if (this.isWatchMode) {
                         const watcher = gulp.watch(this.src);
                         watcher.on("change", (eventType: string, filename: string) => {
-                            log.info(this.taskName, " file " + filename + " was " + eventType + ", running tasks...");
+                            log.debug(cyan(this.taskName), " file " + filename + " was " + eventType + ", running tasks...");
                             this.copy(this.src);
                         });
                     }
-                    log.info(this.taskName, " done ", this.count++);
+                    log.debug(cyan(this.taskName), " done ", this.count++);
                     resolve();
                 })
                 .on("error", e => {
-                    log.info(this.taskName, " error ", e);
+                    log.debug(cyan(this.taskName), " error ", e);
                     reject(e);
                 });
         });

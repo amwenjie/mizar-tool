@@ -1,7 +1,7 @@
-import { green } from "colorette";
+import { cyan, green } from "colorette";
 import fs from "fs-extra";
 import path from "path";
-import webpack from "webpack";
+import webpack, { type RuleSetRule } from "webpack";
 import nodeExternals from "webpack-node-externals";
 import getGlobalConfig, { IGlobalConfig, devLocalIdentName, prodLocalIdentName } from "../getGlobalConfig";
 import { ConfigHelper } from "../libs/ConfigHelper";
@@ -13,33 +13,14 @@ const log = Logger("ServerPack");
 
 export class ServerPack extends WebpackTaskBase {
     private globalConfig: IGlobalConfig;
-    private tslintConfig;
     private autoRun: boolean = false;
     private debugPort: number = 0;
 
     constructor(taskName = "ServerPack") {
         super(taskName);
-        this.shouldRestartDevServer = false;
         this.globalConfig = getGlobalConfig();
         this.src = path.resolve("./src/server/index");
         this.dist = path.resolve(`${this.globalConfig.rootOutput}`);
-    }
-
-    public setAutoRun(autoRun: boolean = true): ServerPack {
-        this.autoRun = autoRun;
-        this.debugPort = ConfigHelper.get("debugPort", 0);
-        log.info("debugPort", this.debugPort);
-        return this;
-    }
-
-    public async run(): Promise<void|Error> {
-        this.tslintConfig = ConfigHelper.get("tslint", { disable: false });
-        log.info("->", this.taskName, HelperTask.taking());
-        try {
-            await this.pack({"index": this.src});
-        } catch (e) {
-            log.error(this.taskName, " run into an error: ", e);
-        }
     }
     
     private shouldSourceModuled(resourcePath: string): boolean {
@@ -52,17 +33,18 @@ export class ServerPack extends WebpackTaskBase {
         return ConfigHelper.get(loaderName, {});
     }
 
-    public async pack(entry): Promise<void|Error> {
-        const tslintPath = path.resolve(`${this.rootPath}tslint.json`);
-        const tsConfigPath = path.resolve(`${this.rootPath}tsconfig.json`);
+    private getRules(): (RuleSetRule | "...")[]  {
         let localIdentName = prodLocalIdentName;
         let sourceMap = false;
         if (this.isDebugMode) {
             localIdentName = devLocalIdentName;
             sourceMap = true;
         }
+        const tslintPath = path.resolve(`${this.rootPath}tslint.json`);
+        const tsConfigPath = path.resolve(`${this.rootPath}tsconfig.json`);
         let rules = [];
-        if (!this.tslintConfig.disable) {
+        const tslintConfig = ConfigHelper.get("tslint", { disable: false });
+        if (!tslintConfig.disable) {
             rules.push({
                 exclude: /node_modules/,
                 test: /\.ts(x?)$/,
@@ -226,6 +208,31 @@ export class ServerPack extends WebpackTaskBase {
             ],
             type: "javascript/auto",
         });
+        return rules;
+    }
+
+    protected async done(): Promise<void> {
+        console.log(green(`${cyan(this.taskName)}, success`));
+        this.appendCompileDoneCallback(async (): Promise<void> => {
+            if (this.autoRun === true && this.isDebugMode === true) {
+                if (this.debugPort < 1) {
+                    return;
+                }
+                let serverEntry = "index";
+                await RunServer(serverEntry, this.debugPort);
+            }
+        });
+    }
+
+    public setAutoRun(autoRun: boolean = true): ServerPack {
+        this.autoRun = autoRun;
+        this.debugPort = ConfigHelper.get("debugPort", 0);
+        log.info("debugPort", this.debugPort);
+        return this;
+    }
+
+    protected async compile(): Promise<void|Error> {
+        log.info("->", cyan(this.taskName), HelperTask.taking());
         
         const mode = this.isDebugMode ? "development" : "production"; // this.isDebugMode ? JSON.stringify("development") : JSON.stringify("production");
         const defineOption = {
@@ -236,7 +243,7 @@ export class ServerPack extends WebpackTaskBase {
             mode,
             // cache: false,
             devtool: this.isDebugMode ? "source-map" : undefined,
-            entry,
+            entry: { "index": this.src },
             externals: [
                 nodeExternals({
                     allowlist: [
@@ -250,7 +257,7 @@ export class ServerPack extends WebpackTaskBase {
                         commonjsMagicComments: true,
                     },
                 },
-                rules: rules.concat(),
+                rules: this.getRules(),
             },
             name: this.taskName,
             output: {
@@ -279,21 +286,7 @@ export class ServerPack extends WebpackTaskBase {
             },
         };
         log.info("ServerPack.pack", { config: JSON.stringify(config) });
-        try {
-            await this.compile(config);
-        } catch (e) {
-            log.error(this.taskName, " webpacking raised an error: ", e);
-        }
-    }
-    protected async doneCallback(): Promise<void> {
-        console.log(green(`${this.taskName}, success`));
-        if (this.autoRun === true && this.isDebugMode === true) {
-            if (this.debugPort < 1) {
-                return;
-            }
-            let serverEntry = "index";
-            await RunServer(serverEntry, this.debugPort);
-        }
+        await super.compile(config);
     }
 }
 

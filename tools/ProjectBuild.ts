@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 import { green } from "colorette";
-import ora from "ora";
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 import { CopyTask } from "./task/CopyTask";
@@ -59,66 +58,47 @@ export class ProjectBuild {
     }
 
     private async build() {
-        let spinner;
-        spinner = ora("prepare the environment...\r\n").start();
         // 环境准备
         const task = new HelperTask();
         task.start();
-        spinner.succeed();
         try {
-            spinner = ora("process config & packageInfo ...\r\n").start();
             // 1 clean
             await task.cleanAsync();
             const packageInfo = new PackageInfo();
             packageInfo.setWatchMode(this.isWatchMode);
             await packageInfo.run();
             await new CopyTask("./config", "./config").run();
-            await new CopyTask("./config", "./config").run();
-            spinner.succeed();
-            console.log();
             // 2. 生成同构下的ClientPack
-            spinner = ora("client assets pack...\r\n").start();
             const isomorphicClientPack = new IsomorphicPack();
             isomorphicClientPack
                 .setDebugMode(this.isDebugMode)
                 .setWatchMode(this.isWatchMode)
                 .setAnalyzMode(this.isAnalyzMode);
             await isomorphicClientPack.run();
-            spinner.succeed();
-            console.log();
             // 3. 生成ServerApiPack
-            spinner = ora("server api assets pack...\r\n").start();
             const serverApiPack = new ServerApiPack();
             serverApiPack
                 .setWatchMode(this.isWatchMode)
                 .setDebugMode(this.isDebugMode);
             await serverApiPack.run();
-            spinner.succeed();
-            console.log();
             // 4. 生成ServerPack
-            spinner = ora("server assets pack...\r\n").start();
             const serverPack = new ServerPack();
             serverPack
                 .setAutoRun(this.isRunServerMode)
                 .setDebugMode(this.isDebugMode)
                 .setWatchMode(this.isWatchMode);
             await serverPack.run();
-            spinner.succeed();
-            console.log();
             const shouldStandaloneBuild = ConfigHelper.get("standalone", false);
             if (shouldStandaloneBuild) {
                 // 5. 生成standalone文件
-                spinner = ora("standalone pack...\r\n").start();
                 const standalonePack = new StandalonePack();
                 standalonePack
                     .setDebugMode(this.isDebugMode)
                     .setWatchMode(this.isWatchMode);
                 await standalonePack.run();
-                spinner.succeed();
             }
             console.log(green("build success"));
         } catch (e) {
-            spinner.fail();
             log.error("ProjectBuild raised an error: ", e);
         }
         task.end();

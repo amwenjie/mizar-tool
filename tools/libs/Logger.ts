@@ -39,7 +39,7 @@ class Logger {
     }
 
     public debug(...args: any[]): void {
-        if (argv.verbose || argv.debug) {
+        if (argv.debug) {
             console.debug(this.suffix, ...args);
         }
     }
@@ -49,7 +49,9 @@ class Logger {
         }
     }
     public info(...args: any[]): void {
-        this.log(...args);
+        if (argv.verbose) {
+            this.log(...args);
+        }
     }
     public warn(...args: any[]): void {
         console.warn(this.suffix, ...args);

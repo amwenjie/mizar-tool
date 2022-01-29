@@ -1,3 +1,4 @@
+import { cyan } from "colorette";
 import fs from "fs-extra";
 import path from "path";
 import getGlobalConfig from "../getGlobalConfig";
@@ -13,9 +14,9 @@ export class CopyTask extends TaskBase {
         this.dist = path.resolve(getGlobalConfig().rootOutput, dist);
     }
 
-    public async run(): Promise<void> {
-        log.info("->", this.taskName, HelperTask.taking());
-        return fs.copy(this.src, this.dist);
+    protected async compile(): Promise<void> {
+        log.info("->", cyan(this.taskName), HelperTask.taking());
+        await fs.copy(this.src, this.dist);
     }
 }
 export default CopyTask;

@@ -9,7 +9,7 @@ export class PublishTask extends TaskBase {
         super(taskName);
     }
 
-    public async run(): Promise<void> {
+    public async compile(): Promise<void> {
         log.info("->", "PublishTask", HelperTask.taking());
         log.info("PublishTask.start.distPath", this.dist, HelperTask.taking());
         const output = execSync("npm --registry https://registry.npmjs.org publish", {

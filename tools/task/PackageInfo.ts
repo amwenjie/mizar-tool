@@ -15,7 +15,7 @@ export class PackageInfo extends TaskBase {
         super(taskName);
     }
 
-    public async run(): Promise<void> {
+    protected async compile(): Promise<void> {
         log.info("->", "PackageInfo", HelperTask.taking());
         this.mkdir();
         this.packageJson = this.replacePackage();
