@@ -22,7 +22,7 @@ export class PublicAsset extends TaskBase {
     }
     
     private copy(src: string): NodeJS.ReadWriteStream {
-        log.debug(cyan(this.taskName), " src: ", src, " dist: ", this.dist);
+        log.info(cyan(this.taskName), " src: ", src, " dist: ", this.dist);
         return gulp.src(src)
             .pipe(plumber())
             // .pipe(rev())
@@ -34,7 +34,7 @@ export class PublicAsset extends TaskBase {
     protected async compile(): Promise<void|Error> {
         return new Promise((resolve, reject) => {
             log.info("->", cyan(this.taskName), HelperTask.taking());
-            log.debug(cyan(this.taskName), ' src: ', this.src);
+            log.info(cyan(this.taskName), ' src: ', this.src);
             this.copy(this.src)
                 .on("end", e => {
                     if (e) {
@@ -44,15 +44,15 @@ export class PublicAsset extends TaskBase {
                     if (this.isWatchMode) {
                         const watcher = gulp.watch(this.src);
                         watcher.on("change", (eventType: string, filename: string) => {
-                            log.debug(cyan(this.taskName), " file " + filename + " was " + eventType + ", running tasks...");
+                            log.info(cyan(this.taskName), " file " + filename + " was " + eventType + ", running tasks...");
                             this.copy(this.src);
                         });
                     }
-                    log.debug(cyan(this.taskName), " done ", this.count++);
+                    log.info(cyan(this.taskName), " done ", this.count++);
                     resolve();
                 })
                 .on("error", e => {
-                    log.debug(cyan(this.taskName), " error ", e);
+                    log.info(cyan(this.taskName), " error ", e);
                     reject(e);
                 });
         });

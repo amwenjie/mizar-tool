@@ -1,7 +1,12 @@
 import { cyan, green } from "colorette";
+import ESLintWebpackPlugin from "eslint-webpack-plugin";
 import fs from "fs-extra";
 import path from "path";
-import webpack, { type RuleSetRule } from "webpack";
+import webpack, {
+    type Compiler,
+    type RuleSetRule,
+    type WebpackPluginInstance,
+} from "webpack";
 import nodeExternals from "webpack-node-externals";
 import getGlobalConfig, { IGlobalConfig, devLocalIdentName, prodLocalIdentName } from "../getGlobalConfig";
 import { ConfigHelper } from "../libs/ConfigHelper";
@@ -28,9 +33,25 @@ export class ServerPack extends WebpackTaskBase {
         // log.warn('/components?|pages?/i.test(resourcePath): ', /components?|pages?/i.test(resourcePath));
         return /components?|pages?/i.test(resourcePath);
     }
-    
-    private getStyleRuleLoaderOption(loaderName): object {
-        return ConfigHelper.get(loaderName, {});
+
+    private getPlugins(): (
+		| ((this: Compiler, compiler: Compiler) => void)
+		| WebpackPluginInstance
+	)[] {
+        const defineOption = {
+            IS_SERVER_RUNTIME: JSON.stringify(true),
+            IS_DEBUG_MODE: JSON.stringify(!!this.isDebugMode),
+        };
+        const plugins = [];
+        plugins.push(new webpack.DefinePlugin(defineOption));
+        const esLintPluginConfig = ConfigHelper.get("eslint", {
+            files: "./src",
+            failOnError: !this.isDebugMode,
+        });
+        if (esLintPluginConfig) {
+            plugins.push(new ESLintWebpackPlugin(esLintPluginConfig));
+        }
+        return plugins;
     }
 
     private getRules(): (RuleSetRule | "...")[]  {
@@ -43,8 +64,8 @@ export class ServerPack extends WebpackTaskBase {
         const tslintPath = path.resolve(`${this.rootPath}tslint.json`);
         const tsConfigPath = path.resolve(`${this.rootPath}tsconfig.json`);
         let rules = [];
-        const tslintConfig = ConfigHelper.get("tslint", { disable: false });
-        if (!tslintConfig.disable) {
+        const tslintConfig = ConfigHelper.get("tslint", true);
+        if (tslintConfig) {
             rules.push({
                 exclude: /node_modules/,
                 test: /\.ts(x?)$/,
@@ -71,18 +92,8 @@ export class ServerPack extends WebpackTaskBase {
             ],
         });
         rules.push({
-            test: /\/src\/isomorphic\/.+\/index\.tsx?$/,
-            use: [
-                {
-                    loader: path.resolve(__dirname, "../libs/loaders/connect-default-param-loader"),
-                    options: {
-                        IS_SERVER_RUNTIME: true,
-                    }
-                },
-            ],
-        });
-        rules.push({
-            test: /\/pageRouters\//,
+            include: [path.resolve(`${this.rootPath}src`)],
+            test: /[\\/]isomorphic[\\/]pageRouters[\\/].+\.tsx?$/,
             use: [
                 {
                     loader: path.resolve(__dirname, "../libs/loaders/router-loadable-loader"),
@@ -93,21 +104,17 @@ export class ServerPack extends WebpackTaskBase {
             ],
         });
         rules.push({
-            test: /\.(ico|jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2)(\?.*)?$/i,
-            type: "asset",
-            generator: {
-                filename: path.resolve(
-                    this.globalConfig.clientOutput,
-                    "assets/[name]_[contenthash][ext][query]",
-                ),
-            },
+            include: [path.resolve(`${this.rootPath}src`)],
+            test: /[\\/]isomorphic[\\/].+[\\/][A-Z][^\\/]+[\\/]index\.tsx?$/,
+            use: [
+                {
+                    loader: path.resolve(__dirname, "../libs/loaders/connect-default-param-loader"),
+                },
+            ],
         });
         rules.push({
             test: /\.css$/i,
             use: [
-                // {
-                //     loader: "isomorphic-style-loader",
-                // },
                 {
                     loader: "css-loader",
                     options: {
@@ -124,13 +131,16 @@ export class ServerPack extends WebpackTaskBase {
                 },
                 {
                     loader: "postcss-loader",
-                    options: Object.assign({
-                        postcssOptions: {
-                            plugins: [
-                                "postcss-preset-env",
-                            ],
+                    options: Object.assign(
+                        {
+                            postcssOptions: {
+                                plugins: [
+                                    "postcss-preset-env",
+                                ],
+                            },
                         },
-                    }, this.getStyleRuleLoaderOption("postcss-loader")),
+                        ConfigHelper.get("postcss-loader", {}),
+                    ),
                 },
             ],
             type: "javascript/auto",
@@ -138,9 +148,6 @@ export class ServerPack extends WebpackTaskBase {
         rules.push({
             test: /\.less$/i,
             use: [
-                // {
-                //     loader: "isomorphic-style-loader",
-                // },
                 {
                     loader: "css-loader",
                     options: {
@@ -157,19 +164,25 @@ export class ServerPack extends WebpackTaskBase {
                 },
                 {
                     loader: "postcss-loader",
-                    options: Object.assign({
-                        postcssOptions: {
-                            plugins: [
-                                "postcss-preset-env",
-                            ],
+                    options: Object.assign(
+                            {
+                            postcssOptions: {
+                                plugins: [
+                                    "postcss-preset-env",
+                                ],
+                            },
                         },
-                    }, this.getStyleRuleLoaderOption("postcss-loader")),
+                        ConfigHelper.get("postcss-loader", {}),
+                    ),
                 },
                 {
                     loader: "less-loader",
-                    options: Object.assign({
-                        sourceMap,
-                    }, this.getStyleRuleLoaderOption("less-loader")),
+                    options: Object.assign(
+                            {
+                            sourceMap,
+                        },
+                        ConfigHelper.get("less-loader", {}),
+                    ),
                 },
             ],
             type: "javascript/auto",
@@ -191,22 +204,38 @@ export class ServerPack extends WebpackTaskBase {
                 },
                 {
                     loader: "postcss-loader",
-                    options: Object.assign({
-                        postcssOptions: {
-                            plugins: [
-                                "postcss-preset-env",
-                            ],
+                    options: Object.assign(
+                        {
+                            postcssOptions: {
+                                plugins: [
+                                    "postcss-preset-env",
+                                ],
+                            },
                         },
-                    }, this.getStyleRuleLoaderOption("postcss-loader")),
+                        ConfigHelper.get("postcss-loader", {}),
+                    ),
                 },
                 {
                     loader: "sass-loader",
-                    options: Object.assign({
-                        sourceMap,
-                    }, this.getStyleRuleLoaderOption("sass-loader")),
+                    options: Object.assign(
+                        {
+                            sourceMap,
+                        },
+                        ConfigHelper.get("sass-loader", {}),
+                    ),
                 },
             ],
             type: "javascript/auto",
+        });
+        rules.push({
+            test: /\.(ico|jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2)(\?.*)?$/i,
+            type: "asset",
+            generator: {
+                filename: path.resolve(
+                    this.globalConfig.clientOutput,
+                    "assets/[name]_[contenthash][ext][query]",
+                ),
+            },
         });
         return rules;
     }
@@ -235,13 +264,9 @@ export class ServerPack extends WebpackTaskBase {
         log.info("->", cyan(this.taskName), HelperTask.taking());
         
         const mode = this.isDebugMode ? "development" : "production"; // this.isDebugMode ? JSON.stringify("development") : JSON.stringify("production");
-        const defineOption = {
-            IS_SERVER_RUNTIME: JSON.stringify(true),
-            IS_DEBUG_MODE: JSON.stringify(!!this.isDebugMode),
-        };
         const config: webpack.Configuration = {
             mode,
-            // cache: false,
+            // cache: true,
             devtool: this.isDebugMode ? "source-map" : undefined,
             entry: { "index": this.src },
             externals: [
@@ -267,9 +292,7 @@ export class ServerPack extends WebpackTaskBase {
                     type: "commonjs2",
                 },
             },
-            plugins: [
-                new webpack.DefinePlugin(defineOption),
-            ],
+            plugins: this.getPlugins(),
             resolve: {
                 extensions: [".ts", ".tsx", ".js", ".css", ".png", ".jpg", ".gif", ".less", "sass", "scss", "..."],
                 modules: [

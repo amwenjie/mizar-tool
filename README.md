@@ -3,6 +3,8 @@ a mizar-based react project compile cli tool
 
 npm install -g alcor
 
+!!!鉴于typescript的部分能力eslint无法覆盖，且typescript-eslint还待完善，该编译工具对ts/tsx的文件应用tslint，js文件应用eslint，日后将合并两种lint检查。
+
 1. 利用cli创建一个应用，包含文件、目录、配置
    * alcor create your-project-directory-path，在your-project-directory-path目录中创建一个应用，包含必要的文件、配置
 
@@ -17,11 +19,35 @@ npm install -g alcor
    * 0.1.39开始将debug能力拆解，debug不在默认监听文件变化，新增watch用于监听文件变化
    * 仅debug、watch、server可使用缩写，其他选项不可缩写，必须使用--的形式
 
-3. 版本0.1.32(含)以前connect用法：connect()()()，0.1.33(含)以后用法：connect()()，会对第二次调用的中间两个缺省参数注入默认值
+3. 应用根目录中需要存在config文件夹，里面包含两个文件：app.json, configure.json。由于configure.json是用于打包编译的配置，编译产出build目录中，只会包含用于发布的内容，因此不会包含configure.json
+   * app.json用来配置应用信息和运行时信息
+```
+    "name": "alcor-template-app", # 应用名称
+    "port": 8889, # 应用在服务端启动时的端口号
+    "cdn": "/", # cdn 域名加根目录
+    "assetsPathPrefix": "static/" # 静态资源路径前缀
+```
+   * configure.json用来配置打包编译过程中的一些配置
+```
+   "tslint": true, #  启用tslint，默认启用
+   "stylelint": true, #  启用stylelint，默认启用，默认配置对应用根目录src目录中的.css、.less、.scss、.sass文件生效
+   "eslint": true, #  启用eslint，默认启用，默认配置对应用根目录src目录中的.js文件生效
+   "postcss-loader": {}, #  配置插件option配置
+   "less-loader": {}, #  配置插件option配置
+   "sass-loader": {}, #  配置插件option配置
+   "standalone": {
+      "externals": {
+         "react": "React",
+         "react-dom": "ReactDOM"
+      }
+   } #  配置独立打包信息，参见下面第6点
+```
 
-4. 版本0.1.33(含)以前支持应用路由配置语法为react-router-config v5语法，0.1.34(含)以后**只支持**react-router v6 useRoutes语法，[两个配置区别点击此处](https://reactrouter.com/docs/en/v6/upgrading/v5#use-useroutes-instead-of-react-router-config)。
+4. 版本0.1.32(含)以前connect用法：connect()()()，0.1.33(含)以后用法：connect()()，会对第二次调用的中间两个缺省参数注入默认值
 
-5. 版本0.1.38开始支持standalone形式编译产出(ProjectBuild和PackageBuild都支持)，standalone代表每个standalone的文件之间没有公共文件，即哪怕在standalone中的文件有很多共同的内容也不会提取runtime、lib这种公共文件，他们是各自独立的，可以想象成每个standalone的文件就是一个第三方库，可以放在cdn，然后直接在html中以```<script>```的形式引入。
+5. 版本0.1.33(含)以前支持应用路由配置语法为react-router-config v5语法，0.1.34(含)以后**只支持**react-router v6 useRoutes语法，[两个配置区别点击此处](https://reactrouter.com/docs/en/v6/upgrading/v5#use-useroutes-instead-of-react-router-config)。
+
+6. 版本0.1.38开始支持standalone形式编译产出(ProjectBuild和PackageBuild都支持)，standalone代表每个standalone的文件之间没有公共文件，即哪怕在standalone中的文件有很多共同的内容也不会提取runtime、lib这种公共文件，他们是各自独立的，可以想象成每个standalone的文件就是一个第三方库，可以放在cdn，然后直接在html中以```<script>```的形式引入。
    * 在config/configure.json中增加standalone配置，value支持true、object。
    * true，表示会自动寻找src/standalone目录中的ts、js文件，每个文件分别作为入口，然后入口打包编译后的导出会赋值给用项目名命名的变量
    * object，里面的key是standalone/目录中的文件路径，value是object，可以配置导出内容的名称、导出类型等

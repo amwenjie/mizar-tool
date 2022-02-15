@@ -1,17 +1,19 @@
 import { cyan, green, red, yellow } from "colorette";
 import CssMinimizerPlugin from "css-minimizer-webpack-plugin";
 import DirectoryNamedWebpackPlugin from "directory-named-webpack-plugin";
-import MiniCssExtractPlugin from "mini-css-extract-plugin";
-import TerserJSPlugin from "terser-webpack-plugin";
-import { BundleAnalyzerPlugin } from "webpack-bundle-analyzer";
+import ESLintWebpackPlugin from "eslint-webpack-plugin";
 import fs from "fs-extra";
 import klaw from "klaw";
+import MiniCssExtractPlugin from "mini-css-extract-plugin";
 import path from "path";
+import StylelintPlugin from "stylelint-webpack-plugin";
+import TerserJSPlugin from "terser-webpack-plugin";
 import webpack, {
     type Compiler,
     type RuleSetRule,
     type WebpackPluginInstance,
 } from "webpack";
+import { BundleAnalyzerPlugin } from "webpack-bundle-analyzer";
 import getGlobalConfig, { IGlobalConfig, devLocalIdentName, prodLocalIdentName } from "../getGlobalConfig";
 import { ConfigHelper } from "../libs/ConfigHelper";
 import Logger from "../libs/Logger";
@@ -71,10 +73,6 @@ export class StandalonePack extends WebpackTaskBase {
         await super.compile(config);
     }
 
-    private getStyleRuleLoaderOption(loaderName: string) {
-        return ConfigHelper.get(loaderName, {});
-    }
-
     private entryScan() {
         return new Promise((resolve, reject) => {
             const entries: any = {};
@@ -97,8 +95,8 @@ export class StandalonePack extends WebpackTaskBase {
                 }
             });
             walk.on("end", () => {
-                log.debug("StandalonePack.entryScan.end", path.resolve(this.rootPath));
-                log.debug("StandalonePack.entryScan.entries", entries);
+                log.info("StandalonePack.entryScan.end", path.resolve(this.rootPath));
+                log.info("StandalonePack.entryScan.entries", entries);
                 resolve(entries);
             });
             walk.on("error", (error) => {
@@ -130,9 +128,9 @@ export class StandalonePack extends WebpackTaskBase {
     }
 
     private shouldSourceModuled(resourcePath: string): boolean {
-        // log.debug('resourcePath: ', resourcePath);
-        // log.debug('!/node_modules/i.test(resourcePath): ', !/node_modules/i.test(resourcePath));
-        // log.debug('/components?|pages?/i.test(resourcePath): ', /components?|pages?/i.test(resourcePath));
+        // log.info('resourcePath: ', resourcePath);
+        // log.info('!/node_modules/i.test(resourcePath): ', !/node_modules/i.test(resourcePath));
+        // log.info('/components?|pages?/i.test(resourcePath): ', /components?|pages?/i.test(resourcePath));
         return /components?|pages?/i.test(resourcePath);
     }
 
@@ -180,10 +178,11 @@ export class StandalonePack extends WebpackTaskBase {
             ],
         });
         rules.push({
-            test: /\/src\/isomorphic\/.+\/index\.tsx?$/,
+            include: [path.resolve(`${this.rootPath}src`)],
+            test: /[\\/]isomorphic[\\/]pageRouters[\\/].+\.tsx?$/,
             use: [
                 {
-                    loader: path.resolve(__dirname, "../libs/loaders/connect-default-param-loader"),
+                    loader: path.resolve(__dirname, "../libs/loaders/router-loadable-loader"),
                     options: {
                         IS_SERVER_RUNTIME: false,
                     }
@@ -191,10 +190,11 @@ export class StandalonePack extends WebpackTaskBase {
             ],
         });
         rules.push({
-            test: /\/pageRouters\/.+\.tsx?$/,
+            include: [path.resolve(`${this.rootPath}src`)],
+            test: /[\\/]isomorphic[\\/].+[\\/][A-Z][^\\/]+[\\/]index\.tsx?$/,
             use: [
                 {
-                    loader: path.resolve(__dirname, "../libs/loaders/router-loadable-loader"),
+                    loader: path.resolve(__dirname, "../libs/loaders/connect-default-param-loader"),
                     options: {
                         IS_SERVER_RUNTIME: false,
                     }
@@ -222,13 +222,16 @@ export class StandalonePack extends WebpackTaskBase {
                 },
                 {
                     loader: "postcss-loader",
-                    options: Object.assign({
-                        postcssOptions: {
-                            plugins: [
-                                "postcss-preset-env",
-                            ],
+                    options: Object.assign(
+                        {
+                            postcssOptions: {
+                                plugins: [
+                                    "postcss-preset-env",
+                                ],
+                            },
                         },
-                    }, this.getStyleRuleLoaderOption("postcss-loader")),
+                        ConfigHelper.get("postcss-loader", {}),
+                    ),
                 },
             ],
             type: "javascript/auto",
@@ -253,19 +256,25 @@ export class StandalonePack extends WebpackTaskBase {
                 },
                 {
                     loader: "postcss-loader",
-                    options: Object.assign({
-                        postcssOptions: {
-                            plugins: [
-                                "postcss-preset-env",
-                            ],
+                    options: Object.assign(
+                            {
+                            postcssOptions: {
+                                plugins: [
+                                    "postcss-preset-env",
+                                ],
+                            },
                         },
-                    }, this.getStyleRuleLoaderOption("postcss-loader")),
+                        ConfigHelper.get("postcss-loader", {}),
+                    ),
                 },
                 {
                     loader: "less-loader",
-                    options: Object.assign({
-                        sourceMap,
-                    }, this.getStyleRuleLoaderOption("less-loader")),
+                    options: Object.assign(
+                        {
+                            sourceMap,
+                        },
+                        ConfigHelper.get("less-loader", {}),
+                    ),
                 },
             ],
             type: "javascript/auto",
@@ -290,19 +299,25 @@ export class StandalonePack extends WebpackTaskBase {
                 },
                 {
                     loader: "postcss-loader",
-                    options: Object.assign({
-                        postcssOptions: {
-                            plugins: [
-                                "postcss-preset-env",
-                            ],
+                    options: Object.assign(
+                        {
+                            postcssOptions: {
+                                plugins: [
+                                    "postcss-preset-env",
+                                ],
+                            },
                         },
-                    }, this.getStyleRuleLoaderOption("postcss-loader")),
+                        ConfigHelper.get("postcss-loader", {}),
+                    ),
                 },
                 {
                     loader: "sass-loader",
-                    options: Object.assign({
-                        sourceMap,
-                    }, this.getStyleRuleLoaderOption("sass-loader")),
+                    options: Object.assign(
+                        {
+                            sourceMap,
+                        },
+                        ConfigHelper.get("sass-loader", {}),
+                    ),
                 },
             ],
             type: "javascript/auto",
@@ -325,6 +340,21 @@ export class StandalonePack extends WebpackTaskBase {
 
         const plugins = [];
         plugins.push(new webpack.DefinePlugin(defineOption));
+        
+        const stylelintConfig = ConfigHelper.get("stylelint", {
+            extensions: ["css", "less", "scss", "sass"],
+            files: "./src",
+        });
+        if (stylelintConfig) {
+            plugins.push(new StylelintPlugin(stylelintConfig));
+        }
+        
+        const esLintPluginConfig = ConfigHelper.get("eslint", {
+            files: "./src",
+        });
+        if (esLintPluginConfig) {
+            plugins.push(new ESLintWebpackPlugin(esLintPluginConfig));
+        }
         plugins.push(new MiniCssExtractPlugin({
             filename: "[name].css",
             // chunkFilename: "[name]-chunk-[id]_[contenthash:8].css",
@@ -386,7 +416,7 @@ export class StandalonePack extends WebpackTaskBase {
     private getExternalConfig(): any {
         const config = ConfigHelper.get("standalone.externals", false);
         const serverExternal = ({ context, request }, callback) => {
-            const isExternal = /\/server\//i.test(request);
+            const isExternal = /[\\/]server[\\/]/i.test(request);
             if (isExternal || request === "node-mocks-http") {
                 callback(null, "''");
             } else {

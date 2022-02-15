@@ -2,11 +2,12 @@ import { cyan, green, red, yellow } from "colorette";
 import CopyWebpackPlugin from "copy-webpack-plugin";
 import CssMinimizerPlugin from "css-minimizer-webpack-plugin";
 import DirectoryNamedWebpackPlugin from "directory-named-webpack-plugin";
+import ESLintWebpackPlugin from "eslint-webpack-plugin";
 import fs from "fs-extra";
 import klaw from "klaw";
 import MiniCssExtractPlugin from "mini-css-extract-plugin";
 import path from "path";
-import StylelintPlugin, { type Options as StyleLintOptions} from "stylelint-webpack-plugin";
+import StylelintPlugin from "stylelint-webpack-plugin";
 import TerserJSPlugin from "terser-webpack-plugin";
 import webpack, { type Compiler, type RuleSetRule, type WebpackPluginInstance } from "webpack";
 import { BundleAnalyzerPlugin } from "webpack-bundle-analyzer";
@@ -39,42 +40,8 @@ export class IsomorphicPack extends WebpackTaskBase {
             this.globalConfig.publicPath,
             'client/'
         ].join("");
-        log.debug("isomorphicPack getPublicPath: ", path);
+        log.info("isomorphicPack getPublicPath: ", path);
         return path;
-    }
-
-    private getStylelintConfig(): StyleLintOptions|false {
-        const stylelintPath = path.resolve(`${this.rootPath}.stylelintrc.json`);
-        const defaultConfig = {
-            configFile: fs.existsSync(stylelintPath) ? stylelintPath : undefined,
-            extensions: ["css", "less", "scss", "sass"],
-            // files: "**/*.(le|s(a|c)|c)ss",
-        };
-        const config = ConfigHelper.get("stylelint");
-        if (typeof config === "boolean") {
-            if (config === false) {
-                return false;
-            }
-        } else if (typeof config === "object") {
-            return config;
-        } else if (typeof config === "string") {
-            if (fs.existsSync(config)) {
-                const fn = require(config).default;
-                if (typeof fn === "function") {
-                    try {
-                        return fn();
-                    } catch (e) {
-                        log.error("exec stylelint config error: ", config);
-                        return defaultConfig;
-                    }
-                }
-            }
-        }
-        return defaultConfig;
-    }
-
-    private getStyleRuleLoaderOption(loaderName): any {
-        return ConfigHelper.get(loaderName, {});
     }
 
     private async styleScan(): Promise<object|Error> {
@@ -105,8 +72,8 @@ export class IsomorphicPack extends WebpackTaskBase {
                 }
             });
             walk.on("end", () => {
-                log.debug("IsomorphicPack.styleScan.end", path.resolve(this.rootPath));
-                log.debug("IsomorphicPack.styleScan.entries", entries);
+                log.info("IsomorphicPack.styleScan.end", path.resolve(this.rootPath));
+                log.info("IsomorphicPack.styleScan.entries", entries);
                 resolve(entries);
             });
             walk.on("error", error => {
@@ -150,8 +117,8 @@ export class IsomorphicPack extends WebpackTaskBase {
                 }
             });
             walk.on("end", () => {
-                log.debug("IsomorphicPack.pageScan.end", path.resolve(this.rootPath));
-                log.debug("IsomorphicPack.pageScan.entries", entries);
+                log.info("IsomorphicPack.pageScan.end", path.resolve(this.rootPath));
+                log.info("IsomorphicPack.pageScan.entries", entries);
                 resolve(entries);
             });
             walk.on("error", (error) => {
@@ -194,8 +161,8 @@ export class IsomorphicPack extends WebpackTaskBase {
                 }
             });
             walk.on("end", () => {
-                log.debug("IsomorphicPack.clientEntryScan.end", path.resolve(this.rootPath));
-                log.debug("IsomorphicPack.clientEntryScan.entries", entries);
+                log.info("IsomorphicPack.clientEntryScan.end", path.resolve(this.rootPath));
+                log.info("IsomorphicPack.clientEntryScan.entries", entries);
                 resolve(entries);
             });
             walk.on("error", (error) => {
@@ -220,7 +187,7 @@ export class IsomorphicPack extends WebpackTaskBase {
                         //     dependOn: Object.keys(entries[0]),
                         // },
                     };
-                    log.debug("IsomorphicPack.pack.keys", Object.keys(combinedEntries).join(","));
+                    log.info("IsomorphicPack.pack.keys", Object.keys(combinedEntries).join(","));
                     resolve(combinedEntries);
                 })
                 .catch(e => {
@@ -232,9 +199,9 @@ export class IsomorphicPack extends WebpackTaskBase {
     }
 
     private shouldSourceModuled(resourcePath: string): boolean {
-        // log.debug('resourcePath: ', resourcePath);
-        // log.debug('!/node_modules/i.test(resourcePath): ', !/node_modules/i.test(resourcePath));
-        // log.debug('/components?|pages?/i.test(resourcePath): ', /components?|pages?/i.test(resourcePath));
+        // log.info('resourcePath: ', resourcePath);
+        // log.info('!/node_modules/i.test(resourcePath): ', !/node_modules/i.test(resourcePath));
+        // log.info('/components?|pages?/i.test(resourcePath): ', /components?|pages?/i.test(resourcePath));
         return /components?|pages?/i.test(resourcePath);
     }
 
@@ -297,7 +264,7 @@ export class IsomorphicPack extends WebpackTaskBase {
                 assetModuleFilename: "assets/[name]_[contenthash:8][ext][query]",
             },
             externals: ({ context, request }, callback) => {
-                const isExternal = /\/server\//i.test(request);
+                const isExternal = /[\\/]server[\\/]/i.test(request);
                 if (isExternal || request === "node-mocks-http") {
                     callback(null, "''");
                 } else {
@@ -386,8 +353,8 @@ export class IsomorphicPack extends WebpackTaskBase {
         const tslintPath = path.resolve(`${this.rootPath}tslint.json`);
         const tsConfigPath = path.resolve(`${this.rootPath}tsconfig.json`);
         const rules = [];
-        const tslintConfig = ConfigHelper.get("tslint", { disable: false });
-        if (!tslintConfig.disable) {
+        const tslintConfig = ConfigHelper.get("tslint", true);
+        if (tslintConfig) {
             rules.push({
                 test: /\.tsx?$/,
                 enforce: "pre",
@@ -395,8 +362,6 @@ export class IsomorphicPack extends WebpackTaskBase {
                 options: {
                     configFile: fs.existsSync(tslintPath) ? tslintPath : "",
                     tsConfigFile: fs.existsSync(tsConfigPath) ? tsConfigPath : "",
-                    // lint错误仅在生产build时影响编译，主要考虑到兼容老旧项目
-                    emitErrors: this.isDebugMode === true,
                 },
             });
         }
@@ -415,24 +380,20 @@ export class IsomorphicPack extends WebpackTaskBase {
             ],
         });
         rules.push({
-            test: /\/src\/isomorphic\/.+\/index\.tsx?$/,
+            test: /[\\/]isomorphic[\\/]pageRouters[\\/].+\.tsx?$/,
+            include: [path.resolve(`${this.rootPath}src`)],
             use: [
                 {
-                    loader: path.resolve(__dirname, "../libs/loaders/connect-default-param-loader"),
-                    options: {
-                        IS_SERVER_RUNTIME: false,
-                    }
+                    loader: path.resolve(__dirname, "../libs/loaders/router-loadable-loader"),
                 },
             ],
         });
         rules.push({
-            test: /\/pageRouters\/.+\.tsx?$/,
+            test: /[\\/]isomorphic[\\/].+[\\/][A-Z][^\\/]+[\\/]index\.tsx?$/,
+            include: [path.resolve(`${this.rootPath}src`)],
             use: [
                 {
-                    loader: path.resolve(__dirname, "../libs/loaders/router-loadable-loader"),
-                    options: {
-                        IS_SERVER_RUNTIME: false,
-                    }
+                    loader: path.resolve(__dirname, "../libs/loaders/connect-default-param-loader"),
                 },
             ],
         });
@@ -457,13 +418,16 @@ export class IsomorphicPack extends WebpackTaskBase {
                 },
                 {
                     loader: "postcss-loader",
-                    options: Object.assign({
-                        postcssOptions: {
-                            plugins: [
-                                "postcss-preset-env",
-                            ],
+                    options: Object.assign(
+                        {
+                            postcssOptions: {
+                                plugins: [
+                                    "postcss-preset-env",
+                                ],
+                            },
                         },
-                    }, this.getStyleRuleLoaderOption("postcss-loader")),
+                        ConfigHelper.get("postcss-loader", {}),
+                    ),
                 },
             ],
             type: "javascript/auto",
@@ -488,19 +452,25 @@ export class IsomorphicPack extends WebpackTaskBase {
                 },
                 {
                     loader: "postcss-loader",
-                    options: Object.assign({
-                        postcssOptions: {
-                            plugins: [
-                                "postcss-preset-env",
-                            ],
+                    options: Object.assign(
+                            {
+                            postcssOptions: {
+                                plugins: [
+                                    "postcss-preset-env",
+                                ],
+                            },
                         },
-                    }, this.getStyleRuleLoaderOption("postcss-loader")),
+                        ConfigHelper.get("postcss-loader", {}),
+                    ),
                 },
                 {
                     loader: "less-loader",
-                    options: Object.assign({
-                        sourceMap,
-                    }, this.getStyleRuleLoaderOption("less-loader")),
+                    options: Object.assign(
+                        {
+                            sourceMap,
+                        },
+                        ConfigHelper.get("less-loader", {}),
+                    ),
                 },
             ],
             type: "javascript/auto",
@@ -525,19 +495,25 @@ export class IsomorphicPack extends WebpackTaskBase {
                 },
                 {
                     loader: "postcss-loader",
-                    options: Object.assign({
-                        postcssOptions: {
-                            plugins: [
-                                "postcss-preset-env",
-                            ],
+                    options: Object.assign(
+                        {
+                            postcssOptions: {
+                                plugins: [
+                                    "postcss-preset-env",
+                                ],
+                            },
                         },
-                    }, this.getStyleRuleLoaderOption("postcss-loader")),
+                        ConfigHelper.get("postcss-loader", {}),
+                    ),
                 },
                 {
                     loader: "sass-loader",
-                    options: Object.assign({
-                        sourceMap,
-                    }, this.getStyleRuleLoaderOption("sass-loader")),
+                    options: Object.assign(
+                        {
+                            sourceMap,
+                        },
+                        ConfigHelper.get("sass-loader", {}),
+                    ),
                 },
             ],
             type: "javascript/auto",
@@ -563,12 +539,25 @@ export class IsomorphicPack extends WebpackTaskBase {
         };
 
         const plugins = [];
-        const stylelintConfig = this.getStylelintConfig();
-        log.debug("stylelintConfig: ", stylelintConfig);
-        if (stylelintConfig !== false) {
+        const stylelintConfig = ConfigHelper.get("stylelint", {
+            extensions: ["css", "less", "scss", "sass"],
+            files: "./src",
+        });
+        log.info("stylelintConfig: ", stylelintConfig);
+        if (stylelintConfig) {
             plugins.push(new StylelintPlugin(stylelintConfig));
         }
         plugins.push(new webpack.DefinePlugin(defineOption));
+
+        const esLintConfig = ConfigHelper.get("eslint", {
+            files: "./src",
+            failOnError: !this.isDebugMode,
+        });
+        log.info("esLintConfig: ", esLintConfig);
+        if (esLintConfig) {
+            plugins.push(new ESLintWebpackPlugin(esLintConfig));
+        }
+
         plugins.push(new MiniCssExtractPlugin({
             filename: "[name]_[contenthash:8].css",
             // chunkFilename: "[name]-chunk-[id]_[contenthash:8].css",
@@ -587,9 +576,9 @@ export class IsomorphicPack extends WebpackTaskBase {
         plugins.push(new GatherPageDepsPlugin({
             isDebug: this.isDebugMode,
         }));
-        if (this.isDebugMode) {
-            plugins.push(new webpack.HotModuleReplacementPlugin());
-        }
+        // if (this.isDebugMode) {
+        //     plugins.push(new webpack.HotModuleReplacementPlugin());
+        // }
         if (this.isAnalyzMode) {
             plugins.push(new BundleAnalyzerPlugin({
                 analyzerMode: this.isDebugMode ? "server" : "disabled",

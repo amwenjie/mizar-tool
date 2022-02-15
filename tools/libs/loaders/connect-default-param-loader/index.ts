@@ -6,47 +6,35 @@ import Logger from "../../Logger";
 const log = Logger("connect-default-param-loader");
 
 export default function (source) {
+    const callback = this.async();
     const sourcePath = this.resourcePath;
-    if (!/\/src\/isomorphic\/.+\/index\.tsx?$/.test(sourcePath)
+    if (
+        /[\\/]src[\\/]isomorphic[\\/].+[\\/][A-Z][^\\/]+[\\/]index\.tsx?$/.test(sourcePath)
         // || proceed.indexOf(sourcePath) > -1
     ) {
-        return source;
-    }
-    const outterReg = /connect\s*\(.*?\)\s*\((.+?)\)(?:$|;)/;
-    let outterMatched = outterReg.exec(source);
-    // 先取出connect(xxxxx)(bbbbbbbbbbb)的bbbbbbbbb部分
-    if (outterMatched) {
-        const connectParamStr = outterMatched[1];
-        const paramExceptChildComponentReg = /([^[]+)/;
-        const innerMatched = paramExceptChildComponentReg.exec(connectParamStr);
-        // 再取出connect(xxxxx)(cccccccc [dddddddddddd]) 的ccccccc部分，因为ddddddd部分中可能包含逗号，会干扰下面的处理
-        // 下面的处理是根据逗号来split看有多少个参数，然后遍历参数，
-        // 1、看是否是空字符串，是空字符串表示是[ddddddd]部分，
-        // 2、看是否包含引号，有引号说明是reducerName的参数
-        // 3、再结合参数个数，决定该默认给什么参数
+        const outterReg = /connect\s*\(.*?\)\s*\((.+?)\)(?:$|;)/;
+        let outterMatched = outterReg.exec(source);
+        // 先取出connect(xxxxx)(bbbbbbbbbbb)的bbbbbbbbb部分
+        if (outterMatched) {
+            const connectParamStr = outterMatched[1];
+            const childComponentReg = /,\s*\[([^\]]+)\]/;
+            const childComponentMatch =  childComponentReg.exec(connectParamStr);
+            const excludeChildString = connectParamStr.replace(childComponentReg, "");
+            // 再取出connect(xxxxx)(cccccccc, [dddddddddddd]) 的ccccccc部分，因为ddddddd部分中可能包含逗号，会干扰下面的处理
+            // 下面的处理是根据逗号来split看有多少个参数，然后遍历参数，
+            // 1、len == 3 说明参数完备，直接return；
+            // 2、len == 2 再识别第二个参数，如果是字符串，说明是reduerName，需要注入reduerFunction，如果不是字符串，说明需要注入reduerName
+            // 3、len == 1 说明需要自动注入reducer function和reduerName
 
-        if (innerMatched) {
-            const paramExceptChildComponent = innerMatched[1];
-            const paramArr = paramExceptChildComponent.split(",");
+            const paramArr = excludeChildString.split(/\s*,\s*/);
             const len = paramArr.length;
-            let hasChildComponent = false;
-            let hasReducerName = false;
-            for (let i = 0; i < len; i++) {
-                if (/'|"/.test(paramArr[i])) {
-                    // 简单判断，如果使用connect()(com, require('xxxx').default)的形式，会被误判为是reducerName
-                    hasReducerName = true;
-                } else if (/^\s*$/.test(paramArr[i])) {
-                    hasChildComponent = true;
-                }
+            if (len === 3) {
+                callback(null, source);
+                return;
             }
-            if (len > 3 || len > 2 && !hasChildComponent) {
-                return source;
-            }
-            let shouldInjectReducerName = !hasReducerName;
-            let shouldInjectReducer = len === 1 
-                || (len === 2 && hasReducerName || hasChildComponent)
-                || hasReducerName && hasChildComponent;
 
+            const shouldInjectReducerName = len === 1 || !/'|"/.test(paramArr[1]);
+            const shouldInjectReducer = len === 1 || /'|"/.test(paramArr[1]);
             const parsedPathObj = path.parse(sourcePath);
             const basenameArr = parsedPathObj.dir.split(path.sep);
             const componentName = basenameArr[basenameArr.length - 1];
@@ -75,17 +63,18 @@ export default function (source) {
                 }
             }
             if (shouldInjectReducerName) {
-                paramArr.splice(2, 0, `"${componentName}"`);
+                paramArr[2] = `"${componentName}"`;
             }
 
             if (shouldInjectReducer || shouldInjectReducerName) {
-                let str = outterMatched[1].replace(innerMatched[0], paramArr.join(','));
+                let str = outterMatched[1].replace(excludeChildString, paramArr.join(','));
                 str = outterMatched[0].replace(outterMatched[1], str);
-                return source.replace(outterMatched[0], str);
-
+                callback(null, source.replace(outterMatched[0], str));
+                return;
             }
         }
     }
 
-    return source;
+    callback(null, source);
+    return;
 }

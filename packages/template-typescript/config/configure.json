@@ -1,9 +1,8 @@
 {
     "debugPort": 9026,
-    "tslint": {
-        "disable": true
-    },
+    "tslint": true,
     "stylelint": true,
+    "eslint": true,
     "postcss-loader": {
 
     },

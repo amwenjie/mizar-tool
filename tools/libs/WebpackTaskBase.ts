@@ -1,10 +1,13 @@
 import { bold, cyan, green, red, yellow } from "colorette";
 import webpack, { type WebpackError } from "webpack";
+import yargs from "yargs";
+import { hideBin } from "yargs/helpers";
+import HelperTask from "../task/HelperTask";
 import Logger from "./Logger";
 import TaskBase from "./TaskBase";
-import HelperTask from "../task/HelperTask";
 
 const log = Logger("WebpackTaskBase");
+const argv: any = yargs(hideBin(process.argv)).argv as any;
 const hooksName = "alcor-webpack-task-base";
 
 export class WebpackTaskBase extends TaskBase {
@@ -19,16 +22,15 @@ export class WebpackTaskBase extends TaskBase {
         this.index = WebpackTaskBase.compileQueue.length;
         WebpackTaskBase.compileQueue.push({
             state: false,
-            task: this,
+            hash: "",
         });
-        log.debug("constructor: ", WebpackTaskBase.compileQueue.length);
     }
 
     private compileInvalid(fileName, changeTime) {
         const context = WebpackTaskBase.compileQueue[this.index];
         if (context) {
             context.state = false;
-            log.info(`${cyan(this.taskName)}, file change: ${fileName}`);
+            log.info(`${cyan(this.taskName)}, file change: ${fileName}`, Date.now());
         }
     }
     
@@ -42,9 +44,11 @@ export class WebpackTaskBase extends TaskBase {
     private async compileDone(stats): Promise<void> {
         const context = WebpackTaskBase.compileQueue[this.index];
         if (context) {
-            await context.task.done.call(context.task);
+            await this.done();
             context.state = true;
+            context.hash = stats.hash;
         }
+        // fs.writeJSON("/Users/wenjie02/Desktop/ssr/iso-ssr/build/" + stats.hash + ".json", stats.toJson(), {spaces: 4});
     }
 
     private isAllCompileDone() {
@@ -84,7 +88,7 @@ export class WebpackTaskBase extends TaskBase {
         
         if (stats) {
             log.info(stats.toString({
-                chunks: false,  // Makes the build much quieter
+                chunks: argv.verbose,  
                 colors: true 
             }));
         }
@@ -118,17 +122,20 @@ export class WebpackTaskBase extends TaskBase {
             const compiler = webpack(config);
             // this.compileContext.compiler = compiler;
             compiler.hooks.invalid.tap(hooksName, (fileName, changeTime) => {
-                // log.info("++++++", cyan(this.taskName), "invalid");
                 this.compileInvalid(fileName, changeTime);
             });
             compiler.hooks.watchRun.tapAsync(hooksName, (compiler, callback = () => {}) => {
-                // log.info("++++++", cyan(this.taskName), "watchRun");
                 this.compileWatchRun();
                 callback();
             });
             compiler.hooks.done.tapAsync(hooksName, async (stats, callback = () => {}) => {
-                // log.info("++++++", cyan(this.taskName), "done");
+                log.info(cyan(this.taskName), "done, newhash: ", stats.hash, " , oldhash: ", WebpackTaskBase.compileQueue[this.index].hash);
+                const prevHash = WebpackTaskBase.compileQueue[this.index].hash;
+                // if (prevHash !== stats.hash) {
                 await this.compileDone(stats);
+                // } else {
+                //     WebpackTaskBase.compileQueue[this.index].state = true;
+                // }
                 callback();
             });
             // compiler.hooks.failed.tap(hooksName, error => {
@@ -140,7 +147,9 @@ export class WebpackTaskBase extends TaskBase {
             //     // this.compileDone(stats);
             // });
             if (this.isWatchMode) {
-                this.watcher = compiler.watch({}, callback);
+                this.watcher = compiler.watch({
+                    aggregateTimeout: 600,
+                }, callback);
             } else {
                 compiler.run(async (error?: WebpackError, stats?): Promise<void> => {
                     compiler.close(error => {

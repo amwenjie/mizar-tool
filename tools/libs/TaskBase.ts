@@ -1,12 +1,9 @@
 import { cyan, blue, green, red } from "colorette";
 import ora, { type Ora } from "ora";
 import path from "path";
-import yargs from "yargs";
-import { hideBin } from "yargs/helpers";
 import Logger from "./Logger";
 
 const log = Logger("TaskBase");
-const argv: any = yargs(hideBin(process.argv)).argv as any;
 
 export class TaskBase {
     protected watcher;
@@ -25,7 +22,7 @@ export class TaskBase {
         this.taskName = name;
         this.src = path.resolve("./src");
         this.dist = path.resolve("./build");
-        this.spinner = ora({ discardStdin: false });
+        this.spinner = ora();
     }
 
     protected async compile(config?): Promise<void|Error> {

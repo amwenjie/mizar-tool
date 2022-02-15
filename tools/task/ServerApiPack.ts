@@ -41,8 +41,8 @@ export class ServerApiPack extends WebpackTaskBase {
                 }
             });
             walk.on("end", () => {
-                log.debug(cyan(this.taskName), "scan.done", path.resolve(this.rootPath));
-                log.debug(cyan(this.taskName), "pack.keys", Object.keys(entry).join(","));
+                log.info(cyan(this.taskName), "scan.done", path.resolve(this.rootPath));
+                log.info(cyan(this.taskName), "pack.keys", Object.keys(entry).join(","));
                 resolve(entry);
             });
             walk.on("error", e => {
@@ -73,8 +73,8 @@ export class ServerApiPack extends WebpackTaskBase {
             sourceMap = true;
         }
         const rules = [];
-        const tslintConfig = ConfigHelper.get("tslint", { disable: false });
-        if (!tslintConfig.disable) {
+        const tslintConfig = ConfigHelper.get("tslint", true);
+        if (tslintConfig) {
             rules.push({
                 exclude: /node_modules/,
                 test: /\.ts(x?)$/,

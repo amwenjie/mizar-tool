@@ -12,7 +12,7 @@ const logColorMap = {
     info: green,
     debug: green,
     error: red,
-    warning: yellow,
+    warn: yellow,
 };
 
 export class HelperTask extends TaskBase {
@@ -77,7 +77,6 @@ export class HelperTask extends TaskBase {
         this.endDateTime = new Date();
         // this.spinner.stop();
         log.info("-------------------------------编译信息结束-------------------------------------");
-        log.info("编译总耗时", (this.endDateTime.getTime() - this.startDateTime.getTime()) / 1000, "s");
         // console.log();
         this.sendMessage("首次编译结束", "编译总耗时 " +
             ((this.endDateTime.getTime() - this.startDateTime.getTime()) / 1000) + " s");

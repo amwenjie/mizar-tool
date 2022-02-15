@@ -1,6 +1,6 @@
 import { cyan } from "colorette";
 import { exec, execSync } from "child_process";
-import * as chokidar from "chokidar";
+import chokidar from "chokidar";
 import Logger from "../libs/Logger";
 import TaskBase from "../libs/TaskBase";
 import { HelperTask } from "./HelperTask";
@@ -17,7 +17,7 @@ export class ShellTask extends TaskBase {
             const output = execSync(cli, {
                 cwd: this.rootPath,
             });
-            log.debug(cyan(this.taskName), "output", output.toString());
+            log.info(cyan(this.taskName), "output", output.toString());
         } catch (error) {
             log.error(cyan(this.taskName), "stdout", error.stdout.toString());
             log.error(cyan(this.taskName), "stderr", error.stderr.toString());
