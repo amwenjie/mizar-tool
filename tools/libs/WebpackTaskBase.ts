@@ -1,5 +1,5 @@
 import { bold, cyan, green, red, yellow } from "colorette";
-import webpack, { type WebpackError } from "webpack";
+import webpack, { type WebpackError, type Stats } from "webpack";
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 import HelperTask from "../task/HelperTask";
@@ -41,7 +41,7 @@ export class WebpackTaskBase extends TaskBase {
         }
     }
 
-    private async compileDone(stats): Promise<void> {
+    private async compileDone(stats: Stats): Promise<void> {
         const context = WebpackTaskBase.compileQueue[this.index];
         if (context) {
             await this.done();
@@ -56,7 +56,7 @@ export class WebpackTaskBase extends TaskBase {
         return result;
     }
     
-    private printCompileResult(stats): void {
+    private printCompileResult(stats: Stats): void {
         const info = stats.toJson();
         if (stats.hasErrors()) {
             // 有错误
@@ -100,7 +100,7 @@ export class WebpackTaskBase extends TaskBase {
 
     protected async compile(config: webpack.Configuration): Promise<void|Error> {
         return new Promise(async (resolve, reject) => {
-            const callback = async (error: WebpackError|null|undefined, stats): Promise<void> => {
+            const callback = async (error: WebpackError|null|undefined, stats: Stats): Promise<void> => {
                 if (error) {
                     this.helperTask.sendMessage(this.taskName, "webpack执行出错");
                     log.error(cyan(this.taskName), ` > ${red(bold("webpack error:"))}`);
@@ -128,7 +128,7 @@ export class WebpackTaskBase extends TaskBase {
                 this.compileWatchRun();
                 callback();
             });
-            compiler.hooks.done.tapAsync(hooksName, async (stats, callback = () => {}) => {
+            compiler.hooks.done.tapAsync(hooksName, async (stats: Stats, callback = () => {}) => {
                 log.info(cyan(this.taskName), "done, newhash: ", stats.hash, " , oldhash: ", WebpackTaskBase.compileQueue[this.index].hash);
                 const prevHash = WebpackTaskBase.compileQueue[this.index].hash;
                 // if (prevHash !== stats.hash) {
@@ -151,7 +151,7 @@ export class WebpackTaskBase extends TaskBase {
                     aggregateTimeout: 600,
                 }, callback);
             } else {
-                compiler.run(async (error?: WebpackError, stats?): Promise<void> => {
+                compiler.run(async (error?: WebpackError, stats?: Stats): Promise<void> => {
                     compiler.close(error => {
                         if (error) {
                             log.error(cyan(this.taskName), " compile close error: ");

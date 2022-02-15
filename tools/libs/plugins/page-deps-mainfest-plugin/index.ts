@@ -1,8 +1,10 @@
 import fs from "fs-extra";
 import path from "path";
 import getGlobalConfig from "../../../getGlobalConfig";
+import { type Compilation, type Stats } from "webpack";
 // import { getCompilerHooks } from "webpack-manifest-plugin";
 
+const pluginName = "GatherPageDepsPlugin";
 interface IOptions {
     isDebug: boolean;
 }
@@ -14,21 +16,33 @@ function gatherDeps(bundleId: string, assetsKeys: string[]): string[] {
         const regexp = /\(('|")?([^"')]+)\1?\)/g;
         let matched;
         while (matched = regexp.exec(bundleId)) {
-            if (assetsKeys.some(k => {
-                return (new RegExp(matched[2] + "(?:_.{8})?\\.css$")).test(k)
-            })) {
+            if (assetsKeys.some(k => new RegExp(matched[2] + "(?:_.{8})?\\.css$").test(k))) {
                 deps.push(matched[2]);
             }
         }
     } else {
-        if (assetsKeys.some(k => {
-            return (new RegExp(bundleId + "(?:_.{8})?\\.css$")).test(k)
-        })) {
+        if (assetsKeys.some(k => new RegExp(bundleId + "(?:_.{8})?\\.css$").test(k))) {
             deps.push(bundleId);
         }
     }
     return deps;
 }
+
+function getAsyncLoadComDeps(pageRouterContent, assetsKeys) {
+    const depsMap: {[key: string]: string[]} = {};
+    // 单个依赖的按需加载路由组件
+    const singleDepRegexp = /\belement\:[\s\S]+?loader\:[\s\S]+?"?([^"\)\(]+)"?\)\.then\([\s\S]*?name\:\s*"([^"]+)"/g;
+    // 多个依赖的按需加载路由组件
+    const depRegexp = /\belement\:[^\[]+loader\:[^\[]+Promise\.all\([^\[]*?\[([^\]]+)\][\s\S]*?name\:\s*"([^"]+)"/g;
+    let regexp = depRegexp.test(pageRouterContent) ? depRegexp : singleDepRegexp;
+    let dependencies ;
+    while (dependencies = regexp.exec(pageRouterContent)) {
+        // dependencies[1]代表模块id， dependencies[2]代表路由配置组件name
+        depsMap[`page/${dependencies[2]}`] = gatherDeps(dependencies[1], assetsKeys);
+    }
+    return depsMap;
+}
+
 
 function gatherPageComDeps(file: string, assetsKeys: string[], entryKey: string, isDebug = false): any {
     try {
@@ -38,34 +52,22 @@ function gatherPageComDeps(file: string, assetsKeys: string[], entryKey: string,
         let pageRouterContent = fileContent;
         // debug|dev模式变量名不会被混淆压缩，可以更精确的筛选后续匹配所需的内容
         if (isDebug) {
-            const pageRouterContentMatch = /\bpageRouter\b([\s\S]+)\(pageRouter\)/.exec(fileContent);
+            const pageRouterContentMatch = /\bpageRouter\b\s*=([\s\S]+)\.bootstrap/.exec(fileContent);
             if (pageRouterContentMatch) {
                 pageRouterContent = pageRouterContentMatch[1];
             }
         }
-        const depsMap = {};
-        let regexp;
-        // 单个依赖的按需加载路由组件
-        const singleDepRegexp = /element\:[\s\S]+?loader\:[\s\S]+?"?([^"\)\(]+)"?\)\.then\([\s\S]*?name\:\s*"([^"]+)"/g;
-        // 多个依赖的按需加载路由组件
-        const depRegexp = /element\:[^\[]+loader\:[^\[]+Promise\.all\([^\[]*?\[([^\]]+)\][\s\S]*?name\:\s*"([^"]+)"/g;
-        regexp = depRegexp;
-        let dependencies = regexp.exec(pageRouterContent);
-        if (!dependencies) {
-            regexp = singleDepRegexp;
-            dependencies = regexp.exec(pageRouterContent);
-        }
-        while (dependencies) {
-            // dependencies[1]代表模块id， dependencies[2]代表路由配置组件name
-            depsMap["page/" + dependencies[2]] = gatherDeps(dependencies[1], assetsKeys).concat(entryKey);
-            dependencies = regexp.exec(pageRouterContent);
-        }
+        const depsMap: {[key: string]: string[]} = getAsyncLoadComDeps(pageRouterContent, assetsKeys);
         // 再遍历不是按需加载路由组件
         const nameRegExp = /\bname\b[^"]+"([^"]+)"/g;
-        dependencies = nameRegExp.exec(pageRouterContent);
-        while (dependencies && !(("page/" + dependencies[1]) in depsMap)) {
-            depsMap["page/" + dependencies[1]] = [entryKey];
-            dependencies = nameRegExp.exec(pageRouterContent);
+        let dependencies;
+        while (dependencies = nameRegExp.exec(pageRouterContent)) {
+            const pagePathKey: string = `page/${dependencies[1]}`;
+            if (Array.isArray(depsMap[pagePathKey])) {
+                depsMap[pagePathKey].push(entryKey);
+            } else {
+                depsMap[pagePathKey] = [entryKey];
+            }
         }
         return depsMap;
     } catch (e) {
@@ -84,12 +86,18 @@ export default class GatherPageDepsPlugin {
         this.assetsMainfest = conf.assetsMainfest;
     }
     apply(compiler) {
-        compiler.hooks.entryOption.tap('GatherPageDepsPlugin', (context, entry) => {
+        // compiler.hooks.emit.tapAsync(pluginName, (compilation: Compilation, callback = () => {}) => {
+        //     fs.writeJSON("./output_test.json", compilation.getStats().toJson(), {spaces: 4});
+        //     // 1、从stats.modules中去遍历，取每个module.issuerName能匹配/src/isomorphic/pages/XXXX/index.tsx成功的module，
+        //     // 2、把上一步取出来的module，
+        //     callback();
+        // });
+        compiler.hooks.entryOption.tap(pluginName, (context, entry) => {
             this.entryKeys = Object.keys(entry || {
                 index: ""
             });
         });
-        compiler.hooks.done.tap('GatherPageDepsPlugin', (stats, callback = () => {}) => {
+        compiler.hooks.done.tapAsync(pluginName, (stats: Stats, callback = () => {}) => {
             try {
                 const assetsMap = fs.readJsonSync(`${this.buildPath}/${this.assetsMainfest}`);
                 const assetKeys = Object.keys(assetsMap);
