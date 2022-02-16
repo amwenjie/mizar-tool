@@ -84,7 +84,7 @@ export class HelperTask extends TaskBase {
     }
 
     public async cleanAsync(): Promise<HelperTask> {
-        await new CleanTask().run();
+        await new CleanTask().setDebugMode(this.isDebugMode).run();
         return this;
     }
 }

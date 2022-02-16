@@ -199,45 +199,10 @@ export class IsomorphicPack extends WebpackTaskBase {
     }
 
     private shouldSourceModuled(resourcePath: string): boolean {
-        // log.info('resourcePath: ', resourcePath);
+        // log.info('####### resourcePath: ', resourcePath);
         // log.info('!/node_modules/i.test(resourcePath): ', !/node_modules/i.test(resourcePath));
-        // log.info('/components?|pages?/i.test(resourcePath): ', /components?|pages?/i.test(resourcePath));
-        return /components?|pages?/i.test(resourcePath);
-    }
-
-    private recursiveIssuer(m, c): string|false {
-        const issuer = c.moduleGraph.getIssuer(m);
-        // For webpack@4 chunks = m.issuer
-
-        if (issuer) {
-            return this.recursiveIssuer(issuer, c);
-        }
-
-        const chunks = c.chunkGraph.getModuleChunks(m);
-        // For webpack@4 chunks = m._chunks
-
-        for (const chunk of chunks) {
-            return chunk.name;
-        }
-
-        return false;
-    }
-
-    private getEntryPageModuleStyle(entry): object {
-        const map = {};
-        // .filter(name => !/^styleEntry\//.test(name))
-        Object.keys(entry).forEach(name => {
-            // const styleName = [name, "Styles"].join("");
-            map[name] = {
-                name: name,
-                test: (m, c, entry = name) => {
-                    return m.constructor.name === 'CssModule' && this.recursiveIssuer(m, c) === entry;
-                },
-                chunks: 'all',
-                enforce: true,
-            };
-        });
-        return map;
+        // log.info('$$$$$$$ /[\\/]components?[\\/]|[\\/]pages?[\\/]/i.test(resourcePath): ', /[\\/]components?[\\/]|[\\/]pages?[\\/]/i.test(resourcePath));
+        return /[\\/]components?[\\/]|[\\/]pages?[\\/]/i.test(resourcePath);
     }
 
     protected async compile(): Promise<void|Error> {
@@ -325,7 +290,6 @@ export class IsomorphicPack extends WebpackTaskBase {
                             chunks: "initial",
                             reuseExistingChunk: true,
                         },
-                        // ...this.getEntryPageModuleStyle(entry),
                     },
                 },
                 minimizer: [

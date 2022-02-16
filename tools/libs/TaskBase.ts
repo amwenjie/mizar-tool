@@ -16,13 +16,11 @@ export class TaskBase {
     protected src = "";
     protected dist = "";
     protected state = false;
-    protected spinner: Ora;
 
     constructor(name) {
         this.taskName = name;
         this.src = path.resolve("./src");
         this.dist = path.resolve("./build");
-        this.spinner = ora();
     }
 
     protected async compile(config?): Promise<void|Error> {
@@ -49,12 +47,14 @@ export class TaskBase {
     }
 
     public async run(...args): Promise<void> {
+        const spinner = !this.isDebugMode && ora();
+
         try {
-            this.spinner.start(`${this.taskName} compile task begin ...\r\n`);
+            spinner && spinner.start(`${this.taskName} compile task begin ...\r\n`);
             await this.compile(...args);
-            this.spinner.succeed(`${this.taskName} compile task end.\r\n`);
+            spinner && spinner.succeed(`${this.taskName} compile task end.\r\n`);
         } catch (error) {
-            this.spinner.fail(`${this.taskName} compile task ${red("fail")}.\r\n`)
+            spinner && spinner.fail(`${this.taskName} compile task ${red("fail")}.\r\n`)
             log.error(cyan(this.taskName), ".error: ", error.message);
             // if (argv.verbose || argv.debug) {
             log.error(error);

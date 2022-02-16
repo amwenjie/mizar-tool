@@ -66,13 +66,13 @@
     "@types/node": "~17.0.2",
     "@types/node-notifier": "~8.0.2",
     "@types/semver": "~7.3.9",
+    "@types/validate-npm-package-name": "~3.0.3",
     "@types/webpack": "~5.28.0",
     "@types/webpack-bundle-analyzer": "~4.4.1",
     "@types/webpack-env": "~1.16.3",
     "@types/webpack-manifest-plugin": "~3.0.5",
     "@types/webpack-node-externals": "~2.5.3",
     "@types/webpack-sources": "~3.2.0",
-    "@types/validate-npm-package-name": "~3.0.3",
     "@types/yargs": "~17.0.8",
     "ts-node": "~10.5.0"
   },
@@ -92,5 +92,5 @@
     "Test-ProjectBuild": "ts-node tools/ProjectBuild",
     "build": "ts-node ./Build"
   },
-  "version": "0.1.44"
+  "version": "0.1.45"
 }

@@ -60,14 +60,19 @@ export class ProjectBuild {
     private async build() {
         // 环境准备
         const task = new HelperTask();
+        task.setDebugMode(this.isDebugMode);
         task.start();
         try {
             // 1 clean
             await task.cleanAsync();
             const packageInfo = new PackageInfo();
-            packageInfo.setWatchMode(this.isWatchMode);
+            packageInfo
+                .setDebugMode(this.isDebugMode)
+                .setWatchMode(this.isWatchMode);
             await packageInfo.run();
-            await new CopyTask("./config", "./config").run();
+            const copyTask = new CopyTask("./config", "./config");
+            copyTask.setDebugMode(this.isDebugMode);
+            await copyTask.run();
             // 2. 生成同构下的ClientPack
             const isomorphicClientPack = new IsomorphicPack();
             isomorphicClientPack
@@ -75,12 +80,15 @@ export class ProjectBuild {
                 .setWatchMode(this.isWatchMode)
                 .setAnalyzMode(this.isAnalyzMode);
             await isomorphicClientPack.run();
-            // 3. 生成ServerApiPack
-            const serverApiPack = new ServerApiPack();
-            serverApiPack
-                .setWatchMode(this.isWatchMode)
-                .setDebugMode(this.isDebugMode);
-            await serverApiPack.run();
+            const shouldServerApiBuild = ConfigHelper.get("serverapi", false);
+            if (shouldServerApiBuild) {
+                // 3. 生成ServerApiPack
+                const serverApiPack = new ServerApiPack();
+                serverApiPack
+                    .setWatchMode(this.isWatchMode)
+                    .setDebugMode(this.isDebugMode);
+                await serverApiPack.run();
+            }
             // 4. 生成ServerPack
             const serverPack = new ServerPack();
             serverPack

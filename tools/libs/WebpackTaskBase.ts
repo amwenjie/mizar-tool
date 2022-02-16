@@ -94,7 +94,7 @@ export class WebpackTaskBase extends TaskBase {
         }
     }
 
-    protected appendCompileDoneCallback(fn) {
+    protected compileFinishedCallback(fn) {
         WebpackTaskBase.compileDoneCallback.push(fn);
     }
 
@@ -130,7 +130,7 @@ export class WebpackTaskBase extends TaskBase {
             });
             compiler.hooks.done.tapAsync(hooksName, async (stats: Stats, callback = () => {}) => {
                 log.info(cyan(this.taskName), "done, newhash: ", stats.hash, " , oldhash: ", WebpackTaskBase.compileQueue[this.index].hash);
-                const prevHash = WebpackTaskBase.compileQueue[this.index].hash;
+                // const prevHash = WebpackTaskBase.compileQueue[this.index].hash;
                 // if (prevHash !== stats.hash) {
                 await this.compileDone(stats);
                 // } else {

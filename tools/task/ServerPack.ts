@@ -242,7 +242,8 @@ export class ServerPack extends WebpackTaskBase {
 
     protected async done(): Promise<void> {
         console.log(green(`${cyan(this.taskName)}, success`));
-        this.appendCompileDoneCallback(async (): Promise<void> => {
+        console.log("this.autoRun: ", this.autoRun, " , this.isDebugMode: ", this.isDebugMode);
+        this.compileFinishedCallback(async (): Promise<void> => {
             if (this.autoRun === true && this.isDebugMode === true) {
                 if (this.debugPort < 1) {
                     return;

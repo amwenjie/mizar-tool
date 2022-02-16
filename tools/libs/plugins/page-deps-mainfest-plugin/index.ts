@@ -9,27 +9,27 @@ interface IOptions {
     isDebug: boolean;
 }
 
-function gatherDeps(bundleId: string, assetsKeys: string[]): string[] {
-    const deps = [];
+function gatherDeps(bundleId: string, assetsKeys: string[]): Set<string> {
+    const deps: Set<string> = new Set();
     // 遍历所有依赖bundle id
     if (bundleId.indexOf("(") > -1) {
         const regexp = /\(('|")?([^"')]+)\1?\)/g;
         let matched;
         while (matched = regexp.exec(bundleId)) {
             if (assetsKeys.some(k => new RegExp(matched[2] + "(?:_.{8})?\\.css$").test(k))) {
-                deps.push(matched[2]);
+                deps.add(matched[2]);
             }
         }
     } else {
         if (assetsKeys.some(k => new RegExp(bundleId + "(?:_.{8})?\\.css$").test(k))) {
-            deps.push(bundleId);
+            deps.add(bundleId);
         }
     }
     return deps;
 }
 
 function getAsyncLoadComDeps(pageRouterContent, assetsKeys) {
-    const depsMap: {[key: string]: string[]} = {};
+    const depsMap: {[key: string]: Set<string>} = {};
     // 单个依赖的按需加载路由组件
     const singleDepRegexp = /\belement\:[\s\S]+?loader\:[\s\S]+?"?([^"\)\(]+)"?\)\.then\([\s\S]*?name\:\s*"([^"]+)"/g;
     // 多个依赖的按需加载路由组件
@@ -57,16 +57,16 @@ function gatherPageComDeps(file: string, assetsKeys: string[], entryKey: string,
                 pageRouterContent = pageRouterContentMatch[1];
             }
         }
-        const depsMap: {[key: string]: string[]} = getAsyncLoadComDeps(pageRouterContent, assetsKeys);
+        const depsMap: {[key: string]: Set<string>} = getAsyncLoadComDeps(pageRouterContent, assetsKeys);
         // 再遍历不是按需加载路由组件
         const nameRegExp = /\bname\b[^"]+"([^"]+)"/g;
         let dependencies;
         while (dependencies = nameRegExp.exec(pageRouterContent)) {
             const pagePathKey: string = `page/${dependencies[1]}`;
             if (Array.isArray(depsMap[pagePathKey])) {
-                depsMap[pagePathKey].push(entryKey);
+                depsMap[pagePathKey].add(entryKey);
             } else {
-                depsMap[pagePathKey] = [entryKey];
+                depsMap[pagePathKey] = new Set([entryKey]);
             }
         }
         return depsMap;
@@ -108,7 +108,9 @@ export default class GatherPageDepsPlugin {
                     const assetPath = assetsMap[index[0]];
                     if (assetPath) {
                         const map = gatherPageComDeps(path.resolve(this.buildPath + assetPath), assetKeys, entryKey, this.options.isDebug);
-                        Object.assign(depsMap, map);
+                        Object.keys(map).forEach(key => {
+                            depsMap[key] = Array.from(map[key]);
+                        });
                     }
                 });
                 if (JSON.stringify(depsMap) !== "{}") {
