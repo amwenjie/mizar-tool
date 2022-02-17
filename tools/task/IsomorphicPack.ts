@@ -20,6 +20,8 @@ import { WebpackTaskBase } from "../libs/WebpackTaskBase";
 import { HelperTask } from "./HelperTask";
 
 const log = Logger("IsomorphicPack");
+
+const cssModuleRegExp = /[\\/]components?[\\/]|[\\/]pages?[\\/]/i;
 export class IsomorphicPack extends WebpackTaskBase {
     private clientEntrySrc = "src/isomorphic/pageRouters";
     private pageSrc = "src/isomorphic/pages";
@@ -198,11 +200,15 @@ export class IsomorphicPack extends WebpackTaskBase {
         });
     }
 
+    private getCssModuleMode(resourcePath: string): "global" | "local" {
+        if (cssModuleRegExp.test(resourcePath)) {
+            return "local";
+        }
+        return "global";
+    }
+
     private shouldSourceModuled(resourcePath: string): boolean {
-        // log.info('####### resourcePath: ', resourcePath);
-        // log.info('!/node_modules/i.test(resourcePath): ', !/node_modules/i.test(resourcePath));
-        // log.info('$$$$$$$ /[\\/]components?[\\/]|[\\/]pages?[\\/]/i.test(resourcePath): ', /[\\/]components?[\\/]|[\\/]pages?[\\/]/i.test(resourcePath));
-        return /[\\/]components?[\\/]|[\\/]pages?[\\/]/i.test(resourcePath);
+        return cssModuleRegExp.test(resourcePath);
     }
 
     protected async compile(): Promise<void|Error> {
@@ -344,9 +350,7 @@ export class IsomorphicPack extends WebpackTaskBase {
             ],
         });
         rules.push({
-            test: /[\\/]isomorphic[\\/]pageRouters(?:[\\/][^\\/]+?){1}\.tsx?$/,
-            // test: /[\\/]isomorphic[\\/]pageRouters[\\/].+\.tsx?$/,
-            include: [path.resolve(`${this.rootPath}src`)],
+            test: /[\\/]src[\\/]isomorphic[\\/]pageRouters(?:[\\/][^\\/]+?){1}\.tsx?$/,
             use: [
                 {
                     loader: path.resolve(__dirname, "../libs/loaders/router-loadable-loader"),
@@ -354,8 +358,7 @@ export class IsomorphicPack extends WebpackTaskBase {
             ],
         });
         rules.push({
-            test: /[\\/]isomorphic[\\/].+[\\/][A-Z][^\\/]+[\\/]index\.tsx?$/,
-            include: [path.resolve(`${this.rootPath}src`)],
+            test: /[\\/]src[\\/]isomorphic[\\/].+[\\/][A-Z][^\\/]+[\\/]index\.tsx?$/,
             use: [
                 {
                     loader: path.resolve(__dirname, "../libs/loaders/connect-default-param-loader"),
@@ -368,14 +371,15 @@ export class IsomorphicPack extends WebpackTaskBase {
                 {
                     loader: MiniCssExtractPlugin.loader,
                 },
+                "@teamsupercell/typings-for-css-modules-loader",
                 {
                     loader: "css-loader",
                     options: {
                         importLoaders: 1,
                         sourceMap,
-                        // modules: true,
                         modules: {
                             auto: this.shouldSourceModuled,
+                            mode: this.getCssModuleMode,
                             localIdentName: localIdentName,
                             namedExport: true,
                         },
@@ -403,6 +407,7 @@ export class IsomorphicPack extends WebpackTaskBase {
                 {
                     loader: MiniCssExtractPlugin.loader,
                 },
+                "@teamsupercell/typings-for-css-modules-loader",
                 {
                     loader: "css-loader",
                     options: {
@@ -410,6 +415,7 @@ export class IsomorphicPack extends WebpackTaskBase {
                         sourceMap,
                         modules: {
                             auto: this.shouldSourceModuled,
+                            mode: this.getCssModuleMode,
                             localIdentName: localIdentName,
                             namedExport: true,
                         },
@@ -446,6 +452,7 @@ export class IsomorphicPack extends WebpackTaskBase {
                 {
                     loader: MiniCssExtractPlugin.loader,
                 },
+                "@teamsupercell/typings-for-css-modules-loader",
                 {
                     loader: "css-loader",
                     options: {
@@ -453,6 +460,7 @@ export class IsomorphicPack extends WebpackTaskBase {
                         sourceMap,
                         modules: {
                             auto: this.shouldSourceModuled,
+                            mode: this.getCssModuleMode,
                             localIdentName: localIdentName,
                             namedExport: true,
                         },

@@ -7,6 +7,7 @@
     "url": "https://github.com/amwenjie/mizar-tool/issues"
   },
   "dependencies": {
+    "@teamsupercell/typings-for-css-modules-loader": "~2.5.1",
     "autoprefixer": "~10.4.2",
     "chokidar": "~3.5.3",
     "colorette": "~2.0.16",
@@ -91,5 +92,5 @@
     "Test-ProjectBuild": "ts-node tools/ProjectBuild",
     "build": "ts-node ./Build"
   },
-  "version": "0.1.46"
+  "version": "0.1.47"
 }

@@ -178,8 +178,7 @@ export class StandalonePack extends WebpackTaskBase {
             ],
         });
         rules.push({
-            include: [path.resolve(`${this.rootPath}src`)],
-            test: /[\\/]isomorphic[\\/]pageRouters(?:[\\/][^\\/]+?){1}\.tsx?$/,
+            test: /[\\/]src[\\/]isomorphic[\\/]pageRouters(?:[\\/][^\\/]+?){1}\.tsx?$/,
             use: [
                 {
                     loader: path.resolve(__dirname, "../libs/loaders/router-loadable-loader"),
@@ -190,8 +189,7 @@ export class StandalonePack extends WebpackTaskBase {
             ],
         });
         rules.push({
-            include: [path.resolve(`${this.rootPath}src`)],
-            test: /[\\/]isomorphic[\\/].+[\\/][A-Z][^\\/]+[\\/]index\.tsx?$/,
+            test: /[\\/]src[\\/]isomorphic[\\/].+[\\/][A-Z][^\\/]+[\\/]index\.tsx?$/,
             use: [
                 {
                     loader: path.resolve(__dirname, "../libs/loaders/connect-default-param-loader"),

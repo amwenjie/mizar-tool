@@ -92,8 +92,7 @@ export class ServerPack extends WebpackTaskBase {
             ],
         });
         rules.push({
-            include: [path.resolve(`${this.rootPath}src`)],
-            test: /[\\/]isomorphic[\\/]pageRouters(?:[\\/][^\\/]+?){1}\.tsx?$/,
+            test: /[\\/]src[\\/]isomorphic[\\/]pageRouters(?:[\\/][^\\/]+?){1}\.tsx?$/,
             use: [
                 {
                     loader: path.resolve(__dirname, "../libs/loaders/router-loadable-loader"),
@@ -104,8 +103,7 @@ export class ServerPack extends WebpackTaskBase {
             ],
         });
         rules.push({
-            include: [path.resolve(`${this.rootPath}src`)],
-            test: /[\\/]isomorphic[\\/].+[\\/][A-Z][^\\/]+[\\/]index\.tsx?$/,
+            test: /[\\/]src[\\/]isomorphic[\\/].+[\\/][A-Z][^\\/]+[\\/]index\.tsx?$/,
             use: [
                 {
                     loader: path.resolve(__dirname, "../libs/loaders/connect-default-param-loader"),
@@ -244,9 +242,6 @@ export class ServerPack extends WebpackTaskBase {
         console.log(green(`${cyan(this.taskName)}, success`));
         this.compileFinishedCallback(async (): Promise<void> => {
             if (this.autoRun === true && this.isDebugMode === true) {
-                if (this.debugPort < 1) {
-                    return;
-                }
                 let serverEntry = "index";
                 await RunServer(serverEntry, this.debugPort);
             }
