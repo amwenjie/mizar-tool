@@ -10,10 +10,10 @@ import webpack, {
 import nodeExternals from "webpack-node-externals";
 import getGlobalConfig, { IGlobalConfig, devLocalIdentName, prodLocalIdentName } from "../getGlobalConfig";
 import { ConfigHelper } from "../libs/ConfigHelper";
+import Logger from "../libs/Logger";
 import { WebpackTaskBase } from "../libs/WebpackTaskBase";
 import { HelperTask } from "./HelperTask";
 import RunServer from "./RunServer";
-import Logger from "../libs/Logger";
 const log = Logger("ServerPack");
 
 export class ServerPack extends WebpackTaskBase {
@@ -93,7 +93,7 @@ export class ServerPack extends WebpackTaskBase {
         });
         rules.push({
             include: [path.resolve(`${this.rootPath}src`)],
-            test: /[\\/]isomorphic[\\/]pageRouters[\\/].+\.tsx?$/,
+            test: /[\\/]isomorphic[\\/]pageRouters(?:[\\/][^\\/]+?){1}\.tsx?$/,
             use: [
                 {
                     loader: path.resolve(__dirname, "../libs/loaders/router-loadable-loader"),
@@ -242,7 +242,6 @@ export class ServerPack extends WebpackTaskBase {
 
     protected async done(): Promise<void> {
         console.log(green(`${cyan(this.taskName)}, success`));
-        console.log("this.autoRun: ", this.autoRun, " , this.isDebugMode: ", this.isDebugMode);
         this.compileFinishedCallback(async (): Promise<void> => {
             if (this.autoRun === true && this.isDebugMode === true) {
                 if (this.debugPort < 1) {

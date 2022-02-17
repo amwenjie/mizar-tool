@@ -6,7 +6,8 @@ export default function (source) {
     const sourcePath = this.resourcePath;
     let rplSource = source;
     if (
-        /[\\/]src[\\/]isomorphic[\\/]pageRouters[\\/].+\.tsx?$/.test(sourcePath)
+        /[\\/]src[\\/]isomorphic[\\/]pageRouters(?:[\\/][^\\/]+?){1}\.tsx?$/.test(sourcePath)
+        // /[\\/]src[\\/]isomorphic[\\/]pageRouters[\\/].+\.tsx?$/.test(sourcePath)
         // || proceed.indexOf(sourcePath) > -1
     ) {
         const options = this.getOptions();

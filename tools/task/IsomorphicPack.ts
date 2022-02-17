@@ -15,7 +15,7 @@ import { WebpackManifestPlugin } from "webpack-manifest-plugin";
 import getGlobalConfig, { IGlobalConfig, devLocalIdentName, prodLocalIdentName } from "../getGlobalConfig";
 import { ConfigHelper } from "../libs/ConfigHelper";
 import Logger from "../libs/Logger";
-import GatherPageDepsPlugin from "../libs/plugins/page-deps-mainfest-plugin";
+import SSRPageDepsPlugin from "../libs/plugins/ssr-page-deps-plugin";
 import { WebpackTaskBase } from "../libs/WebpackTaskBase";
 import { HelperTask } from "./HelperTask";
 
@@ -344,7 +344,8 @@ export class IsomorphicPack extends WebpackTaskBase {
             ],
         });
         rules.push({
-            test: /[\\/]isomorphic[\\/]pageRouters[\\/].+\.tsx?$/,
+            test: /[\\/]isomorphic[\\/]pageRouters(?:[\\/][^\\/]+?){1}\.tsx?$/,
+            // test: /[\\/]isomorphic[\\/]pageRouters[\\/].+\.tsx?$/,
             include: [path.resolve(`${this.rootPath}src`)],
             use: [
                 {
@@ -537,9 +538,7 @@ export class IsomorphicPack extends WebpackTaskBase {
         plugins.push(new WebpackManifestPlugin({
             fileName: path.resolve(this.globalConfig.rootOutput, this.globalConfig.assetsMainfest),
         }));
-        plugins.push(new GatherPageDepsPlugin({
-            isDebug: this.isDebugMode,
-        }));
+        plugins.push(new SSRPageDepsPlugin());
         // if (this.isDebugMode) {
         //     plugins.push(new webpack.HotModuleReplacementPlugin());
         // }

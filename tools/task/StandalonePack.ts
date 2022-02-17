@@ -179,7 +179,7 @@ export class StandalonePack extends WebpackTaskBase {
         });
         rules.push({
             include: [path.resolve(`${this.rootPath}src`)],
-            test: /[\\/]isomorphic[\\/]pageRouters[\\/].+\.tsx?$/,
+            test: /[\\/]isomorphic[\\/]pageRouters(?:[\\/][^\\/]+?){1}\.tsx?$/,
             use: [
                 {
                     loader: path.resolve(__dirname, "../libs/loaders/router-loadable-loader"),
