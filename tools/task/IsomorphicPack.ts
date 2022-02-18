@@ -21,7 +21,7 @@ import { HelperTask } from "./HelperTask";
 
 const log = Logger("IsomorphicPack");
 
-const cssModuleRegExp = /[\\/]components?[\\/]|[\\/]pages?[\\/]/i;
+const cssModuleRegExp = /[\\/]components?[\\/]|[\\/]pages?[\\/]|\.module\.(?:css|less|s[ac]ss)$/i;
 export class IsomorphicPack extends WebpackTaskBase {
     private clientEntrySrc = "src/isomorphic/pageRouters";
     private pageSrc = "src/isomorphic/pages";
@@ -313,20 +313,63 @@ export class IsomorphicPack extends WebpackTaskBase {
         };
     }
 
-    private getRules(): (RuleSetRule | "...")[] {
+    private getCssLoaders(extraLoaders = []) {
+        const loaders = [];
+        loaders.push({
+            loader: MiniCssExtractPlugin.loader,
+        });
+        if (this.isDebugMode) {
+            loaders.push(
+                {
+                    loader: path.resolve(__dirname, "../libs/loaders/typing-for-css-module"),
+                }
+            );
+        }
         let localIdentName = prodLocalIdentName;
         let sourceMap = false;
         if (this.isDebugMode) {
             localIdentName = devLocalIdentName;
             sourceMap = true;
         }
+        return loaders.concat([
+            {
+                loader: "css-loader",
+                options: {
+                    importLoaders: 1 + extraLoaders.length,
+                    sourceMap,
+                    modules: {
+                        auto: this.shouldSourceModuled,
+                        mode: this.getCssModuleMode,
+                        localIdentName,
+                        namedExport: true,
+                    },
+                },
+            },
+            {
+                loader: "postcss-loader",
+                options: Object.assign(
+                    {
+                        postcssOptions: {
+                            plugins: [
+                                "postcss-preset-env",
+                            ],
+                        },
+                    },
+                    ConfigHelper.get("postcss-loader", {}),
+                ),
+            },
+        ], extraLoaders);
+    }
+
+    private getRules(): (RuleSetRule | "...")[] {
         const tslintPath = path.resolve(`${this.rootPath}tslint.json`);
         const tsConfigPath = path.resolve(`${this.rootPath}tsconfig.json`);
         const rules = [];
         const tslintConfig = ConfigHelper.get("tslint", true);
         if (tslintConfig) {
             rules.push({
-                test: /\.tsx?$/,
+                exclude: /[\\/]node_modules[\\/]|\.d\.ts$/i,
+                test: /\.tsx?$/i,
                 enforce: "pre",
                 loader: "tslint-loader",
                 options: {
@@ -336,8 +379,8 @@ export class IsomorphicPack extends WebpackTaskBase {
             });
         }
         rules.push({
+            exclude: /[\\/]node_modules[\\/]|\.d\.ts$/i,
             test: /\.tsx?$/i,
-            exclude: /\.d\.ts$/i,
             use: [
                 {
                     loader: "ts-loader",
@@ -350,6 +393,7 @@ export class IsomorphicPack extends WebpackTaskBase {
             ],
         });
         rules.push({
+            exclude: /\.d\.ts$/i,
             test: /[\\/]src[\\/]isomorphic[\\/]pageRouters(?:[\\/][^\\/]+?){1}\.tsx?$/,
             use: [
                 {
@@ -358,6 +402,7 @@ export class IsomorphicPack extends WebpackTaskBase {
             ],
         });
         rules.push({
+            exclude: /\.d\.ts$/i,
             test: /[\\/]src[\\/]isomorphic[\\/].+[\\/][A-Z][^\\/]+[\\/]index\.tsx?$/,
             use: [
                 {
@@ -367,128 +412,37 @@ export class IsomorphicPack extends WebpackTaskBase {
         });
         rules.push({
             test: /\.css$/i,
-            use: [
-                {
-                    loader: MiniCssExtractPlugin.loader,
-                },
-                "@teamsupercell/typings-for-css-modules-loader",
-                {
-                    loader: "css-loader",
-                    options: {
-                        importLoaders: 1,
-                        sourceMap,
-                        modules: {
-                            auto: this.shouldSourceModuled,
-                            mode: this.getCssModuleMode,
-                            localIdentName: localIdentName,
-                            namedExport: true,
-                        },
-                    },
-                },
-                {
-                    loader: "postcss-loader",
-                    options: Object.assign(
-                        {
-                            postcssOptions: {
-                                plugins: [
-                                    "postcss-preset-env",
-                                ],
-                            },
-                        },
-                        ConfigHelper.get("postcss-loader", {}),
-                    ),
-                },
-            ],
+            use: this.getCssLoaders(),
             type: "javascript/auto",
         });
         rules.push({
             test: /\.less$/i,
-            use: [
-                {
-                    loader: MiniCssExtractPlugin.loader,
-                },
-                "@teamsupercell/typings-for-css-modules-loader",
-                {
-                    loader: "css-loader",
-                    options: {
-                        importLoaders: 2,
-                        sourceMap,
-                        modules: {
-                            auto: this.shouldSourceModuled,
-                            mode: this.getCssModuleMode,
-                            localIdentName: localIdentName,
-                            namedExport: true,
-                        },
-                    },
-                },
-                {
-                    loader: "postcss-loader",
-                    options: Object.assign(
-                            {
-                            postcssOptions: {
-                                plugins: [
-                                    "postcss-preset-env",
-                                ],
-                            },
-                        },
-                        ConfigHelper.get("postcss-loader", {}),
-                    ),
-                },
+            use: this.getCssLoaders([
                 {
                     loader: "less-loader",
                     options: Object.assign(
                         {
-                            sourceMap,
+                            sourceMap: this.isDebugMode,
                         },
                         ConfigHelper.get("less-loader", {}),
                     ),
                 },
-            ],
+            ]),
             type: "javascript/auto",
         });
         rules.push({
             test: /\.s[ac]ss$/i,
-            use: [
-                {
-                    loader: MiniCssExtractPlugin.loader,
-                },
-                "@teamsupercell/typings-for-css-modules-loader",
-                {
-                    loader: "css-loader",
-                    options: {
-                        importLoaders: 2,
-                        sourceMap,
-                        modules: {
-                            auto: this.shouldSourceModuled,
-                            mode: this.getCssModuleMode,
-                            localIdentName: localIdentName,
-                            namedExport: true,
-                        },
-                    },
-                },
-                {
-                    loader: "postcss-loader",
-                    options: Object.assign(
-                        {
-                            postcssOptions: {
-                                plugins: [
-                                    "postcss-preset-env",
-                                ],
-                            },
-                        },
-                        ConfigHelper.get("postcss-loader", {}),
-                    ),
-                },
+            use: this.getCssLoaders([
                 {
                     loader: "sass-loader",
                     options: Object.assign(
                         {
-                            sourceMap,
+                            sourceMap: this.isDebugMode,
                         },
                         ConfigHelper.get("sass-loader", {}),
                     ),
                 },
-            ],
+            ]),
             type: "javascript/auto",
         });
         rules.push({

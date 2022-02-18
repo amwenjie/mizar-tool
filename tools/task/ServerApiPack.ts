@@ -76,7 +76,7 @@ export class ServerApiPack extends WebpackTaskBase {
         const tslintConfig = ConfigHelper.get("tslint", true);
         if (tslintConfig) {
             rules.push({
-                exclude: /node_modules/,
+                exclude: /node_modules|\.d\.ts$/i,
                 test: /\.ts(x?)$/,
                 enforce: "pre",
                 loader: "tslint-loader",
@@ -109,7 +109,7 @@ export class ServerApiPack extends WebpackTaskBase {
                 rules: rules.concat([
                     {
                         test: /\.tsx?$/,
-                        exclude: /node_modules|\.d\.ts$/,
+                        exclude: /[\\/]node_modules[\\/]|\.d\.ts$/i,
                         use: [
                             {
                                 loader: "ts-loader",

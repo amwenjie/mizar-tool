@@ -1,26 +1,32 @@
 declare module '*.css' {
-    type Primitive = string | number | boolean | null | undefined;
-    const content: {
-        [className: string]: string;
-        (...names: Array<Primitive | Record<string, Primitive>>): string;
-    };
-    export default content;
+    namespace ModuleStyleNamespace {
+        export interface IModuleStyle {
+            [key: string]: string;
+        }
+    }
+    const StyleModule: ModuleStyleNamespace.IModuleStyle;
+    export = StyleModule;
 }
 
 declare module '*.less' {
-    const content: {
-        [className: string]: string
-    };
-    export default content;
+    namespace ModuleStyleNamespace {
+        export interface IModuleStyle {
+            [key: string]: string;
+        }
+    }
+    const StyleModule: ModuleStyleNamespace.IModuleStyle;
+    export = StyleModule;
 }
 
 declare module '*.scss' {
-    const content: {
-        [className: string]: string
-    };
-    export default content;
+    namespace ModuleStyleNamespace {
+        export interface IModuleStyle {
+            [key: string]: string;
+        }
+    }
+    const StyleModule: ModuleStyleNamespace.IModuleStyle;
+    export = StyleModule;
 }
-
 declare module '*.png' {
     const url: string;
     export default url;

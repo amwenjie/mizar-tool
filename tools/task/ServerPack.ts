@@ -67,8 +67,8 @@ export class ServerPack extends WebpackTaskBase {
         const tslintConfig = ConfigHelper.get("tslint", true);
         if (tslintConfig) {
             rules.push({
-                exclude: /node_modules/,
-                test: /\.ts(x?)$/,
+                exclude: /[\\/]node_modules[\\/]|\.d\.ts$/i,
+                test: /\.ts(x?)$/i,
                 enforce: "pre",
                 loader: "tslint-loader",
                 options: {
@@ -78,8 +78,8 @@ export class ServerPack extends WebpackTaskBase {
             });
         }
         rules.push({
+            exclude: /[\\/]node_modules[\\/]|\.d\.ts$/i,
             test: /\.tsx?$/i,
-            exclude: /node_modules|\.d\.ts$/i,
             use: [
                 {
                     loader: "ts-loader",
@@ -92,6 +92,7 @@ export class ServerPack extends WebpackTaskBase {
             ],
         });
         rules.push({
+            exclude: /\.d\.ts$/i,
             test: /[\\/]src[\\/]isomorphic[\\/]pageRouters(?:[\\/][^\\/]+?){1}\.tsx?$/,
             use: [
                 {
@@ -103,6 +104,7 @@ export class ServerPack extends WebpackTaskBase {
             ],
         });
         rules.push({
+            exclude: /\.d\.ts$/i,
             test: /[\\/]src[\\/]isomorphic[\\/].+[\\/][A-Z][^\\/]+[\\/]index\.tsx?$/,
             use: [
                 {

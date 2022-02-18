@@ -148,6 +148,7 @@ export class WebpackTaskBase extends TaskBase {
             // });
             if (this.isWatchMode) {
                 this.watcher = compiler.watch({
+                    ignored: /[\\/]node_modules[\\/]|\.d\.ts$|\.js\.map$|\.css\.map$/i,
                     aggregateTimeout: 600,
                 }, callback);
             } else {

@@ -164,8 +164,8 @@ export class StandalonePack extends WebpackTaskBase {
         }
         const rules = [];
         rules.push({
+            exclude: /[\\/]node_modules[\\/]|\.d\.ts$/i,
             test: /\.tsx?$/i,
-            exclude: /\.d\.ts$/i,
             use: [
                 {
                     loader: "ts-loader",
@@ -178,6 +178,7 @@ export class StandalonePack extends WebpackTaskBase {
             ],
         });
         rules.push({
+            exclude: /\.d\.ts$/i,
             test: /[\\/]src[\\/]isomorphic[\\/]pageRouters(?:[\\/][^\\/]+?){1}\.tsx?$/,
             use: [
                 {
@@ -189,6 +190,7 @@ export class StandalonePack extends WebpackTaskBase {
             ],
         });
         rules.push({
+            exclude: /\.d\.ts$/i,
             test: /[\\/]src[\\/]isomorphic[\\/].+[\\/][A-Z][^\\/]+[\\/]index\.tsx?$/,
             use: [
                 {
