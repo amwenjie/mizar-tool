@@ -45,7 +45,7 @@ npm install -g alcor
 
 ### 4. 版本0.1.32(含)以前connect用法：connect()()()，0.1.33(含)以后用法：connect()()，会对第二次调用的中间两个缺省参数注入默认值
 
-#### 5. 版本0.1.33(含)以前支持应用路由配置语法为react-router-config v5语法，0.1.34(含)以后**只支持**react-router v6 useRoutes语法，[两个配置区别点击此处](https://reactrouter.com/docs/en/v6/upgrading/v5#use-useroutes-instead-of-react-router-config)。
+### 5. 版本0.1.33(含)以前支持应用路由配置语法为react-router-config v5语法，0.1.34(含)以后**只支持**react-router v6 useRoutes语法，[两个配置区别点击此处](https://reactrouter.com/docs/en/v6/upgrading/v5#use-useroutes-instead-of-react-router-config)。
 
 ### 6. 版本0.1.38开始支持standalone形式编译产出(ProjectBuild和PackageBuild都支持)，standalone代表每个standalone的文件之间没有公共文件，即哪怕在standalone中的文件有很多共同的内容也不会提取runtime、lib这种公共文件，他们是各自独立的，可以想象成每个standalone的文件就是一个第三方库，可以放在cdn，然后直接在html中以```<script>```的形式引入。
    * 在config/configure.json中增加standalone配置，value支持true、object。
@@ -106,4 +106,4 @@ npm install -g alcor
 
 ### 7. 支持css module
    * 模块化样式文件的支持设计理念是：基于目录的规则，在/components?|pages?/目录内的所有.css|.less|.scss|.sass样式文件都会被当作模块化样式文件。
-   * (基于目录的规则出发点事，上述目录中的组件对应样式都应该是模块化的，如果有不需要模块化的样式，说明是可以不专属于对应组件的，应该放在其他目录，为了兼容个别特殊需要文件名包含.module. ，同样视为模块化样式文件。）
+   * (基于目录的规则设计是因为上述目录中的组件对应样式都应该是模块化的，如果有不需要模块化的样式，说明是可以不专属于对应组件的，应该放在common或public目录，为了兼容个别特殊需要，文件名包含.module. ，同样视为模块化样式文件。）
