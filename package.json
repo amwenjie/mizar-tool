@@ -48,7 +48,7 @@
     "tslint-loader": "~3.5.4",
     "typescript": "~4.5.5",
     "validate-npm-package-name": "~3.0.0",
-    "webpack": "~5.69.0",
+    "webpack": "~5.69.1",
     "webpack-bundle-analyzer": "~4.5.0",
     "webpack-manifest-plugin": "~4.1.1",
     "webpack-node-externals": "~3.0.0",
@@ -91,5 +91,5 @@
     "Test-ProjectBuild": "ts-node tools/ProjectBuild",
     "build": "ts-node ./Build"
   },
-  "version": "0.1.49"
+  "version": "0.1.52"
 }

@@ -12,7 +12,7 @@ export class CleanTask extends TaskBase {
 
     protected async compile(): Promise<void> {
         log.info("->", cyan(this.taskName), HelperTask.taking());
-        await fs.remove("build");
+        await fs.remove("dist");
     }
 }
 

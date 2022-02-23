@@ -1,6 +1,7 @@
 .history
 *.js.map
 build
+dist
 node_modules
 .scannerwork
 logs

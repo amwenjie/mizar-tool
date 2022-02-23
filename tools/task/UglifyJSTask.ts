@@ -12,13 +12,13 @@ export class UglifyJSTask extends TaskBase {
     private uglifyProcess (src) {
         return gulp.src(src)
             .pipe(uglify())
-            .pipe(gulp.dest("./build"));
+            .pipe(gulp.dest("./dist"));
     }
     
     protected async compile(): Promise<void|Error> {
         log.info("->", "UglifyJSTask", HelperTask.taking());
         return new Promise((resolve, reject) => {
-            this.uglifyProcess("./build/**/*.js")
+            this.uglifyProcess("./dist/**/*.js")
                 .on("end", e => {
                     if (e) {
                         reject(e);

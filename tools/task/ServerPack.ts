@@ -3,6 +3,7 @@ import ESLintWebpackPlugin from "eslint-webpack-plugin";
 import fs from "fs-extra";
 import path from "path";
 import webpack, {
+    container,
     type Compiler,
     type RuleSetRule,
     type WebpackPluginInstance,
@@ -12,6 +13,7 @@ import getGlobalConfig, { IGlobalConfig, devLocalIdentName, prodLocalIdentName }
 import { ConfigHelper } from "../libs/ConfigHelper";
 import Logger from "../libs/Logger";
 import { WebpackTaskBase } from "../libs/WebpackTaskBase";
+import NodeModuleFederation from "../libs/plugins/node-module-federation-plugin";
 import { HelperTask } from "./HelperTask";
 import RunServer from "./RunServer";
 const log = Logger("ServerPack");
@@ -50,6 +52,13 @@ export class ServerPack extends WebpackTaskBase {
         });
         if (esLintPluginConfig) {
             plugins.push(new ESLintWebpackPlugin(esLintPluginConfig));
+        }
+        const moduleFederationConfig = ConfigHelper.get("federation", false);
+        if (moduleFederationConfig && moduleFederationConfig.remotes) {
+            delete moduleFederationConfig.exposes;
+            delete moduleFederationConfig.filename;
+            delete moduleFederationConfig.name;
+            plugins.push(new NodeModuleFederation(moduleFederationConfig));
         }
         return plugins;
     }

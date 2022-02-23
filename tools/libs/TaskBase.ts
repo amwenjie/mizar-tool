@@ -20,7 +20,7 @@ export class TaskBase {
     constructor(name) {
         this.taskName = name;
         this.src = path.resolve("./src");
-        this.dist = path.resolve("./build");
+        this.dist = path.resolve("./dist");
     }
 
     protected async compile(config?): Promise<void|Error> {

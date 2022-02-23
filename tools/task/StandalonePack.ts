@@ -9,6 +9,7 @@ import path from "path";
 import StylelintPlugin from "stylelint-webpack-plugin";
 import TerserJSPlugin from "terser-webpack-plugin";
 import webpack, {
+    container,
     type Compiler,
     type RuleSetRule,
     type WebpackPluginInstance,
@@ -359,6 +360,11 @@ export class StandalonePack extends WebpackTaskBase {
             filename: "[name].css",
             // chunkFilename: "[name]-chunk-[id]_[contenthash:8].css",
         }));
+        const moduleFederationConfig = ConfigHelper.get("federation", false);
+        if (moduleFederationConfig && moduleFederationConfig.remotes) {
+            delete moduleFederationConfig.exposes;
+            plugins.push(new container.ModuleFederationPlugin(moduleFederationConfig));
+        }
         if (this.isAnalyzMode) {
             plugins.push(new BundleAnalyzerPlugin({
                 analyzerMode: this.isDebugMode ? "server" : "disabled",

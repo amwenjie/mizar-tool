@@ -6,7 +6,7 @@
         "importHelpers": true,
         "allowJs": false,
         "baseUrl": "src",
-        "outDir": "build",
+        "outDir": "dist",
         "pretty": false,
         "module": "CommonJS",
         "jsx": "react",

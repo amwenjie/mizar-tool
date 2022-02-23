@@ -9,7 +9,12 @@ import MiniCssExtractPlugin from "mini-css-extract-plugin";
 import path from "path";
 import StylelintPlugin from "stylelint-webpack-plugin";
 import TerserJSPlugin from "terser-webpack-plugin";
-import webpack, { type Compiler, type RuleSetRule, type WebpackPluginInstance } from "webpack";
+import webpack, { 
+    container,
+    type Compiler,
+    type RuleSetRule,
+    type WebpackPluginInstance
+} from "webpack";
 import { BundleAnalyzerPlugin } from "webpack-bundle-analyzer";
 import { WebpackManifestPlugin } from "webpack-manifest-plugin";
 import getGlobalConfig, { IGlobalConfig, devLocalIdentName, prodLocalIdentName } from "../getGlobalConfig";
@@ -179,11 +184,11 @@ export class IsomorphicPack extends WebpackTaskBase {
     private async scan(): Promise<webpack.EntryObject> {
         return new Promise(async resolve => {
             Promise
-                .all([this.pageScan(), this.clientEntryScan()])
-                .then((entries: [object, object]) => {
+                .all([this.clientEntryScan()])
+                .then((entries: object) => {
                     const combinedEntries = {
-                        // ...entries[0],
-                        ...entries[1],
+                        ...entries[0],
+                        // ...entries[1],
                         // index: {
                         //     import: path.resolve(this.rootPath, this.clientEntrySrc, "./index.tsx"),
                         //     dependOn: Object.keys(entries[0]),
@@ -318,18 +323,17 @@ export class IsomorphicPack extends WebpackTaskBase {
         loaders.push({
             loader: MiniCssExtractPlugin.loader,
         });
-        if (this.isDebugMode) {
-            loaders.push(
-                {
-                    loader: path.resolve(__dirname, "../libs/loaders/typing-for-css-module"),
-                }
-            );
-        }
         let localIdentName = prodLocalIdentName;
         let sourceMap = false;
         if (this.isDebugMode) {
             localIdentName = devLocalIdentName;
             sourceMap = true;
+
+            loaders.push(
+                {
+                    loader: path.resolve(__dirname, "../libs/loaders/typing-for-css-module"),
+                }
+            );
         }
         return loaders.concat([
             {
@@ -504,6 +508,10 @@ export class IsomorphicPack extends WebpackTaskBase {
         // if (this.isDebugMode) {
         //     plugins.push(new webpack.HotModuleReplacementPlugin());
         // }
+        const moduleFederationConfig = ConfigHelper.get("federation", false);
+        if (moduleFederationConfig && Object.keys(moduleFederationConfig).length) {
+            plugins.push(new container.ModuleFederationPlugin(moduleFederationConfig));
+        }
         if (this.isAnalyzMode) {
             plugins.push(new BundleAnalyzerPlugin({
                 analyzerMode: this.isDebugMode ? "server" : "disabled",

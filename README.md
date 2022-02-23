@@ -19,7 +19,7 @@ npm install -g alcor
    * 0.1.39开始将debug能力拆解，debug不在默认监听文件变化，新增watch用于监听文件变化
    * 仅debug、watch、server可使用缩写，其他选项不可缩写，必须使用--的形式
 
-### 3. 应用根目录中需要存在config文件夹，里面包含两个文件：app.json, configure.json。由于configure.json是用于打包编译的配置，编译产出build目录中，只会包含用于发布的内容，因此不会包含configure.json
+### 3. 应用根目录中需要存在config文件夹，里面包含两个文件：app.json, configure.json。由于configure.json是用于打包编译的配置，编译产出dist目录中，只会包含用于发布的内容，因此不会包含configure.json
    * app.json用来配置应用信息和运行时信息
 ```
     "name": "alcor-template-app", # 应用名称
@@ -97,7 +97,7 @@ npm install -g alcor
 ```
    1. 会先自动收集standalone目录中的文件作为入口，因此此配置的standalone编译产出的入口文件有component/login、logic/ui/component/render、logic/ui/component/loading；
    2. 然后来和配置中standalone对象中的key进行比对，如果自动收集的入口在standalone中存在，则将该配置设置为此入口文件的配置，如果不在配置中存在，则入口的内容**不会被导出**。
-   3. 编译时会在产出目录build目录中创建一个standalone目录，生成component/login.js、logic/ui/component/render.js、logic/ui/component/loading.js文件，三个文件中包含各自的所有依赖，
+   3. 编译时会在产出目录dist目录中创建一个standalone目录，生成component/login.js、logic/ui/component/render.js、logic/ui/component/loading.js文件，三个文件中包含各自的所有依赖，
    4. component/login配置了type:this，login的导出会挂载到运行时环境的this上，形式为this['login'],如果在浏览器端this就是window即window['login']，
    5. logic/ui/component/render配置了type:assign，render的导出会挂载到一个叫做adRender的变量上，
    6. 而logic/ui/component/loading没有standalone的配置，因此loading的导出的内容在最后的产出文件中不会有导出语句导出，此形式可用来编译web项目(即ProjectBuild）的standalone，因为web项目只需要被引用后执行内容，可以不具有导出。

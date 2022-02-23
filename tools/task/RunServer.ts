@@ -60,7 +60,7 @@ export default async function RunServer(serverPath, debug, cb: any = false): Pro
                 ...process.env,
                 NODE_ENV: "development",
             },
-            cwd: "build",
+            cwd: "dist",
             // silent: false,
         });
         if (cbIsPending) {

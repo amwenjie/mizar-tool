@@ -48,7 +48,6 @@ export class WebpackTaskBase extends TaskBase {
             context.state = true;
             context.hash = stats.hash;
         }
-        // fs.writeJSON("/Users/wenjie02/Desktop/ssr/iso-ssr/build/" + stats.hash + ".json", stats.toJson(), {spaces: 4});
     }
 
     private isAllCompileDone() {
@@ -148,7 +147,7 @@ export class WebpackTaskBase extends TaskBase {
             // });
             if (this.isWatchMode) {
                 this.watcher = compiler.watch({
-                    ignored: /[\\/]node_modules[\\/]|\.d\.ts$|\.js\.map$|\.css\.map$/i,
+                    ignored: /[\\/]node_modules[\\/]|[\\/]dist[\\/]|\.d\.ts$|\.js\.map$|\.css\.map$/i,
                     aggregateTimeout: 600,
                 }, callback);
             } else {

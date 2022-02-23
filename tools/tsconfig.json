@@ -1,6 +1,6 @@
 {
     "extends": "../tsconfig.json",
     "compilerOptions": {
-        "outDir": "../build/tools"
+        "outDir": "../dist/tools"
     }
 }

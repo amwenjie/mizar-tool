@@ -11,10 +11,10 @@
     "scripts": {
         "build": "alcor build",
         "debug": "alcor build -ds",
-        "report": "webpack-bundle-analyzer --port 8888 build/static/client/stats.json"
+        "report": "webpack-bundle-analyzer --port 8888 dist/static/client/stats.json"
     },
     "dependencies": {
-        "mizar": "~0.0.37",
+        "mizar": "~0.0.38",
         "react": "~17.0.2",
         "react-dom": "~17.0.2",
         "react-loadable": "~5.5.0",
@@ -29,17 +29,7 @@
         "@types/react": "~17.0.34",
         "@types/react-dom": "~17.0.11",
         "@types/react-redux": "~7.1.20",
-        "alcor": "~0.1.49",
+        "alcor": "~0.1.52",
         "postcss-less": "~6.0.0"
-    },
-    "browserslist": [
-        "Android 2.3",
-        "Android >= 4",
-        "Chrome >= 20",
-        "Firefox >= 24",
-        "Explorer >= 8",
-        "iOS >= 6",
-        "Opera >= 12",
-        "Safari >= 6"
-    ]
+    }
 }
