@@ -39,7 +39,7 @@ function performRemoteUrl(remoteUrl) {
         // Disadvantages are that it's slow (creation takes ~10 ms.) and takes up a couple megabytes.
         // So don't use it as a require replacement.
 
-        const remoteModule = eval(`${moduleContent} \\n  try{' ${moduleName} } catch(e) { null; };`);
+        const remoteModule = eval(`${moduleContent} \\n  try{ ${moduleName} } catch(e) { null; };`);
         return remoteModule;
     });
 }

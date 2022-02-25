@@ -1,1 +1,1 @@
-import "../isomorphic/pageRouters/index";
+import "../isomorphic/routers/index";

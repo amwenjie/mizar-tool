@@ -5,6 +5,38 @@ npm install -g alcor
 
 !!!鉴于typescript的部分能力eslint无法覆盖，且typescript-eslint还待完善，该编译工具对ts/tsx的文件应用tslint，js文件应用eslint，日后将合并两种lint检查。
 
+
+## 使用此框架的应用程序，需要使用alcor打包编译工具。应用目录结构应为：
+    -config   用于存放配置文件的目录
+        -app.json   用于配置应用的运行时信息，比如该应用的node服务启动端口、cdn地址等
+        -configure.json   用于配置应用的编译时信息，比如是否启用tslint、stylelint的配置、less-loader的配置等
+    -src   应用代码源文件目录
+        -isomorphic    同构内容所在目录，组件会被在客户端或服务端执行，需要注意执行环境特有能力的使用
+            -entry    客户端启动入口，里面的每个文件就对应一个所包含的路由组成的客户端单页应用的入口
+                -index.ts    文件中包含的页面组成的单页应用入口
+            -routers   应用的客户端路由文件所在目录
+                -index.tsx
+            -pages    页面所在的目录
+                -pageA    一个采用类组件形式开发的页面级redux组件
+                    -index.tsx    页面组件入口文件
+                    -index.less    页面组件样式文件
+                    -action.ts    页面组件内所有action定义
+                    -initialState.ts    页面组件reducer需要使用的初始值定义
+                    -reduce.ts    页面组件reducer定义
+                    -interface.ts    页面组件内所有的ts定义文件
+                -pageB
+                    - ...
+            -typings
+                -*.d.ts    同构目录中，css的类型定义
+            -public   存放一些非模块化的的内容，每个文件会被直接用link或script引入
+        -server   应用的服务端代码
+            -apis   服务端node api存放目录，规则是请求路径已/apis/开头，文件名为方法名
+                -api-name.ts
+            -index.ts   服务端启动入口
+    -package.json
+    -tslint.json
+    -tsconfig.json
+
 ### 1. 利用cli创建一个应用，包含文件、目录、配置
    * alcor create your-project-directory-path，在your-project-directory-path目录中创建一个应用，包含必要的文件、配置
 

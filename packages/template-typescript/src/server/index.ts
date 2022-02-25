@@ -1,7 +1,6 @@
 import WebServer from "mizar/server";
 import { bootstrap } from "mizar/server/bootstrap";
-import clientRouter from "../isomorphic/pageRouters";
-import config from "../config";
+import clientRouter from "../isomorphic/routers/index";
 import meta from "./meta";
 
 (async () => {

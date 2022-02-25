@@ -68,7 +68,7 @@ export class StandalonePack extends WebpackTaskBase {
                     new DirectoryNamedWebpackPlugin(),
                 ],
             },
-            optimization: this.getOptimization().optimization,
+            optimization: this.getOptimization(),
         };
         log.info(cyan(this.taskName), "pack", config);
         await super.compile(config);
@@ -135,24 +135,22 @@ export class StandalonePack extends WebpackTaskBase {
         return /components?|pages?/i.test(resourcePath);
     }
 
-    private getOptimization(): webpack.Configuration {
+    private getOptimization() {
         return {
-            optimization: {
-                minimize: !this.isDebugMode,
-                chunkIds: this.isDebugMode ? "named" : "deterministic",
-                moduleIds: this.isDebugMode ? "named" : "deterministic",
-                minimizer: [
-                    new TerserJSPlugin({
-                        terserOptions: {
-                            format: {
-                                comments: false,
-                            },
+            minimize: !this.isDebugMode,
+            chunkIds: this.isDebugMode ? "named" : "deterministic",
+            moduleIds: this.isDebugMode ? "named" : "deterministic",
+            minimizer: [
+                new TerserJSPlugin({
+                    terserOptions: {
+                        format: {
+                            comments: false,
                         },
-                        extractComments: false,
-                    }),
-                    new CssMinimizerPlugin(),
-                ],
-            }
+                    },
+                    extractComments: false,
+                }),
+                new CssMinimizerPlugin(),
+            ],
         };
     }
 
@@ -180,7 +178,7 @@ export class StandalonePack extends WebpackTaskBase {
         });
         rules.push({
             exclude: /\.d\.ts$/i,
-            test: /[\\/]src[\\/]isomorphic[\\/]pageRouters(?:[\\/][^\\/]+?){1}\.tsx?$/,
+            test: /[\\/]src[\\/]isomorphic[\\/]routers(?:[\\/][^\\/]+?){1}\.tsx?$/,
             use: [
                 {
                     loader: path.resolve(__dirname, "../libs/loaders/router-loadable-loader"),
@@ -363,6 +361,8 @@ export class StandalonePack extends WebpackTaskBase {
         const moduleFederationConfig = ConfigHelper.get("federation", false);
         if (moduleFederationConfig && moduleFederationConfig.remotes) {
             delete moduleFederationConfig.exposes;
+            delete moduleFederationConfig.filename;
+            delete moduleFederationConfig.name;
             plugins.push(new container.ModuleFederationPlugin(moduleFederationConfig));
         }
         if (this.isAnalyzMode) {

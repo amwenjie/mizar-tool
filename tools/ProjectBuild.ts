@@ -5,6 +5,7 @@ import { hideBin } from "yargs/helpers";
 import { CopyTask } from "./task/CopyTask";
 import { HelperTask } from "./task/HelperTask";
 import { IsomorphicPack } from "./task/IsomorphicPack";
+import { ModuleFederatePack } from "./task/ModuleFederatePack";
 import { PublishTask } from "./task/PublishTask";
 import { PackageInfo } from "./task/PackageInfo";
 import { ServerApiPack } from "./task/ServerApiPack";
@@ -104,6 +105,14 @@ export class ProjectBuild {
                     .setDebugMode(this.isDebugMode)
                     .setWatchMode(this.isWatchMode);
                 await standalonePack.run();
+            }
+            const shouldModuleFederateBuild = ConfigHelper.get("federation", false);
+            if (shouldModuleFederateBuild && shouldModuleFederateBuild.exposes) {
+                const moduleFederatePack = new ModuleFederatePack();
+                moduleFederatePack
+                    .setDebugMode(this.isDebugMode)
+                    .setWatchMode(this.isWatchMode)
+                await moduleFederatePack.run();
             }
             console.log(green("build success"));
         } catch (e) {

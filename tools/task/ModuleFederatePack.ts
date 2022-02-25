@@ -1,43 +1,37 @@
-import LoadablePlugin from "@loadable/webpack-plugin";
 import { cyan, green, red, yellow } from "colorette";
-import CopyWebpackPlugin from "copy-webpack-plugin";
-import CssMinimizerPlugin from "css-minimizer-webpack-plugin";
 import DirectoryNamedWebpackPlugin from "directory-named-webpack-plugin";
-import ESLintWebpackPlugin from "eslint-webpack-plugin";
 import fs from "fs-extra";
 import klaw from "klaw";
 import MiniCssExtractPlugin from "mini-css-extract-plugin";
 import path from "path";
-import StylelintPlugin from "stylelint-webpack-plugin";
-import TerserJSPlugin from "terser-webpack-plugin";
 import webpack, { 
     container,
     type Compiler,
     type RuleSetRule,
-    type WebpackPluginInstance,
+    type WebpackPluginInstance
 } from "webpack";
-import { BundleAnalyzerPlugin } from "webpack-bundle-analyzer";
+import FederationModuleIdPlugin from "webpack-federation-module-id-plugin";
 import getGlobalConfig, { IGlobalConfig, devLocalIdentName, prodLocalIdentName } from "../getGlobalConfig";
-import ClientEntryJsonPlugin from "../libs/plugins/client-entry-json-plugin";
 import { ConfigHelper } from "../libs/ConfigHelper";
 import Logger from "../libs/Logger";
+import FederationStatsPlugin from "../libs/plugins/federation-stats-plugin";
 import { WebpackTaskBase } from "../libs/WebpackTaskBase";
 import { HelperTask } from "./HelperTask";
 
-const log = Logger("IsomorphicPack");
+const log = Logger("ModuleFederatePack");
 
 const cssModuleRegExp = /[\\/]components?[\\/]|[\\/]pages?[\\/]|\.module\.(?:css|less|s[ac]ss)$/i;
-export class IsomorphicPack extends WebpackTaskBase {
-    private clientEntrySrc = "src/isomorphic/entry";
+export class ModuleFederatePack extends WebpackTaskBase {
+    private clientEntrySrc = "src/isomorphic/moduleFederate";
     private pageSrc = "src/isomorphic/pages";
     private styleSrc = "src/isomorphic/styleEntries";
     private globalConfig: IGlobalConfig;
     private publicPath = "";
 
-    constructor(taskName = "IsomorphicPack") {
+    constructor(taskName = "ModuleFederatePack") {
         super(taskName);
         this.globalConfig = getGlobalConfig();
-        this.dist = path.resolve(`${this.rootPath}${this.globalConfig.clientOutput}`);
+        this.dist = path.resolve(`${this.rootPath}${this.globalConfig.clientOutput}/federate`);
         this.publicPath = this.getPublicPath();
     }
 
@@ -47,7 +41,7 @@ export class IsomorphicPack extends WebpackTaskBase {
             this.globalConfig.publicPath,
             'client/'
         ].join("");
-        log.info("isomorphicPack getPublicPath: ", path);
+        log.info("ModuleFederatePack getPublicPath: ", path);
         return path;
     }
 
@@ -79,8 +73,8 @@ export class IsomorphicPack extends WebpackTaskBase {
                 }
             });
             walk.on("end", () => {
-                log.info("IsomorphicPack.styleScan.end", path.resolve(this.rootPath));
-                log.info("IsomorphicPack.styleScan.entries", entries);
+                log.info("ModuleFederatePack.styleScan.end", path.resolve(this.rootPath));
+                log.info("ModuleFederatePack.styleScan.entries", entries);
                 resolve(entries);
             });
             walk.on("error", error => {
@@ -124,8 +118,8 @@ export class IsomorphicPack extends WebpackTaskBase {
                 }
             });
             walk.on("end", () => {
-                log.info("IsomorphicPack.pageScan.end", path.resolve(this.rootPath));
-                log.info("IsomorphicPack.pageScan.entries", entries);
+                log.info("ModuleFederatePack.pageScan.end", path.resolve(this.rootPath));
+                log.info("ModuleFederatePack.pageScan.entries", entries);
                 resolve(entries);
             });
             walk.on("error", (error) => {
@@ -168,8 +162,8 @@ export class IsomorphicPack extends WebpackTaskBase {
                 }
             });
             walk.on("end", () => {
-                log.info("IsomorphicPack.clientEntryScan.end", path.resolve(this.rootPath));
-                log.info("IsomorphicPack.clientEntryScan.entries", entries);
+                log.info("ModuleFederatePack.clientEntryScan.end", path.resolve(this.rootPath));
+                log.info("ModuleFederatePack.clientEntryScan.entries", entries);
                 resolve(entries);
             });
             walk.on("error", (error) => {
@@ -194,7 +188,7 @@ export class IsomorphicPack extends WebpackTaskBase {
                         //     dependOn: Object.keys(entries[0]),
                         // },
                     };
-                    log.info("IsomorphicPack.pack.keys", Object.keys(combinedEntries).join(","));
+                    log.info("ModuleFederatePack.pack.keys", Object.keys(combinedEntries).join(","));
                     resolve(combinedEntries);
                 })
                 .catch(e => {
@@ -217,27 +211,18 @@ export class IsomorphicPack extends WebpackTaskBase {
     }
 
     protected async compile(): Promise<void|Error> {
-        log.info("->", "IsomorphicPack", HelperTask.taking());
-        const entry: webpack.EntryObject = await this.scan();
-        if (!entry || Object.keys(entry).length === 0) {
-            log.warn(yellow(`${cyan(this.taskName)}, scan emtpy entry`));
-            return;
-        }
-        log.info("run.entry", entry);
-        // log.info("IsomorphicPack.pack.run", entry);
+        log.info("->", "ModuleFederatePack", HelperTask.taking());
+        // log.info("ModuleFederatePack.pack.run", entry);
         // const mode = this.isDebugMode ? JSON.stringify("development") : JSON.stringify("production");
         const config: webpack.Configuration = {
             mode: this.getEnvDef(),
             // cache: true,
             // debug: true,
+            entry: "./src/moduleFederation/index.ts",
             devtool: this.isDebugMode ? "source-map" : undefined,
-            entry,
             output: {
-                chunkFilename: "[name]_[contenthash:8].js",
-                publicPath: this.publicPath,
-                filename: "[name]_[contenthash:8].js",
+                publicPath: "auto", // this.publicPath,
                 path: this.dist,
-                assetModuleFilename: "assets/[name]_[contenthash:8][ext][query]",
             },
             externals: ({ context, request }, callback) => {
                 const isExternal = /[\\/]server[\\/]/i.test(request);
@@ -250,7 +235,7 @@ export class IsomorphicPack extends WebpackTaskBase {
             module: {
                 rules: this.getRules(),
             },
-            name: "IsomorphicPack",
+            name: "ModuleFederatePack",
             plugins: this.getPlugins(),
             resolve: {
                 extensions: [".ts", ".tsx", ".js", ".css", ".png", ".jpg", ".gif", ".less", "sass", "scss", "..."],
@@ -265,54 +250,15 @@ export class IsomorphicPack extends WebpackTaskBase {
             optimization: this.getOptimization() as any,
         };
         log.info("pack", { config: JSON.stringify(config) });
-        await super.compile(config);
+        try {
+            await super.compile(config);
+        } catch (e) {}
     }
 
     private getOptimization() {
         return {
             minimize: !this.isDebugMode,
-            chunkIds: this.isDebugMode ? "named" : "deterministic",
-            moduleIds: this.isDebugMode ? "named" : "deterministic",
-            runtimeChunk: {
-                name: "runtime",
-            },
-            splitChunks: {
-                // chunks: "all",
-                cacheGroups: {
-                    libBase: {
-                        test: /[\\/](?:core\-js|raf|react(?:\-[^\\/]+)?|redux(?:\-[^\\/]+)?)[\\/]/,
-                        name: "lib",
-                        priority: 30,
-                        chunks: "all",
-                        // maxSize: 204800,
-                    },
-                    nmDeps: {
-                        test: /[\\/]node_modules[\\/]/,
-                        name: "nmdeps",
-                        priority: 20,
-                        chunks: "all",
-                        reuseExistingChunk: true,
-                        // maxSize: 204800,
-                    },
-                    common: {
-                        name: "common",
-                        minChunks: 2,
-                        chunks: "initial",
-                        reuseExistingChunk: true,
-                    },
-                },
-            },
-            minimizer: [
-                new TerserJSPlugin({
-                    terserOptions: {
-                        format: {
-                            comments: false,
-                        },
-                    },
-                    extractComments: false,
-                }),
-                new CssMinimizerPlugin(),
-            ],
+            splitChunks: false,
         };
     }
 
@@ -326,12 +272,6 @@ export class IsomorphicPack extends WebpackTaskBase {
         if (this.isDebugMode) {
             localIdentName = devLocalIdentName;
             sourceMap = true;
-
-            loaders.push(
-                {
-                    loader: path.resolve(__dirname, "../libs/loaders/typing-for-css-module"),
-                }
-            );
         }
         return loaders.concat([
             {
@@ -364,22 +304,7 @@ export class IsomorphicPack extends WebpackTaskBase {
     }
 
     private getRules(): (RuleSetRule | "...")[] {
-        const tslintPath = path.resolve(`${this.rootPath}tslint.json`);
-        const tsConfigPath = path.resolve(`${this.rootPath}tsconfig.json`);
         const rules = [];
-        const tslintConfig = ConfigHelper.get("tslint", true);
-        if (tslintConfig) {
-            rules.push({
-                exclude: /[\\/]node_modules[\\/]|\.d\.ts$/i,
-                test: /\.tsx?$/i,
-                enforce: "pre",
-                loader: "tslint-loader",
-                options: {
-                    configFile: fs.existsSync(tslintPath) ? tslintPath : "",
-                    tsConfigFile: fs.existsSync(tsConfigPath) ? tsConfigPath : "",
-                },
-            });
-        }
         rules.push({
             exclude: /[\\/]node_modules[\\/]|\.d\.ts$/i,
             test: /\.tsx?$/i,
@@ -468,61 +393,30 @@ export class IsomorphicPack extends WebpackTaskBase {
         };
 
         const plugins = [];
-        const stylelintConfig = ConfigHelper.get("stylelint", {
-            extensions: ["css", "less", "scss", "sass"],
-            files: "./src",
-        });
-        log.info("stylelintConfig: ", stylelintConfig);
-        if (stylelintConfig) {
-            plugins.push(new StylelintPlugin(stylelintConfig));
-        }
-        plugins.push(new webpack.DefinePlugin(defineOption));
-
-        const esLintConfig = ConfigHelper.get("eslint", {
-            files: "./src",
-            failOnError: !this.isDebugMode,
-        });
-        log.info("esLintConfig: ", esLintConfig);
-        if (esLintConfig) {
-            plugins.push(new ESLintWebpackPlugin(esLintConfig));
-        }
-
+        
         plugins.push(new MiniCssExtractPlugin({
             filename: "[name]_[contenthash:8].css",
             // chunkFilename: "[name]-chunk-[id]_[contenthash:8].css",
         }));
-        plugins.push(new CopyWebpackPlugin({
-            patterns: [
-                {
-                    context: "src",
-                    from: "public/**/*",
-                },
-            ]
-        }));
-        plugins.push(new ClientEntryJsonPlugin());
+        plugins.push(new webpack.DefinePlugin(defineOption));
+
         // if (this.isDebugMode) {
         //     plugins.push(new webpack.HotModuleReplacementPlugin());
         // }
         const moduleFederationConfig = ConfigHelper.get("federation", false);
-        if (moduleFederationConfig && moduleFederationConfig.remotes) {
-            delete moduleFederationConfig.exposes;
-            delete moduleFederationConfig.filename;
-            delete moduleFederationConfig.name;
+        if (moduleFederationConfig && moduleFederationConfig.exposes) {
+            if (!moduleFederationConfig.name) {
+                moduleFederationConfig.name = ConfigHelper.getPackageName();
+            }
+            if (!moduleFederationConfig.filename) {
+                moduleFederationConfig.filename = "mfEntry.js";
+            }
+            plugins.push(new FederationStatsPlugin());
+            plugins.push(new FederationModuleIdPlugin());
             plugins.push(new container.ModuleFederationPlugin(moduleFederationConfig));
-        }
-        plugins.push(new LoadablePlugin({
-            filename: "./stats.json",
-            writeToDisk: true,
-        }));
-        if (this.isAnalyzMode) {
-            plugins.push(new BundleAnalyzerPlugin({
-                analyzerMode: this.isDebugMode ? "server" : "disabled",
-                generateStatsFile: !this.isDebugMode,
-                openAnalyzer: !!this.isDebugMode,
-            }));
         }
         return plugins;
     }
 }
 
-export default IsomorphicPack;
+export default ModuleFederatePack;

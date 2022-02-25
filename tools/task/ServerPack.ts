@@ -1,3 +1,4 @@
+import LoadablePlugin from "@loadable/webpack-plugin";
 import { cyan, green } from "colorette";
 import ESLintWebpackPlugin from "eslint-webpack-plugin";
 import fs from "fs-extra";
@@ -13,7 +14,7 @@ import getGlobalConfig, { IGlobalConfig, devLocalIdentName, prodLocalIdentName }
 import { ConfigHelper } from "../libs/ConfigHelper";
 import Logger from "../libs/Logger";
 import { WebpackTaskBase } from "../libs/WebpackTaskBase";
-import NodeModuleFederation from "../libs/plugins/node-module-federation-plugin";
+// import NodeModuleFederation from "../libs/plugins/node-module-federation-plugin";
 import { HelperTask } from "./HelperTask";
 import RunServer from "./RunServer";
 const log = Logger("ServerPack");
@@ -53,12 +54,17 @@ export class ServerPack extends WebpackTaskBase {
         if (esLintPluginConfig) {
             plugins.push(new ESLintWebpackPlugin(esLintPluginConfig));
         }
+        plugins.push(new LoadablePlugin({
+            filename: "./stats.json",
+            writeToDisk: true,
+        }));
         const moduleFederationConfig = ConfigHelper.get("federation", false);
         if (moduleFederationConfig && moduleFederationConfig.remotes) {
             delete moduleFederationConfig.exposes;
             delete moduleFederationConfig.filename;
             delete moduleFederationConfig.name;
-            plugins.push(new NodeModuleFederation(moduleFederationConfig));
+            // plugins.push(new NodeModuleFederation(moduleFederationConfig));
+            plugins.push(new container.ModuleFederationPlugin(moduleFederationConfig));
         }
         return plugins;
     }
@@ -102,7 +108,7 @@ export class ServerPack extends WebpackTaskBase {
         });
         rules.push({
             exclude: /\.d\.ts$/i,
-            test: /[\\/]src[\\/]isomorphic[\\/]pageRouters(?:[\\/][^\\/]+?){1}\.tsx?$/,
+            test: /[\\/]src[\\/]isomorphic[\\/]routers(?:[\\/][^\\/]+?){1}\.tsx?$/,
             use: [
                 {
                     loader: path.resolve(__dirname, "../libs/loaders/router-loadable-loader"),

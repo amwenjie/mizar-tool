@@ -7,6 +7,7 @@
     "url": "https://github.com/amwenjie/mizar-tool/issues"
   },
   "dependencies": {
+    "@loadable/webpack-plugin": "~5.15.2",
     "autoprefixer": "~10.4.2",
     "chokidar": "~3.5.3",
     "colorette": "~2.0.16",
@@ -50,7 +51,7 @@
     "validate-npm-package-name": "~3.0.0",
     "webpack": "~5.69.1",
     "webpack-bundle-analyzer": "~4.5.0",
-    "webpack-manifest-plugin": "~4.1.1",
+    "webpack-federation-module-id-plugin": "~1.0.0",
     "webpack-node-externals": "~3.0.0",
     "yargs": "~17.3.1"
   },
@@ -69,7 +70,6 @@
     "@types/webpack": "~5.28.0",
     "@types/webpack-bundle-analyzer": "~4.4.1",
     "@types/webpack-env": "~1.16.3",
-    "@types/webpack-manifest-plugin": "~3.0.5",
     "@types/webpack-node-externals": "~2.5.3",
     "@types/webpack-sources": "~3.2.0",
     "@types/yargs": "~17.0.8",
@@ -91,5 +91,5 @@
     "Test-ProjectBuild": "ts-node tools/ProjectBuild",
     "build": "ts-node ./Build"
   },
-  "version": "0.1.52"
+  "version": "0.1.53"
 }
