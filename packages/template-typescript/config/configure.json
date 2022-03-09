@@ -12,6 +12,7 @@
     "sass-loader": {
         
     },
+    "serverapi": true,
     "standalone": {
         "externals": {
             "react": "React",

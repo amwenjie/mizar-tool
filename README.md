@@ -1,4 +1,4 @@
-# mizar-tool
+# alcor
 a mizar-based react project compile cli tool
 
 npm install -g alcor
@@ -6,7 +6,7 @@ npm install -g alcor
 !!!鉴于typescript的部分能力eslint无法覆盖，且typescript-eslint还待完善，该编译工具对ts/tsx的文件应用tslint，js文件应用eslint，日后将合并两种lint检查。
 
 
-## 使用此框架的应用程序，需要使用alcor打包编译工具。应用目录结构应为：
+## alcor辅助mizar应用打包编译。应用目录结构应为：
     -config   用于存放配置文件的目录
         -app.json   用于配置应用的运行时信息，比如该应用的node服务启动端口、cdn地址等
         -configure.json   用于配置应用的编译时信息，比如是否启用tslint、stylelint的配置、less-loader的配置等
@@ -67,6 +67,8 @@ npm install -g alcor
    "postcss-loader": {}, #  配置插件option配置
    "less-loader": {}, #  配置插件option配置
    "sass-loader": {}, #  配置插件option配置
+   "serverapi": true, #  配置是否产出/src/server/apis目录的服务端api内容
+   "proxy": [{}], #  配置debug模式的接口代理转发规则
    "standalone": {
       "externals": {
          "react": "React",
@@ -139,3 +141,36 @@ npm install -g alcor
 ### 7. 支持css module
    * 模块化样式文件的支持设计理念是：基于目录的规则，在/components?|pages?/目录内的所有.css|.less|.scss|.sass样式文件都会被当作模块化样式文件。
    * (基于目录的规则设计是因为上述目录中的组件对应样式都应该是模块化的，如果有不需要模块化的样式，说明是可以不专属于对应组件的，应该放在common或public目录，为了兼容个别特殊需要，文件名包含.module. ，同样视为模块化样式文件。）
+
+
+### 8. debug模式支持接口代理转发
+   * 本地开发的时候，需要请求后端数据，但是本地又没有对应api，此时可以在/config/configure.json里增加一个proxy配置，必须是个对象数组.
+   * 所有通过转发的接口，都会默认改写真实请求到target域名的请求头Host和Referer字段。可通过增加changeOrigin: false配置来关闭两个改写操作，或仅增加changeOriginReferer: false配置来关闭改写Referer但保持改写Host的操作。
+   * 配置说明：
+```
+    /config/configure.json:
+
+    ...
+    "proxy": [
+      {
+         path: "/ajax/api",
+         config: {
+            target: "http://target.com",
+            changeOrigin: false, // 显示的关闭代理转发请求的时候更改请求头中的Host和Referer
+            pathRewrite: {
+               "^/ajax": "",
+            },
+         },
+      }, // 如果请求/ajax/api/api1/getsomething,会被代理到http://target.com/api/api1/getsomething
+      {
+         path: "/user",
+         config: {
+            target: "http://user.com",
+            pathRewrite: {
+               "^/user/ajax": "/anotheruserpath",
+            },
+         }
+      }, // 如果请求/user/ajax/getsomething,会被代理到http://user.com/anotheruserpath/getsomething
+      ],
+    ...
+```

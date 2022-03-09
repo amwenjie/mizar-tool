@@ -44,6 +44,7 @@ export class ServerPack extends WebpackTaskBase {
         const defineOption = {
             IS_SERVER_RUNTIME: JSON.stringify(true),
             IS_DEBUG_MODE: JSON.stringify(!!this.isDebugMode),
+            DEV_PROXY_CONFIG: JSON.stringify(ConfigHelper.get("proxy", false)),
         };
         const plugins = [];
         plugins.push(new webpack.DefinePlugin(defineOption));
