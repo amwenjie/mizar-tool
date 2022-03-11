@@ -21,7 +21,7 @@ npm install -g alcor
                     -index.less    页面组件样式文件
                     -action.ts    页面组件内所有action定义
                     -initialState.ts    页面组件reducer需要使用的初始值定义
-                    -reduce.ts    页面组件reducer定义
+                    -reducer.ts    页面组件reducer定义
                     -interface.ts    页面组件内所有的ts定义文件
                 -pageB
                     - ...
