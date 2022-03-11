@@ -12,8 +12,7 @@ npm install -g alcor
         -configure.json   用于配置应用的编译时信息，比如是否启用tslint、stylelint的配置、less-loader的配置等
     -src   应用代码源文件目录
         -isomorphic    同构内容所在目录，组件会被在客户端或服务端执行，需要注意执行环境特有能力的使用
-            -entry    客户端启动入口，里面的每个文件就对应一个所包含的路由组成的客户端单页应用的入口
-                -index.ts    文件中包含的页面组成的单页应用入口
+            -index.ts    客户端启动入口
             -routers   应用的客户端路由文件所在目录
                 -index.tsx
             -pages    页面所在的目录

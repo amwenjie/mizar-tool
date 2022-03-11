@@ -1,4 +1,3 @@
-import LoadablePlugin from "@loadable/webpack-plugin";
 import { cyan, green } from "colorette";
 import ESLintWebpackPlugin from "eslint-webpack-plugin";
 import fs from "fs-extra";
@@ -55,10 +54,6 @@ export class ServerPack extends WebpackTaskBase {
         if (esLintPluginConfig) {
             plugins.push(new ESLintWebpackPlugin(esLintPluginConfig));
         }
-        plugins.push(new LoadablePlugin({
-            filename: "./stats.json",
-            writeToDisk: true,
-        }));
         const moduleFederationConfig = ConfigHelper.get("federation", false);
         if (moduleFederationConfig && moduleFederationConfig.remotes) {
             delete moduleFederationConfig.exposes;
@@ -285,9 +280,9 @@ export class ServerPack extends WebpackTaskBase {
             externals: [
                 nodeExternals({
                     allowlist: [
-                        /mizar/,
+                        /^mizar/,
                     ],
-                }) as any
+                }),
             ],
             module: {
                 parser: {

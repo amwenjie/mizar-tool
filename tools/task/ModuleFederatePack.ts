@@ -20,183 +20,25 @@ import { HelperTask } from "./HelperTask";
 
 const log = Logger("ModuleFederatePack");
 
+const esDepends = [
+    "core-js/features/object",
+    "core-js/features/array",
+    "core-js/features/map",
+    "core-js/features/set",
+    "core-js/features/promise",
+    "raf/polyfill",
+];
+
 const cssModuleRegExp = /[\\/]components?[\\/]|[\\/]pages?[\\/]|\.module\.(?:css|less|s[ac]ss)$/i;
 export class ModuleFederatePack extends WebpackTaskBase {
     private clientEntrySrc = "src/isomorphic/moduleFederate";
-    private pageSrc = "src/isomorphic/pages";
-    private styleSrc = "src/isomorphic/styleEntries";
     private globalConfig: IGlobalConfig;
-    private publicPath = "";
 
     constructor(taskName = "ModuleFederatePack") {
         super(taskName);
         this.globalConfig = getGlobalConfig();
+        this.src = path.resolve(`${this.rootPath}${this.clientEntrySrc}`);
         this.dist = path.resolve(`${this.rootPath}${this.globalConfig.clientOutput}/federate`);
-        this.publicPath = this.getPublicPath();
-    }
-
-    private getPublicPath() {
-        const path = [
-            this.isDebugMode ? "/" : ConfigHelper.getCDN(),
-            this.globalConfig.publicPath,
-            'client/'
-        ].join("");
-        log.info("ModuleFederatePack getPublicPath: ", path);
-        return path;
-    }
-
-    private async styleScan(): Promise<object|Error> {
-        return new Promise((resolve, reject) => {
-            const entries = {};
-            const entryDir = this.rootPath + this.styleSrc;
-            if (!fs.existsSync(entryDir)) {
-                log.warn(yellow(`isomorphic pack styleEntry 入口目录不存在：, ${entryDir}`));
-                resolve({});
-                return;
-            }
-            const walk = klaw(entryDir, {
-                depthLimit: 0,
-            });
-            walk.on("data", (state) => {
-                const src = state.path;
-                const isFile = state.stats.isFile();
-                if (isFile && /\.css$|\.s[ac]ss$|\.less$/i.test(src)) {
-                    const fileObj = path.parse(src);
-                    // const dirName = src.replace(path.resolve(this.rootPath), "")
-                    //     .replace(".css", "")
-                    //     .replace(".less", "")
-                    //     .replace(".sass", "")
-                    //     .replace(".scss", "")
-                    //     .replace(/\\/g, "/")
-                    //     .replace("/" + this.styleSrc + "/", "");
-                    entries["styleEntry/" + fileObj.name] = [src];
-                }
-            });
-            walk.on("end", () => {
-                log.info("ModuleFederatePack.styleScan.end", path.resolve(this.rootPath));
-                log.info("ModuleFederatePack.styleScan.entries", entries);
-                resolve(entries);
-            });
-            walk.on("error", error => {
-                reject(error);
-            });
-        });
-    }
-
-    private async pageScan(): Promise<object|Error> {
-        return new Promise((resolve, reject) => {
-            const entries = {};
-            const entryDir = this.rootPath + this.pageSrc;
-            if (!fs.existsSync(entryDir)) {
-                log.warn(yellow(`isomorphic pack build 入口目录不存在：, ${entryDir}`));
-                resolve({});
-                return;
-            }
-            const walk = klaw(entryDir, {
-                depthLimit: 0,
-            });
-            walk.on("data", async (state) => {
-                const src = state.path;
-                const isDir = state.stats.isDirectory();
-                if (isDir) {
-                    const dirArr = src.split(path.sep);
-                    const dirName = dirArr[dirArr.length - 1];
-                    if (/^[A-Z].+/.test(dirName)) {
-                        const sm = [
-                            src + "/index.tsx",
-                        ];
-                        const lessFile = src + "/index.less";
-                        try {
-                            if (fs.existsSync(lessFile)) {
-                                sm.push(lessFile);
-                            }
-                        } catch (e) {
-                            console.warn(e);
-                        }
-                        entries["page/" + dirName] = sm;
-                    }
-                }
-            });
-            walk.on("end", () => {
-                log.info("ModuleFederatePack.pageScan.end", path.resolve(this.rootPath));
-                log.info("ModuleFederatePack.pageScan.entries", entries);
-                resolve(entries);
-            });
-            walk.on("error", (error) => {
-                reject(error);
-            });
-        });
-    }
-
-    private clientEntryScan(): Promise<object|Error> {
-        return new Promise((resolve, reject) => {
-            const esDepends = [
-                "core-js/features/object",
-                "core-js/features/array",
-                "core-js/features/map",
-                "core-js/features/set",
-                "core-js/features/promise",
-                "raf/polyfill",
-            ];
-            const entries: any = {};
-            const entryDir = this.rootPath + this.clientEntrySrc;
-            if (!fs.existsSync(entryDir)) {
-                log.warn(yellow(`isomorphic pack build 入口目录不存在：, ${entryDir}`));
-                resolve({});
-                return;
-            }
-            const walk = klaw(entryDir, {
-                depthLimit: 0,
-            });
-            walk.on("data", (state) => {
-                const src = state.path;
-                const isFile = state.stats.isFile();
-                if (isFile && /\.ts$|\.tsx$|\.js$/i.test(src)) {
-                    const fileObj = path.parse(src);
-                    // const dirName = src.replace(path.resolve(this.rootPath), "")
-                    //     .replace(".tsx", "")
-                    //     .replace(".ts", "")
-                    //     .replace(/\\/g, "/")
-                    //     .replace("/" + this.src + "/", "");
-                    entries[fileObj.name] = esDepends.concat(src);
-                }
-            });
-            walk.on("end", () => {
-                log.info("ModuleFederatePack.clientEntryScan.end", path.resolve(this.rootPath));
-                log.info("ModuleFederatePack.clientEntryScan.entries", entries);
-                resolve(entries);
-            });
-            walk.on("error", (error) => {
-                reject(error);
-            });
-        });
-    }
-
-    /**
-     * 入口文件搜寻
-     */
-    private async scan(): Promise<webpack.EntryObject> {
-        return new Promise(async resolve => {
-            Promise
-                .all([this.clientEntryScan()])
-                .then((entries: object) => {
-                    const combinedEntries = {
-                        ...entries[0],
-                        // ...entries[1],
-                        // index: {
-                        //     import: path.resolve(this.rootPath, this.clientEntrySrc, "./index.tsx"),
-                        //     dependOn: Object.keys(entries[0]),
-                        // },
-                    };
-                    log.info("ModuleFederatePack.pack.keys", Object.keys(combinedEntries).join(","));
-                    resolve(combinedEntries);
-                })
-                .catch(e => {
-                    log.error(red("scan entry cause an error: "));
-                    log.error(e);
-                    resolve({});
-                });
-        });
     }
 
     private getCssModuleMode(resourcePath: string): "global" | "local" {
@@ -218,10 +60,10 @@ export class ModuleFederatePack extends WebpackTaskBase {
             mode: this.getEnvDef(),
             // cache: true,
             // debug: true,
-            entry: "./src/moduleFederation/index.ts",
+            entry: { "index": esDepends.concat(this.src), },
             devtool: this.isDebugMode ? "source-map" : undefined,
             output: {
-                publicPath: "auto", // this.publicPath,
+                publicPath: "auto",
                 path: this.dist,
             },
             externals: ({ context, request }, callback) => {
