@@ -1,3 +1,6 @@
 export const articleDetailInitState = {
-    data: "article detail client init value",
+    data: {
+        text: "loading...",
+        count: -1,
+    }
 };

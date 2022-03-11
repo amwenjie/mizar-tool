@@ -4,9 +4,9 @@ import getLogger from "mizar/iso/utils/logger";
 import React from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Page from "../../common/components/Page";
-import { IProps, IVideoPlayerParam } from "./interface";
+import { IProps } from "./interface";
 import { showVideoPlayer } from "./action";
-import cssStyle from "./index.less";
+import * as style from "./index.less";
 const logger = getLogger().getLogger("videodetail component");
 
 function JumpTo({url, text}) {
@@ -19,7 +19,7 @@ function JumpTo({url, text}) {
 
 function ShowParam () {
     const {id} = useParams();
-    return (<h4 className={(cssStyle as any).title}>这是video detail {id} 页面</h4>)
+    return (<h4 className={style.title}>这是video detail {id} 页面</h4>)
 }
 class VideoDetail extends Component<IProps, {}> {
     public static async getInitialData(serverFetch, query, params) {
@@ -43,7 +43,7 @@ class VideoDetail extends Component<IProps, {}> {
     public render() {
         return (<Page>
             <div>这是每秒更新的新text：<span>{this.props.text}</span></div>
-            <h4 className={(cssStyle as any).title}>
+            <h4 className={style.title}>
                 <ShowParam />
             </h4>
             <i>{this.props.data}</i>

@@ -1,12 +1,3 @@
-import {
-    CloseFullscreenPictureViewer,
-    CloseVideoPlayer,
-    GallarySwitch,
-    HideArticleContent,
-    MoveVideoPlayer,
-    ShowFullscreenPictureViewer,
-    ShowVideoPlayer,
-} from "./constants";
 import { articleDetailInitState } from "./initialState";
 
 export function articleDetailReducer(state = articleDetailInitState, action) {
@@ -14,6 +5,7 @@ export function articleDetailReducer(state = articleDetailInitState, action) {
         default:
             return {
                 ...state,
+                ...action.data
             };
     }
 }

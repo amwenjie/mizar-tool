@@ -1,10 +1,4 @@
 import {
-    CloseFullscreenPictureViewer,
-    CloseVideoPlayer,
-    GallarySwitch,
-    HideArticleContent,
-    MoveVideoPlayer,
-    ShowFullscreenPictureViewer,
     ShowVideoPlayer,
 } from "./constants";
 import { articleDetailInitState } from "./initialState";
