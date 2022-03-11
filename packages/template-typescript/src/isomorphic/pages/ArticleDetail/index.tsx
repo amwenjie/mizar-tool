@@ -6,7 +6,7 @@ import { useNavigate, useLocation, useSearchParams} from "react-router-dom";
 import getLogger from "mizar/iso/utils/logger";
 import fetch from "mizar/iso/fetch";
 // import loadable from '@loadable/component';
-// const Counting = loadable(() => import('micro1_federate/counting')); // micro1_federate/counting需要在typings目录中增加声明
+// const Counting = loadable(() => import('micro_1/counting')); // micro_1/counting需要在typings目录中增加声明
 
 import * as css from "./index.less";
 

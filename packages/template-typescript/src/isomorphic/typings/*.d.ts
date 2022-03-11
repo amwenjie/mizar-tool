@@ -17,13 +17,13 @@ declare module "*.less" {
     export default StyleModule;
 }
 
-declare module "micro1_federate/counting" {
+declare module "micro_1/counting" {
     const comp: React.ComponentType;
   
     export default comp;
 }
 
-declare module "micro1_federate/article" {
+declare module "micro_1/PageA" {
     const comp: React.ComponentType;
   
     export default comp;

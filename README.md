@@ -26,7 +26,7 @@ npm install -g alcor
                 -pageB
                     - ...
             -typings
-                -*.d.ts    同构目录中，css的类型定义
+                -*.d.ts    同构目录中，css\module-federation模块等类型定义
             -public   存放一些非模块化的的内容，每个文件会被直接用link或script引入
         -server   应用的服务端代码
             -apis   服务端node api存放目录，规则是请求路径已/apis/开头，文件名为方法名
@@ -171,5 +171,43 @@ npm install -g alcor
          }
       }, // 如果请求/user/ajax/getsomething,会被代理到http://user.com/anotheruserpath/getsomething
       ],
+    ...
+```
+
+### 9. 支持微前端组件的构建和使用
+   * 配置说明：
+```
+    host-app，启动端口8890，
+    /config/configure.json:
+
+    ...
+    "federation": {
+        "name": "hostapp",
+        "remotes": {
+            "micro_1": "micro_1@http://localhost:8891/static/client/federate/micro_1_remote.js"
+        }
+    }
+    ...
+
+    remote-app，启动端口8891，
+    /config/configure.json:
+
+    ...
+    "federation": {
+        "name": "micro_1",
+        "filename": "micro_1_remote.js",
+        "exposes": {
+            "./counting": "./src/isomorphic/common/components/Counting",
+            "./PageA": "./src/isomorphic/pages/PageA",
+            "./PageB": "./src/isomorphic/pages/PageB"
+        },
+        "shared": [
+            {
+            "react": "~17.0.2",
+            "react-dom": "~17.0.2",
+            "react-redux": "~7.2.4",
+            "redux": "~4.1.0",
+        }]
+    }
     ...
 ```
