@@ -79,18 +79,6 @@ export class ConfigHelper {
         return ConfigHelper.privateGet(node, defaultValue, configPath);
     }
 
-    public static getPackageVersion(): string {
-        let patchVer = 0;
-        // log.info(argv);
-        if (argv.patchVer && argv.patchVer !== true) {
-            patchVer = argv.patchVer;
-        }
-        const packageJSON = fs.readJSONSync("package.json");
-        const version = packageJSON.version.split(".");
-        version[2] = patchVer;
-        return version.slice(0, 3).join(".");
-    }
-
     public static getPackageName(): any {
         return ConfigHelper.get("name", null, appConfJSON);
     }

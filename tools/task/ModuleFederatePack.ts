@@ -251,7 +251,7 @@ export class ModuleFederatePack extends WebpackTaskBase {
                 moduleFederationConfig.name = ConfigHelper.getPackageName();
             }
             if (!moduleFederationConfig.filename) {
-                moduleFederationConfig.filename = "mfEntry.js";
+                moduleFederationConfig.filename = "remoteEntry.js";
             }
             plugins.push(new FederationStatsPlugin());
             plugins.push(new FederationModuleIdPlugin());

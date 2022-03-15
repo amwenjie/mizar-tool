@@ -101,9 +101,9 @@ export class ServerApiPack extends WebpackTaskBase {
             externals: [
                 nodeExternals({
                     allowlist: [
-                        /mizar/,
+                        /^mizar/,
                     ],
-                }) as any
+                }),
             ],
             module: {
                 rules: rules.concat([

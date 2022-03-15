@@ -13,7 +13,6 @@ import getGlobalConfig, { IGlobalConfig, devLocalIdentName, prodLocalIdentName }
 import { ConfigHelper } from "../libs/ConfigHelper";
 import Logger from "../libs/Logger";
 import { WebpackTaskBase } from "../libs/WebpackTaskBase";
-// import NodeModuleFederation from "../libs/plugins/node-module-federation-plugin";
 import { HelperTask } from "./HelperTask";
 import RunServer from "./RunServer";
 const log = Logger("ServerPack");
@@ -59,7 +58,6 @@ export class ServerPack extends WebpackTaskBase {
             delete moduleFederationConfig.exposes;
             delete moduleFederationConfig.filename;
             delete moduleFederationConfig.name;
-            // plugins.push(new NodeModuleFederation(moduleFederationConfig));
             plugins.push(new container.ModuleFederationPlugin(moduleFederationConfig));
         }
         return plugins;

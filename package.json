@@ -76,7 +76,7 @@
     "ts-node": "~10.7.0"
   },
   "engines": {
-    "node": "^14.18.1 || >=16.13.0"
+    "node": ">=16.13.0"
   },
   "license": "MIT",
   "name": "alcor",
@@ -91,5 +91,5 @@
     "Test-ProjectBuild": "ts-node tools/ProjectBuild",
     "build": "ts-node ./Build"
   },
-  "version": "0.1.55"
+  "version": "0.1.56"
 }

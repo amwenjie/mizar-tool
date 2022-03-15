@@ -355,7 +355,7 @@ export class IsomorphicPack extends WebpackTaskBase {
             plugins.push(new container.ModuleFederationPlugin(moduleFederationConfig));
         }
         plugins.push(new LoadablePlugin({
-            filename: "./stats.json",
+            filename: "./loadable-stats.json",
             writeToDisk: true,
         }));
         if (this.isAnalyzMode) {
