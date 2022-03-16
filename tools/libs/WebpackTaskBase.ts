@@ -165,6 +165,10 @@ export class WebpackTaskBase extends TaskBase {
             }
         });
     }
+
+    protected getEnvDef(): "development"|"production" {
+        return this.isDebugMode ? "development" : "production";
+    }
 }
 
 export default WebpackTaskBase;

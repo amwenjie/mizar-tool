@@ -15,7 +15,7 @@
     },
     "dependencies": {
         "@loadable/component": "~5.15.2",
-        "mizar": "~0.0.45",
+        "mizar": "~0.0.46",
         "react": "~17.0.2",
         "react-dom": "~17.0.2",
         "react-redux": "~7.2.6",
@@ -29,7 +29,7 @@
         "@types/react": "~17.0.34",
         "@types/react-dom": "~17.0.11",
         "@types/react-redux": "~7.1.20",
-        "alcor": "~0.1.56",
+        "alcor": "~0.1.57",
         "postcss-less": "~6.0.0"
     }
 }

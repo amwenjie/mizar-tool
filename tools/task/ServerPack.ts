@@ -2,14 +2,17 @@ import { cyan, green } from "colorette";
 import ESLintWebpackPlugin from "eslint-webpack-plugin";
 import fs from "fs-extra";
 import path from "path";
-import webpack, {
+import {
     container,
+    DefinePlugin,
     type Compiler,
+    type Configuration,
     type RuleSetRule,
     type WebpackPluginInstance,
 } from "webpack";
-import nodeExternals from "webpack-node-externals";
-import getGlobalConfig, { IGlobalConfig, devLocalIdentName, prodLocalIdentName } from "../getGlobalConfig";
+import { merge } from "webpack-merge";
+import serverBase from "../config/server.base";
+import getGlobalConfig, { type IGlobalConfig, devLocalIdentName, prodLocalIdentName } from "../getGlobalConfig";
 import { ConfigHelper } from "../libs/ConfigHelper";
 import Logger from "../libs/Logger";
 import { WebpackTaskBase } from "../libs/WebpackTaskBase";
@@ -45,7 +48,7 @@ export class ServerPack extends WebpackTaskBase {
             DEV_PROXY_CONFIG: JSON.stringify(ConfigHelper.get("proxy", false)),
         };
         const plugins = [];
-        plugins.push(new webpack.DefinePlugin(defineOption));
+        plugins.push(new DefinePlugin(defineOption));
         const esLintPluginConfig = ConfigHelper.get("eslint", {
             files: "./src",
             failOnError: !this.isDebugMode,
@@ -55,10 +58,9 @@ export class ServerPack extends WebpackTaskBase {
         }
         const moduleFederationConfig = ConfigHelper.get("federation", false);
         if (moduleFederationConfig && moduleFederationConfig.remotes) {
-            delete moduleFederationConfig.exposes;
-            delete moduleFederationConfig.filename;
-            delete moduleFederationConfig.name;
-            plugins.push(new container.ModuleFederationPlugin(moduleFederationConfig));
+            plugins.push(new container.ModuleFederationPlugin({
+                remotes: moduleFederationConfig.remotes,
+            }));
         }
         return plugins;
     }
@@ -268,20 +270,14 @@ export class ServerPack extends WebpackTaskBase {
 
     protected async compile(): Promise<void|Error> {
         log.info("->", cyan(this.taskName), HelperTask.taking());
-        
-        const mode = this.isDebugMode ? "development" : "production"; // this.isDebugMode ? JSON.stringify("development") : JSON.stringify("production");
-        const config: webpack.Configuration = {
-            mode,
-            // cache: true,
-            devtool: this.isDebugMode ? "source-map" : undefined,
-            entry: { "index": this.src },
-            externals: [
-                nodeExternals({
-                    allowlist: [
-                        /^mizar/,
-                    ],
-                }),
-            ],
+        const config: Configuration = this.getCompileConfig();
+        log.info("ServerPack.pack", { config: JSON.stringify(config) });
+        await super.compile(config);
+    }
+
+    protected getCompileConfig(): Configuration  {
+        const innerConf = merge(serverBase(this.isDebugMode), {
+            entry: { "index": this.src, },
             module: {
                 parser: {
                     javascript: {
@@ -292,30 +288,18 @@ export class ServerPack extends WebpackTaskBase {
             },
             name: this.taskName,
             output: {
-                filename: "[name].js",
                 path: this.dist,
-                library: {
-                    type: "commonjs2",
-                },
             },
             plugins: this.getPlugins(),
-            resolve: {
-                extensions: [".ts", ".tsx", ".js", ".css", ".png", ".jpg", ".gif", ".less", "sass", "scss", "..."],
-                modules: [
-                    path.resolve(__dirname, "src"),
-                    "node_modules",
-                ],
-            },
-            externalsPresets: {
-                node: true,
-            },
-            target: "node",
-            optimization: {
-                emitOnErrors: false
-            },
-        };
-        log.info("ServerPack.pack", { config: JSON.stringify(config) });
-        await super.compile(config);
+        });
+        const cuzConfigPath = path.resolve("./webpack.config/server.js");
+        if (fs.existsSync(cuzConfigPath)) {
+            const cuzConf: () => Configuration = require(cuzConfigPath);
+            if (typeof cuzConf === "function") {
+                return merge(innerConf, cuzConf());
+            }
+        }
+        return innerConf;
     }
 }
 

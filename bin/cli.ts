@@ -134,5 +134,5 @@ alcor
             }
         });
     });
-    
+
 alcor.parse(process.argv);

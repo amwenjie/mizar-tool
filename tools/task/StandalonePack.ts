@@ -1,6 +1,5 @@
 import { cyan, green, red, yellow } from "colorette";
 import CssMinimizerPlugin from "css-minimizer-webpack-plugin";
-import DirectoryNamedWebpackPlugin from "directory-named-webpack-plugin";
 import ESLintWebpackPlugin from "eslint-webpack-plugin";
 import fs from "fs-extra";
 import klaw from "klaw";
@@ -11,11 +10,14 @@ import TerserJSPlugin from "terser-webpack-plugin";
 import webpack, {
     container,
     type Compiler,
-    type RuleSetRule,
+    type Configuration,
+    type EntryObject,
     type WebpackPluginInstance,
 } from "webpack";
 import { BundleAnalyzerPlugin } from "webpack-bundle-analyzer";
-import getGlobalConfig, { IGlobalConfig, devLocalIdentName, prodLocalIdentName } from "../getGlobalConfig";
+import { merge } from "webpack-merge";
+import clientBase from "../config/client.base";
+import getGlobalConfig, { type IGlobalConfig } from "../getGlobalConfig";
 import { ConfigHelper } from "../libs/ConfigHelper";
 import Logger from "../libs/Logger";
 import { WebpackTaskBase } from "../libs/WebpackTaskBase";
@@ -38,38 +40,13 @@ export class StandalonePack extends WebpackTaskBase {
             return;
         }
         log.info("->", "StandalonePack", HelperTask.taking());
-        const entry: webpack.EntryObject = await this.scan();
+        const entry: EntryObject = await this.scan();
         if (!entry || Object.keys(entry).length === 0) {
             log.warn(yellow(`${cyan(this.taskName)}, scan emtpy entry`));
             return;
         }
         log.info(cyan(this.taskName), "run.entry", entry);
-        const mode = this.isDebugMode ? "development" : "production";
-        // const mode = this.isDebugMode ? JSON.stringify("development") : JSON.stringify("production");
-        const config: webpack.Configuration = {
-            mode,
-            // cache: false,
-            // debug: true,
-            devtool: this.isDebugMode ? "source-map" : undefined,
-            ...this.getEntryAndOutputConfig(entry),
-            externals: this.getExternalConfig(),
-            module: {
-                rules: this.getRules(),
-            },
-            name: "StandalonePack",
-            plugins: this.getPlugins(),
-            resolve: {
-                extensions: [".ts", ".tsx", ".js", ".css", ".png", ".jpg", ".gif", ".less", "sass", "scss", "..."],
-                modules: [
-                    path.resolve(__dirname, "src"),
-                    "node_modules",
-                ],
-                plugins: [
-                    new DirectoryNamedWebpackPlugin(),
-                ],
-            },
-            optimization: this.getOptimization(),
-        };
+        const config: Configuration = this.getCompileConfig(entry);
         log.info(cyan(this.taskName), "pack", config);
         await super.compile(config);
     }
@@ -109,7 +86,7 @@ export class StandalonePack extends WebpackTaskBase {
     /**
      * 入口文件搜寻
      */
-    private async scan(): Promise<webpack.EntryObject> {
+    private async scan(): Promise<EntryObject> {
         return new Promise(async resolve => {
             Promise
                 .all([this.entryScan()])
@@ -128,18 +105,8 @@ export class StandalonePack extends WebpackTaskBase {
         });
     }
 
-    private shouldSourceModuled(resourcePath: string): boolean {
-        // log.info('resourcePath: ', resourcePath);
-        // log.info('!/node_modules/i.test(resourcePath): ', !/node_modules/i.test(resourcePath));
-        // log.info('/components?|pages?/i.test(resourcePath): ', /components?|pages?/i.test(resourcePath));
-        return /components?|pages?/i.test(resourcePath);
-    }
-
     private getOptimization() {
         return {
-            minimize: !this.isDebugMode,
-            chunkIds: this.isDebugMode ? "named" : "deterministic",
-            moduleIds: this.isDebugMode ? "named" : "deterministic",
             minimizer: [
                 new TerserJSPlugin({
                     terserOptions: {
@@ -152,180 +119,6 @@ export class StandalonePack extends WebpackTaskBase {
                 new CssMinimizerPlugin(),
             ],
         };
-    }
-
-    private getRules(): (RuleSetRule | "...")[]  {
-        let localIdentName = prodLocalIdentName;
-        let sourceMap = false;
-        if (this.isDebugMode) {
-            localIdentName = devLocalIdentName;
-            sourceMap = true;
-        }
-        const rules = [];
-        rules.push({
-            exclude: /[\\/]node_modules[\\/]|\.d\.ts$/i,
-            test: /\.tsx?$/i,
-            use: [
-                {
-                    loader: "ts-loader",
-                    options: {
-                        compilerOptions: {
-                            declaration: false,
-                        },
-                    },
-                },
-            ],
-        });
-        rules.push({
-            exclude: /\.d\.ts$/i,
-            test: /[\\/]src[\\/]isomorphic[\\/]routers(?:[\\/][^\\/]+?){1}\.tsx?$/,
-            use: [
-                {
-                    loader: path.resolve(__dirname, "../libs/loaders/router-loadable-loader"),
-                    options: {
-                        IS_SERVER_RUNTIME: false,
-                    }
-                },
-            ],
-        });
-        rules.push({
-            exclude: /\.d\.ts$/i,
-            test: /[\\/]src[\\/]isomorphic[\\/].+[\\/][A-Z][^\\/]+[\\/]index\.tsx?$/,
-            use: [
-                {
-                    loader: path.resolve(__dirname, "../libs/loaders/connect-default-param-loader"),
-                    options: {
-                        IS_SERVER_RUNTIME: false,
-                    }
-                },
-            ],
-        });
-        rules.push({
-            test: /\.css$/i,
-            use: [
-                {
-                    loader: MiniCssExtractPlugin.loader,
-                },
-                {
-                    loader: "css-loader",
-                    options: {
-                        importLoaders: 1,
-                        sourceMap,
-                        // modules: true,
-                        modules: {
-                            auto: this.shouldSourceModuled,
-                            localIdentName: localIdentName,
-                            namedExport: true,
-                        },
-                    },
-                },
-                {
-                    loader: "postcss-loader",
-                    options: Object.assign(
-                        {
-                            postcssOptions: {
-                                plugins: [
-                                    "postcss-preset-env",
-                                ],
-                            },
-                        },
-                        ConfigHelper.get("postcss-loader", {}),
-                    ),
-                },
-            ],
-            type: "javascript/auto",
-        });
-        rules.push({
-            test: /\.less$/i,
-            use: [
-                {
-                    loader: MiniCssExtractPlugin.loader,
-                },
-                {
-                    loader: "css-loader",
-                    options: {
-                        importLoaders: 2,
-                        sourceMap,
-                        modules: {
-                            auto: this.shouldSourceModuled,
-                            localIdentName: localIdentName,
-                            namedExport: true,
-                        },
-                    },
-                },
-                {
-                    loader: "postcss-loader",
-                    options: Object.assign(
-                            {
-                            postcssOptions: {
-                                plugins: [
-                                    "postcss-preset-env",
-                                ],
-                            },
-                        },
-                        ConfigHelper.get("postcss-loader", {}),
-                    ),
-                },
-                {
-                    loader: "less-loader",
-                    options: Object.assign(
-                        {
-                            sourceMap,
-                        },
-                        ConfigHelper.get("less-loader", {}),
-                    ),
-                },
-            ],
-            type: "javascript/auto",
-        });
-        rules.push({
-            test: /\.s[ac]ss$/i,
-            use: [
-                {
-                    loader: MiniCssExtractPlugin.loader,
-                },
-                {
-                    loader: "css-loader",
-                    options: {
-                        importLoaders: 2,
-                        sourceMap,
-                        modules: {
-                            auto: this.shouldSourceModuled,
-                            localIdentName: localIdentName,
-                            namedExport: true,
-                        },
-                    },
-                },
-                {
-                    loader: "postcss-loader",
-                    options: Object.assign(
-                        {
-                            postcssOptions: {
-                                plugins: [
-                                    "postcss-preset-env",
-                                ],
-                            },
-                        },
-                        ConfigHelper.get("postcss-loader", {}),
-                    ),
-                },
-                {
-                    loader: "sass-loader",
-                    options: Object.assign(
-                        {
-                            sourceMap,
-                        },
-                        ConfigHelper.get("sass-loader", {}),
-                    ),
-                },
-            ],
-            type: "javascript/auto",
-        });
-        rules.push({
-            test: /\.(ico|jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|swf)(\?.*)?$/i,
-            type: "asset",
-        });
-        return rules;
     }
 
     private getPlugins(): (
@@ -360,10 +153,9 @@ export class StandalonePack extends WebpackTaskBase {
         }));
         const moduleFederationConfig = ConfigHelper.get("federation", false);
         if (moduleFederationConfig && moduleFederationConfig.remotes) {
-            delete moduleFederationConfig.exposes;
-            delete moduleFederationConfig.filename;
-            delete moduleFederationConfig.name;
-            plugins.push(new container.ModuleFederationPlugin(moduleFederationConfig));
+            plugins.push(new container.ModuleFederationPlugin({
+                remotes: moduleFederationConfig.remotes,
+            }));
         }
         if (this.isAnalyzMode) {
             plugins.push(new BundleAnalyzerPlugin({
@@ -421,23 +213,31 @@ export class StandalonePack extends WebpackTaskBase {
 
     private getExternalConfig(): any {
         const config = ConfigHelper.get("standalone.externals", false);
-        const serverExternal = ({ context, request }, callback) => {
-            const isExternal = /[\\/]server[\\/]/i.test(request);
-            if (isExternal || request === "node-mocks-http") {
-                callback(null, "''");
-            } else {
-                callback();
-            }
-        };
-
-        if (config === false) {
-            return serverExternal;
-        }
         if (typeof config === "object" && !Array.isArray(config)) {
-            return [serverExternal, config];
-        } else {
-            return [serverExternal].concat(config);
+            return [config];
+        } else if (Array.isArray(config)) {
+            return config;
         }
+        return [];
+    }
+
+    protected getCompileConfig(entry: EntryObject): Configuration  {
+        const innerConf = merge(clientBase(this.isDebugMode), {
+            ...this.getEntryAndOutputConfig(entry),
+            externals: this.getExternalConfig(),
+            name: this.taskName,
+            plugins: this.getPlugins(),
+            optimization: this.getOptimization(),
+        });
+        
+        const cuzConfigPath = path.resolve("./webpack.config/standalone.js");
+        if (fs.existsSync(cuzConfigPath)) {
+            const cuzConf: () => Configuration = require(cuzConfigPath);
+            if (typeof cuzConf === "function") {
+                return merge(innerConf, cuzConf());
+            }
+        }
+        return innerConf;
     }
 }
 export default StandalonePack;

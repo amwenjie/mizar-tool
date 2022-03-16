@@ -2,9 +2,10 @@ import { cyan, green, red } from "colorette";
 import fs from "fs-extra";
 import klaw from "klaw";
 import path from "path";
-import webpack from "webpack";
-import nodeExternals from "webpack-node-externals";
-import getGlobalConfig, { IGlobalConfig, devLocalIdentName, prodLocalIdentName } from "../getGlobalConfig";
+import { DefinePlugin, type Configuration, type EntryObject, } from "webpack";
+import { merge } from "webpack-merge";
+import serverBase from "../config/server.base";
+import getGlobalConfig, { type IGlobalConfig, devLocalIdentName, prodLocalIdentName } from "../getGlobalConfig";
 import { ConfigHelper } from "../libs/ConfigHelper";
 import { WebpackTaskBase } from "../libs/WebpackTaskBase";
 import { HelperTask } from "./HelperTask";
@@ -21,7 +22,7 @@ export class ServerApiPack extends WebpackTaskBase {
         this.dist = path.resolve(`${this.globalConfig.rootOutput}`);
     }
 
-    private async scan(): Promise<webpack.EntryObject> {
+    private async scan(): Promise<EntryObject> {
         return new Promise((resolve, reject) => {
             const entry = {};
             if (!fs.existsSync(this.src)) {
@@ -55,7 +56,8 @@ export class ServerApiPack extends WebpackTaskBase {
 
     protected async compile(): Promise<void|Error> {
         log.info("->", cyan(this.taskName), HelperTask.taking());
-        let entry: webpack.EntryObject;
+        
+        let entry: EntryObject;
         try {
             entry = await this.scan();
         } catch (e) {}
@@ -64,6 +66,13 @@ export class ServerApiPack extends WebpackTaskBase {
             return;
         }
         log.info(cyan(this.taskName), "run.entry", entry);
+
+        const config: Configuration = this.getCompileConfig(entry);
+        log.info("ServerApiPack.pack", { config: JSON.stringify(config) });
+        await super.compile(config);
+    }
+    
+    protected getCompileConfig(entry: EntryObject): Configuration  {
         const tslintPath = path.resolve(`${this.rootPath}tslint.json`);
         const tsConfigPath = path.resolve(`${this.rootPath}tsconfig.json`);
         let localIdentName = prodLocalIdentName;
@@ -86,25 +95,14 @@ export class ServerApiPack extends WebpackTaskBase {
                 },
             });
         }
-        
-        const mode = this.isDebugMode ? "development" : "production";
-        // const NODE_ENV = this.isDebugMode ? JSON.stringify("development") : JSON.stringify("production");
+
         const defineOption = {
             IS_SERVER_RUNTIME: JSON.stringify(true),
             IS_DEBUG_MODE: JSON.stringify(!!this.isDebugMode),
         };
-        const config: webpack.Configuration = {
-            mode,
-            // cache: true,
-            devtool: this.isDebugMode ? "source-map" : undefined,
+
+        const innerConf = merge(serverBase(this.isDebugMode), {
             entry,
-            externals: [
-                nodeExternals({
-                    allowlist: [
-                        /^mizar/,
-                    ],
-                }),
-            ],
             module: {
                 rules: rules.concat([
                     {
@@ -125,32 +123,21 @@ export class ServerApiPack extends WebpackTaskBase {
             },
             name: this.taskName,
             output: {
-                filename: "[name].js",
                 path: this.dist,
-                library: {
-                    type: "commonjs2",
-                },
             },
             plugins: [
-                new webpack.DefinePlugin(defineOption),
+                new DefinePlugin(defineOption),
             ],
-            resolve: {
-                extensions: [".ts", ".tsx", ".js", ".css", ".png", ".jpg", ".gif", ".less", "sass", "scss", "..."],
-                modules: [
-                    path.resolve(__dirname, "src"),
-                    "node_modules",
-                ],
-            },
-            externalsPresets: {
-                node: true,
-            },
-            target: "node",
-            optimization: {
-                emitOnErrors: false
-            },
-        };
-        log.info("ServerApiPack.pack", { config: JSON.stringify(config) });
-        await super.compile(config);
+        });
+
+        const cuzConfigPath = path.resolve("./webpack.config/api.js");
+        if (fs.existsSync(cuzConfigPath)) {
+            const cuzConf: () => Configuration = require(cuzConfigPath);
+            if (typeof cuzConf === "function") {
+                return merge(innerConf, cuzConf());
+            }
+        }
+        return innerConf;
     }
 }
 

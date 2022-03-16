@@ -52,6 +52,7 @@
     "webpack": "~5.70.0",
     "webpack-bundle-analyzer": "~4.5.0",
     "webpack-federation-module-id-plugin": "~1.0.0",
+    "webpack-merge": "~5.8.0",
     "webpack-node-externals": "~3.0.0",
     "yargs": "~17.3.1"
   },
@@ -91,5 +92,5 @@
     "Test-ProjectBuild": "ts-node tools/ProjectBuild",
     "build": "ts-node ./Build"
   },
-  "version": "0.1.56"
+  "version": "0.1.57"
 }
