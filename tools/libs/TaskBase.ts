@@ -13,8 +13,8 @@ export class TaskBase {
     protected isDebugMode = false;
     protected isAnalyzMode = false;
     protected rootPath = "./";
-    protected src = "";
-    protected dist = "";
+    protected src: string;
+    protected dist: string;
     protected state = false;
 
     constructor(name) {

@@ -1,7 +1,6 @@
 {
     "compilerOptions": {
         "target": "es3",
-        "traceResolution": false,
         "lib": [
             "ES5",
             "ES2015",
@@ -14,7 +13,7 @@
         "importHelpers": true,
         "allowJs": true,
         "baseUrl": "src",
-        "outDir": "../dist",
+        "outDir": "dist",
         "pretty": true,
         "module": "CommonJS",
         "jsx": "react",
@@ -22,10 +21,11 @@
         "sourceMap": true,
         "noImplicitAny": false,
         "noFallthroughCasesInSwitch": false,
+        "allowSyntheticDefaultImports": true,
         "esModuleInterop": true,
         "typeRoots": [
-            "../node_modules/@types",
-            "../typings"
+            "node_modules/@types",
+            "typings"
         ]
     }
 }

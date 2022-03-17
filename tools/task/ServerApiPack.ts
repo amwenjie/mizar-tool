@@ -42,8 +42,7 @@ export class ServerApiPack extends WebpackTaskBase {
                 }
             });
             walk.on("end", () => {
-                log.info(cyan(this.taskName), "scan.done", path.resolve(this.rootPath));
-                log.info(cyan(this.taskName), "pack.keys", Object.keys(entry).join(","));
+                log.info(cyan(this.taskName), "scan done ; pack.keys", Object.keys(entry).join(","));
                 resolve(entry);
             });
             walk.on("error", e => {
@@ -111,11 +110,14 @@ export class ServerApiPack extends WebpackTaskBase {
                         use: [
                             {
                                 loader: "ts-loader",
-                                options: {
-                                    compilerOptions: {
-                                        declaration: false,
+                                options: Object.assign(
+                                    {
+                                        compilerOptions: {
+                                            declaration: false,
+                                        },
                                     },
-                                },
+                                    ConfigHelper.get("ts-loader", {}),
+                                ),
                             },
                         ],
                     },

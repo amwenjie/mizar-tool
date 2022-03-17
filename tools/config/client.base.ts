@@ -73,11 +73,14 @@ function getRules(isDebugMode: boolean): (RuleSetRule | "...")[] {
         use: [
             {
                 loader: "ts-loader",
-                options: {
-                    compilerOptions: {
-                        declaration: false,
+                options: Object.assign(
+                    {
+                        compilerOptions: {
+                            declaration: false,
+                        },
                     },
-                },
+                    ConfigHelper.get("ts-loader", {}),
+                ),
             },
         ],
     });
