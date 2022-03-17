@@ -211,3 +211,34 @@ npm install -g alcor
     }
     ...
 ```
+
+### 10. 支持自定义编译配置
+   * 在项目根目录中如果存在./webpack.config目录，里面有各编译过程的配置js文件时，编译过程会自动读取js文件，与内置配置进行merge。
+   * 各js文件：
+      1. client.js - 自定义./src/iosmorphic目录的编译配置
+      2. server.js - 自定义./src/server目录的编译配置
+      3. api.js - 自定义./src/server/apis目录的编译配置
+      4. standalone.js - 自定义./src/standalone目录的编译配置
+      5. mf.js - 自定义./config/configure.json中federation字段导出的前端组件编译配置
+   * 自定义配置js文件中需要导出一个function，该function需要返回一个webpack.Configuration类型的对象。
+   * 举例：
+```
+    ./webpack.config/client.js 
+
+    module.exports = function () {
+       return {
+          amd: {
+             jQuery: true,
+          },
+          module: {
+             rules: {
+                ...
+             }
+          },
+          externals: [
+             ...
+          ],
+       };
+    };
+```
+   
