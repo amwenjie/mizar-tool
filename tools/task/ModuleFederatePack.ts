@@ -11,7 +11,7 @@ import {
 import FederationModuleIdPlugin from "webpack-federation-module-id-plugin";
 import { merge } from "webpack-merge";
 import clientBase from "../config/client.base";
-import getGlobalConfig, { type IGlobalConfig } from "../getGlobalConfig";
+import getGlobalConfig, { type IGlobalConfig } from "../libs/getGlobalConfig";
 import { ConfigHelper } from "../libs/ConfigHelper";
 import Logger from "../libs/Logger";
 import FederationStatsPlugin from "../libs/plugins/federation-stats-plugin";

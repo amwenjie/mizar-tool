@@ -2,10 +2,10 @@ import { cyan } from "colorette";
 import gulp, { task } from "gulp";
 import plumber from "gulp-plumber";
 import path from "path";
+import getGlobalConfig from "../libs/getGlobalConfig";
 import Logger from "../libs/Logger";
 import TaskBase from "../libs/TaskBase";
 import { HelperTask } from "./HelperTask";
-import getGlobalConfig from "../getGlobalConfig";
 
 const log = Logger("PublicAsset");
 export class PublicAsset extends TaskBase {

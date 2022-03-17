@@ -5,7 +5,7 @@ import path from "path";
 import { DefinePlugin, type Configuration, type EntryObject, } from "webpack";
 import { merge } from "webpack-merge";
 import serverBase from "../config/server.base";
-import getGlobalConfig, { type IGlobalConfig, devLocalIdentName, prodLocalIdentName } from "../getGlobalConfig";
+import getGlobalConfig, { type IGlobalConfig, devLocalIdentName, prodLocalIdentName } from "../libs/getGlobalConfig";
 import { ConfigHelper } from "../libs/ConfigHelper";
 import { WebpackTaskBase } from "../libs/WebpackTaskBase";
 import { HelperTask } from "./HelperTask";

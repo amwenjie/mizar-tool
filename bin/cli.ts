@@ -65,7 +65,7 @@ alcor
 
 alcor
     .command('pack')
-    .description('pack the pakcage')
+    .description('compile ./src directory out as a package')
     .usage(`pack [options]`)
     .option('-d, --debug', 'development mode')
     .option('-w, --watch', 'watch files change')

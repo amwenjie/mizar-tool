@@ -1,4 +1,4 @@
-import { ConfigHelper } from "./libs/ConfigHelper";
+import { ConfigHelper } from "./ConfigHelper";
 
 export interface IGlobalConfig {
     assetsMainfest: string;

@@ -12,7 +12,7 @@ import {
 } from "webpack";
 import { merge } from "webpack-merge";
 import serverBase from "../config/server.base";
-import getGlobalConfig, { type IGlobalConfig, devLocalIdentName, prodLocalIdentName } from "../getGlobalConfig";
+import getGlobalConfig, { type IGlobalConfig, devLocalIdentName, prodLocalIdentName } from "../libs/getGlobalConfig";
 import { ConfigHelper } from "../libs/ConfigHelper";
 import Logger from "../libs/Logger";
 import { WebpackTaskBase } from "../libs/WebpackTaskBase";

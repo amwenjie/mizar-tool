@@ -17,7 +17,7 @@ import {
 import { merge } from "webpack-merge";
 import { BundleAnalyzerPlugin } from "webpack-bundle-analyzer";
 import clientBase from "../config/client.base";
-import getGlobalConfig, { type IGlobalConfig } from "../getGlobalConfig";
+import getGlobalConfig, { type IGlobalConfig } from "../libs/getGlobalConfig";
 import { ConfigHelper } from "../libs/ConfigHelper";
 import Logger from "../libs/Logger";
 import { WebpackTaskBase } from "../libs/WebpackTaskBase";

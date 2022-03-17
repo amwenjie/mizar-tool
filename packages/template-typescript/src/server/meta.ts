@@ -8,7 +8,7 @@ export default {
     styles: [
     ],
     scripts: [
-        "public/js/jquery-1.9.1.min.js",
+        "public/index.css",
     ],
     metas: [
     ],

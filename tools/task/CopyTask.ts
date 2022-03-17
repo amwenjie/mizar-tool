@@ -1,7 +1,7 @@
 import { cyan } from "colorette";
 import fs from "fs-extra";
 import path from "path";
-import getGlobalConfig from "../getGlobalConfig";
+import getGlobalConfig from "../libs/getGlobalConfig";
 import Logger from "../libs/Logger";
 import TaskBase from "../libs/TaskBase";
 import { HelperTask } from "./HelperTask";

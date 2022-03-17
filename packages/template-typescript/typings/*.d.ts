@@ -17,13 +17,13 @@ declare module "*.less" {
     export default StyleModule;
 }
 
-declare module "micro_1/counting" {
+declare module "remoteEntry/PageA" {
     const comp: React.ComponentType;
   
     export default comp;
 }
 
-declare module "micro_1/PageA" {
+declare module "remoteEntry/common/Counting" {
     const comp: React.ComponentType;
   
     export default comp;

@@ -6,7 +6,7 @@ import {
     type RuleSetRule,
 } from "webpack";
 import { merge } from "webpack-merge";
-import { devLocalIdentName, prodLocalIdentName } from "../getGlobalConfig";
+import { devLocalIdentName, prodLocalIdentName } from "../libs/getGlobalConfig";
 import { ConfigHelper } from "../libs/ConfigHelper";
 import base from "./base";
 
