@@ -20,6 +20,7 @@
           -apis   服务端node api存放目录，规则是请求路径以/api/开头，文件名为方法名
              -api-function.ts
           -index.ts   服务端启动入口
+       -tsconfig.json
     -package.json
     -tslint.json
     -tsconfig.json
