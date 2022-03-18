@@ -174,6 +174,11 @@ export class IsomorphicPack extends WebpackTaskBase {
 
     protected getCompileConfig(): Configuration  {
         const baseConf = clientBase(this.isDebugMode);
+        if (this.isDebugMode) {
+            baseConf.module.rules.splice(1, 0, {
+                loader: path.resolve(__dirname, "../libs/loaders/typing-for-css-module"),
+            });
+        }
         const tslintPath = path.resolve(`${this.rootPath}tslint.json`);
         const tsConfigPath = path.resolve(`${this.rootPath}tsconfig.json`);
         const tslintConfig = ConfigHelper.get("tslint", true);

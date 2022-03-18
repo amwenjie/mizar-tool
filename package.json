@@ -8,7 +8,7 @@
   },
   "dependencies": {
     "@loadable/webpack-plugin": "~5.15.2",
-    "autoprefixer": "~10.4.2",
+    "autoprefixer": "~10.4.4",
     "chokidar": "~3.5.3",
     "colorette": "~2.0.16",
     "commander": "~8.3.0",
@@ -32,7 +32,7 @@
     "node-notifier": "~10.0.1",
     "node-notifier-cli": "~2.0.0",
     "ora": "~5.4.1",
-    "postcss": "~8.4.8",
+    "postcss": "~8.4.12",
     "postcss-loader": "~6.2.1",
     "postcss-preset-env": "~7.4.2",
     "raf": "~3.4.1",
@@ -41,7 +41,7 @@
     "schema-utils": "~4.0.0",
     "semver": "~7.3.5",
     "style-loader": "~3.3.1",
-    "stylelint": "~14.5.3",
+    "stylelint": "~14.6.0",
     "stylelint-webpack-plugin": "~3.1.1",
     "ts-loader": "~9.2.8",
     "tslib": "~2.3.1",
@@ -92,5 +92,5 @@
     "Test-ProjectBuild": "ts-node tools/ProjectBuild",
     "build": "ts-node ./Build"
   },
-  "version": "0.1.57"
+  "version": "0.1.58"
 }
