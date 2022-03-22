@@ -32,5 +32,6 @@
         "@types/react-redux": "~7.1.20",
         "alcor": "~0.1.61",
         "postcss-less": "~6.0.0"
-    }
+    },
+    "type": "commonjs"
 }

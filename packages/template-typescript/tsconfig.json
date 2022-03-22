@@ -1,21 +1,18 @@
 {
+    "ts-node": {
+        "esm": true
+    },
     "compilerOptions": {
-        "target": "es3",
-        "lib": [
-            "ES5",
-            "ES2015",
-            "ES2016",
-            "ES2017",
-            "ES2019",
-            "ES2020",
-            "dom"
-        ],
+        "target": "es2020",
         "importHelpers": true,
+        "downlevelIteration": true,
+        "noEmitHelpers": false,
         "allowJs": true,
         "baseUrl": "src",
         "outDir": "dist",
         "pretty": true,
-        "module": "CommonJS",
+        "module": "commonjs",
+        "moduleResolution": "node",
         "jsx": "react",
         "declaration": false,
         "sourceMap": true,
