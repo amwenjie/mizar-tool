@@ -38,6 +38,7 @@ export default function (source) {
             const parsedPathObj = path.parse(sourcePath);
             const basenameArr = parsedPathObj.dir.split(path.sep);
             const componentName = basenameArr[basenameArr.length - 1];
+            let emsg: string;
             if (shouldInjectReducer) {
                 const firstLetterLowerCaseName = `${componentName.slice(0, 1).toLowerCase()}${componentName.slice(1)}`;
                 const reducerPath = `${parsedPathObj.dir}${path.sep}reducer.ts`;
@@ -54,12 +55,15 @@ export default function (source) {
                     // } else if (typeof reducerExports[`${firstLetterLowerCaseName}Reducer`] === "function") {
                     //     paramArr.splice(1, 0, `require(\"${reducerPath}").${firstLetterLowerCaseName}Reducer`);
                     } else {
-                        log.error(`cannot find default reducer function for the component: ${red(sourcePath)}`);
-                        throw new Error(`cannot find default reducer function for the component: ${red(sourcePath)}`);
+                        emsg = `cannot find default reducer function for the component: ${red(sourcePath)}`;
+                        log.error(emsg);
+                        callback(new Error(emsg), "");
+                        return;
                     }
                 } else {
-                    log.error(`cannot find default reducer function for the component: ${red(sourcePath)}`);
-                    throw new Error(`cannot find default reducer function for the component: ${red(sourcePath)}`);
+                    emsg = `cannot find reducer file: ${red(reducerPath)}`;
+                    callback(new Error(emsg), "");
+                    return;
                 }
             }
             if (shouldInjectReducerName) {

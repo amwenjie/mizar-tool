@@ -56,13 +56,6 @@ export class IsomorphicPack extends WebpackTaskBase {
         return path;
     }
 
-    protected async compile(): Promise<void|Error> {
-        log.info("->", "IsomorphicPack", HelperTask.taking());
-        const config: Configuration = this.getCompileConfig();
-        log.info("pack", { config: JSON.stringify(config), });
-        await super.compile(config);
-    }
-
     private getOptimization() {
         return {
             runtimeChunk: {
@@ -147,7 +140,7 @@ export class IsomorphicPack extends WebpackTaskBase {
                     context: "src",
                     from: "public/**/*",
                 },
-            ]
+            ],
         }));
         // if (this.isDebugMode) {
         //     plugins.push(new webpack.HotModuleReplacementPlugin());
@@ -170,6 +163,13 @@ export class IsomorphicPack extends WebpackTaskBase {
             }));
         }
         return plugins;
+    }
+
+    protected async compile(): Promise<void|Error> {
+        log.info("->", "IsomorphicPack", HelperTask.taking());
+        const config: Configuration = this.getCompileConfig();
+        log.info("pack", { config: JSON.stringify(config), });
+        await super.compile(config);
     }
 
     protected getCompileConfig(): Configuration  {

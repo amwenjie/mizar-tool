@@ -37,7 +37,10 @@ export class ShellTask extends TaskBase {
         this.exec(cli);
         
         if (this.isWatchMode) {
-            this.watcher = chokidar.watch(this.src)
+            this.watcher = chokidar
+                .watch(this.src, {
+                    interval: 600,
+                })
                 .on('change', path => {
                     log.info(cyan(this.taskName), " file change: ", path, " re-run shell");
                     this.exec(cli);

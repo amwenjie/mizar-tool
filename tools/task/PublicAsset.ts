@@ -1,6 +1,6 @@
 import { cyan } from "colorette";
-import gulp, { task } from "gulp";
-import plumber from "gulp-plumber";
+import chokidar from "chokidar";
+import cpy from "cpy";
 import path from "path";
 import getGlobalConfig from "../libs/getGlobalConfig";
 import Logger from "../libs/Logger";
@@ -10,48 +10,45 @@ import { HelperTask } from "./HelperTask";
 const log = Logger("PublicAsset");
 export class PublicAsset extends TaskBase {
     private ext = "{js,less,css,sass,scss,txt,ico,ttf,gif,png,jpeg,jpg,swf,woff,woff2,webp,mp4,avi,flv}";
+    private sources: string[];
 
-    constructor(src?: string, taskName: string = "PublicAsset") {
+    constructor(taskName: string = "PublicAsset") {
         super(taskName);
-        this.dist = path.resolve(getGlobalConfig().clientOutput);
-        this.src = path.resolve(this.rootPath, `src/public/**/*.${this.ext}`);
-        if (src) {
-            this.src = path.resolve(this.rootPath, `src/${src}/**/*.${this.ext}`);
-            this.dist = path.resolve(getGlobalConfig().rootOutput, src);
-        }
+        this.dist = path.resolve(getGlobalConfig().rootOutput);
+        this.sources = [
+            `public/**/*.${this.ext}`,
+            `iso/**/*.${this.ext}`,
+        ];
     }
     
-    private copy(src: string): NodeJS.ReadWriteStream {
-        log.info(cyan(this.taskName), " src: ", src, " dist: ", this.dist);
-        return gulp.src(src)
-            .pipe(plumber())
-            // .pipe(rev())
-            // .pipe(gulp.dest(this.dest))
-            // .pipe(rev.mainfest())
-            .pipe(gulp.dest(this.dist));
+    private copy() {
+        return cpy(this.sources, this.dist, {
+            cwd: path.resolve("./src"),
+            parents: true,
+        });
     }
 
     protected async compile(): Promise<void|Error> {
         return new Promise((resolve, reject) => {
             log.info("->", cyan(this.taskName), HelperTask.taking());
-            log.info(cyan(this.taskName), ' src: ', this.src);
-            this.copy(this.src)
-                .on("end", e => {
-                    if (e) {
-                        reject(e);
-                        return;
-                    }
+            log.info(cyan(this.taskName), " sources: ", this.sources, " , dist: ", this.dist);
+            
+            this.copy()
+                .then(() => {
                     if (this.isWatchMode) {
-                        const watcher = gulp.watch(this.src);
-                        watcher.on("change", (eventType: string, filename: string) => {
-                            log.info(cyan(this.taskName), " file " + filename + " was " + eventType + ", running tasks...");
-                            this.copy(this.src);
+                        const watcher = chokidar.watch(this.sources, {
+                            cwd: path.resolve("./src"),
+                            interval: 600,
+                        });
+                        watcher.on("change", (path: string) => {
+                            log.info(cyan(this.taskName), " file " + path + " was has been changed, running PublicAsset task...");
+                            this.copy();
                         });
                     }
                     log.info(cyan(this.taskName), " done ", this.count++);
                     resolve();
                 })
-                .on("error", e => {
+                .catch(e => {
                     log.info(cyan(this.taskName), " error ", e);
                     reject(e);
                 });

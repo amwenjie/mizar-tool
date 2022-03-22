@@ -1,11 +1,12 @@
 #!/usr/bin/env node
-import commander from 'commander';
+import { Command } from 'commander';
 import spawn from 'cross-spawn';
 import { cyan, green } from 'colorette';
+import fs from "fs-extra";
 import path from 'path';
 
 const packageJson = require('../package.json');
-const alcor = new commander.Command(packageJson.name);
+const alcor = new Command(packageJson.name);
 
 alcor
     .version(packageJson.version)

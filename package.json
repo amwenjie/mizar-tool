@@ -11,9 +11,10 @@
     "autoprefixer": "~10.4.4",
     "chokidar": "~3.5.3",
     "colorette": "~2.0.16",
-    "commander": "~8.3.0",
+    "commander": "~9.1.0",
     "copy-webpack-plugin": "~10.2.4",
     "core-js": "~3.21.1",
+    "cpy": "~8.1.2",
     "cross-spawn": "~7.0.3",
     "css-loader": "~6.7.1",
     "css-minimizer-webpack-plugin": "~3.4.1",
@@ -22,9 +23,6 @@
     "eslint": "~8.11.0",
     "eslint-webpack-plugin": "~3.1.1",
     "fs-extra": "~10.0.1",
-    "gulp": "~4.0.2",
-    "gulp-plumber": "~1.2.1",
-    "gulp-uglify": "~3.0.2",
     "klaw": "~4.0.1",
     "less": "~4.1.2",
     "less-loader": "~10.2.0",
@@ -54,15 +52,13 @@
     "webpack-federation-module-id-plugin": "~1.0.0",
     "webpack-merge": "~5.8.0",
     "webpack-node-externals": "~3.0.0",
-    "yargs": "~17.3.1"
+    "yargs": "~17.4.0"
   },
   "description": "基于mizar框架的react同构node应用编译工具",
   "devDependencies": {
     "@types/cross-spawn": "~6.0.2",
     "@types/envinfo": "~7.8.1",
     "@types/fs-extra": "~9.0.13",
-    "@types/gulp": "~4.0.9",
-    "@types/gulp-plumber": "~0.0.33",
     "@types/klaw": "~3.0.3",
     "@types/node": "~17.0.2",
     "@types/node-notifier": "~8.0.2",
@@ -73,12 +69,19 @@
     "@types/webpack-env": "~1.16.3",
     "@types/webpack-node-externals": "~2.5.3",
     "@types/webpack-sources": "~3.2.0",
-    "@types/yargs": "~17.0.8",
+    "@types/yargs": "~17.0.10",
     "ts-node": "~10.7.0"
   },
   "engines": {
     "node": ">=16.13.0"
   },
+  "keywords": [
+    "ssr",
+    "spa",
+    "mpa",
+    "react",
+    "isomorphic"
+  ],
   "license": "MIT",
   "name": "alcor",
   "repository": {
@@ -92,5 +95,6 @@
     "Test-ProjectBuild": "ts-node tools/ProjectBuild",
     "build": "ts-node ./Build"
   },
-  "version": "0.1.58"
+  "type": "commonjs",
+  "version": "0.1.60"
 }

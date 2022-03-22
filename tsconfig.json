@@ -9,7 +9,6 @@
         "outDir": "dist",
         "pretty": false,
         "module": "CommonJS",
-        "jsx": "react",
         "declaration": true,
         "sourceMap": true,
         "noImplicitAny": false,

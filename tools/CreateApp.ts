@@ -4,7 +4,7 @@
 
 import { blue, bold, cyan, green, red, yellow } from 'colorette';
 import https from 'https';
-import commander from 'commander';
+import { Command } from 'commander';
 import dns from 'dns';
 import envinfo from 'envinfo';
 import { execSync } from 'child_process';
@@ -39,7 +39,7 @@ function getDependencies() {
 }
 
 function init() {
-    const createApp = new commander.Command('create')
+    const createApp = new Command('create')
         // .version(packageJson.version)
         .arguments('<project-directory>')
         // .usage(`${green('<project-directory>')} [options]`)

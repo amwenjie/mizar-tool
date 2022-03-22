@@ -36,12 +36,23 @@ class PackageBuild {
         try {
             await task.cleanAsync();
             await new PackageInfo().run();
-            await new PublicAsset().setWatchMode(this.isWatchMode).setDebugMode(this.isDebugMode).run();
-            await new PublicAsset("iso", "PublicAsset iso ").setWatchMode(this.isWatchMode).setDebugMode(this.isDebugMode).run();
-            await new ShellTask("./src").setWatchMode(this.isWatchMode).setDebugMode(this.isDebugMode).run("tsc", "-p");
+            const publicAssets = new PublicAsset();
+            publicAssets
+                .setWatchMode(this.isWatchMode)
+                .setDebugMode(this.isDebugMode);
+            await publicAssets.run();
+            const shellTask = new ShellTask("./src");
+            shellTask
+                .setWatchMode(this.isWatchMode)
+                .setDebugMode(this.isDebugMode);
+            await shellTask.run("tsc", "-p");
             const shouldStandaloneBuild = ConfigHelper.get("standalone", false);
             if (shouldStandaloneBuild) {
-                await new StandalonePack().setWatchMode(this.isWatchMode).setDebugMode(this.isDebugMode).run();
+                const standalonePack = new StandalonePack();
+                standalonePack
+                    .setWatchMode(this.isWatchMode)
+                    .setDebugMode(this.isDebugMode)
+                await standalonePack.run();
             }
             console.log(green("build success"));
             if (this.isPublishMode) {

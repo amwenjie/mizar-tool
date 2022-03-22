@@ -5,7 +5,6 @@ import { HelperTask } from "./tools/task/HelperTask";
 import { PublishTask } from "./tools/task/PublishTask";
 import { PackageInfo } from "./tools/task/PackageInfo";
 import { ShellTask } from "./tools/task/ShellTask";
-import { UglifyJSTask } from "./tools/task/UglifyJSTask";
 import { CopyTask } from "./tools/task/CopyTask";
 import Logger from "./tools/libs/Logger";
 
@@ -23,7 +22,6 @@ class Build {
             await new PackageInfo().run();
             await new ShellTask("./tools").run("tsc", "-p");
             await new ShellTask("./bin").run("tsc", "-p");
-            await new UglifyJSTask().run();
             await new CopyTask("./packages", "./packages").run();
         } catch (e) {
             log.error(e);

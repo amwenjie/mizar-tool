@@ -1,4 +1,3 @@
-import { green, yellow } from "colorette";
 import Logger from "../libs/Logger";
 import TaskBase from "../libs/TaskBase";
 import ShellTask from "./ShellTask";

@@ -1,5 +1,5 @@
 import { cyan, blue, green, red } from "colorette";
-import ora, { type Ora } from "ora";
+import ora from "ora";
 import path from "path";
 import Logger from "./Logger";
 
