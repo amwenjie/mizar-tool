@@ -3,7 +3,7 @@ import { connect } from "mizar/iso/connect";
 import getLogger from "mizar/iso/utils/logger";
 import React from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import Page from "../../common/components/Page";
+import Page from "../../common/components/Page/index";
 import { IProps } from "./interface";
 import { showVideoPlayer } from "./action";
 import * as style from "./index.less";

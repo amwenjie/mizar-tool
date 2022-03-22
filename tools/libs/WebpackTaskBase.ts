@@ -2,9 +2,9 @@ import { bold, cyan, green, red, yellow } from "colorette";
 import webpack, { type WebpackError, type Stats } from "webpack";
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
-import HelperTask from "../task/HelperTask";
-import Logger from "./Logger";
-import TaskBase from "./TaskBase";
+import HelperTask from "../task/HelperTask.js";
+import Logger from "./Logger.js";
+import TaskBase from "./TaskBase.js";
 
 const log = Logger("WebpackTaskBase");
 const argv: any = yargs(hideBin(process.argv)).argv as any;

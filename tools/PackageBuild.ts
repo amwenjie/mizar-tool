@@ -2,14 +2,14 @@
 import { green } from "colorette";
 import yargs  from "yargs";
 import { hideBin } from "yargs/helpers";
-import { HelperTask } from "./task/HelperTask";
-import { PublishTask } from "./task/PublishTask";
-import { PackageInfo } from "./task/PackageInfo";
-import { PublicAsset } from "./task/PublicAsset";
-import { ShellTask } from "./task/ShellTask";
-import { StandalonePack } from "./task/StandalonePack";
-import Logger from "./libs/Logger";
-import { ConfigHelper } from "./libs/ConfigHelper";
+import { HelperTask } from "./task/HelperTask.js";
+import { PublishTask } from "./task/PublishTask.js";
+import { PackageInfo } from "./task/PackageInfo.js";
+import { PublicAsset } from "./task/PublicAsset.js";
+import { ShellTask } from "./task/ShellTask.js";
+import { StandalonePack } from "./task/StandalonePack.js";
+import ConfigHelper from "./libs/ConfigHelper.js";
+import Logger from "./libs/Logger.js";
 
 const log = Logger("PackageBuild");
 

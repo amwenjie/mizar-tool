@@ -7,21 +7,19 @@ import MiniCssExtractPlugin from "mini-css-extract-plugin";
 import path from "path";
 import StylelintPlugin from "stylelint-webpack-plugin";
 import TerserJSPlugin from "terser-webpack-plugin";
-import { 
-    container,
-    DefinePlugin,
+import webpack, { 
     type Configuration,
     type Compiler,
     type WebpackPluginInstance,
 } from "webpack";
 import { merge } from "webpack-merge";
 import { BundleAnalyzerPlugin } from "webpack-bundle-analyzer";
-import clientBase from "../config/client.base";
-import getGlobalConfig, { type IGlobalConfig } from "../libs/getGlobalConfig";
-import { ConfigHelper } from "../libs/ConfigHelper";
-import Logger from "../libs/Logger";
-import { WebpackTaskBase } from "../libs/WebpackTaskBase";
-import { HelperTask } from "./HelperTask";
+import clientBase from "../config/client.base.js";
+import getGlobalConfig, { type IGlobalConfig } from "../libs/getGlobalConfig.js";
+import ConfigHelper from "../libs/ConfigHelper.js";
+import Logger from "../libs/Logger.js";
+import { WebpackTaskBase } from "../libs/WebpackTaskBase.js";
+import { HelperTask } from "./HelperTask.js";
 
 const log = Logger("IsomorphicPack");
 
@@ -119,7 +117,7 @@ export class IsomorphicPack extends WebpackTaskBase {
         if (stylelintConfig) {
             plugins.push(new StylelintPlugin(stylelintConfig));
         }
-        plugins.push(new DefinePlugin(defineOption));
+        plugins.push(new webpack.DefinePlugin(defineOption));
 
         const esLintConfig = ConfigHelper.get("eslint", {
             files: "./src",
@@ -147,7 +145,7 @@ export class IsomorphicPack extends WebpackTaskBase {
         // }
         const moduleFederationConfig = ConfigHelper.get("federation", false);
         if (moduleFederationConfig && moduleFederationConfig.remotes) {
-            plugins.push(new container.ModuleFederationPlugin({
+            plugins.push(new webpack.container.ModuleFederationPlugin({
                 remotes: moduleFederationConfig.remotes,
             }));
         }
@@ -167,16 +165,18 @@ export class IsomorphicPack extends WebpackTaskBase {
 
     protected async compile(): Promise<void|Error> {
         log.info("->", "IsomorphicPack", HelperTask.taking());
-        const config: Configuration = this.getCompileConfig();
+        const config: Configuration = await this.getCompileConfig();
         log.info("pack", { config: JSON.stringify(config), });
         await super.compile(config);
     }
 
-    protected getCompileConfig(): Configuration  {
+    protected async getCompileConfig(): Promise<Configuration>  {
         const baseConf = clientBase(this.isDebugMode);
         if (this.isDebugMode) {
             baseConf.module.rules.splice(1, 0, {
-                loader: path.resolve(__dirname, "../libs/loaders/typing-for-css-module"),
+                test: /\.(?:css|less|s[ac]ss)$/i,
+                exclude: /[\\/]node_modules[\\/]/i,
+                loader: "alcor-loaders/typing-for-css-module",
             });
         }
         const tslintPath = path.resolve(`${this.rootPath}tslint.json`);
@@ -211,9 +211,9 @@ export class IsomorphicPack extends WebpackTaskBase {
         
         const cuzConfigPath = path.resolve("./webpack.config/client.js");
         if (fs.existsSync(cuzConfigPath)) {
-            const cuzConf: () => Configuration = require(cuzConfigPath);
+            const cuzConf: (conf: Configuration) => Configuration = (await import(cuzConfigPath)).default;
             if (typeof cuzConf === "function") {
-                return merge(innerConf, cuzConf());
+                return merge(innerConf, cuzConf(innerConf));
             }
         }
         return innerConf;

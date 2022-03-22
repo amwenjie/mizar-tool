@@ -4,8 +4,12 @@ import spawn from 'cross-spawn';
 import { cyan, green } from 'colorette';
 import fs from "fs-extra";
 import path from 'path';
+import { fileURLToPath } from 'url';
 
-const packageJson = require('../package.json');
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const packageJson = fs.readJSONSync(path.resolve(__dirname, '../package.json'));
 const alcor = new Command(packageJson.name);
 
 alcor

@@ -1,5 +1,5 @@
 // fork from https://github.com/DanielAmenou/webpack-federation-stats-plugin
-import { type Compiler, Compilation, sources } from "webpack";
+import webpack, { type Compiler } from "webpack";
 import { type ModuleFederationPluginOptions } from "webpack/lib/container/ModuleFederationPlugin";
 
 const PLUGIN_NAME = "FederationStatsPlugin";
@@ -33,7 +33,7 @@ export default class FederationStatsPlugin {
             compilation.hooks.processAssets.tapPromise(
                 {
                     name: PLUGIN_NAME,
-                    stage: Compilation.PROCESS_ASSETS_STAGE_REPORT,
+                    stage: webpack.Compilation.PROCESS_ASSETS_STAGE_REPORT,
                 },
                 async () => {
                     const stats = compilation.getStats().toJson({});
@@ -91,9 +91,9 @@ export default class FederationStatsPlugin {
 
                     const asset = compilation.getAsset(fileName);
                     if (asset) {
-                        compilation.updateAsset(fileName, sources.CompatSource.from(mfStats));
+                        compilation.updateAsset(fileName, webpack.sources.CompatSource.from(mfStats));
                     } else {
-                        compilation.emitAsset(fileName, sources.CompatSource.from(mfStats));
+                        compilation.emitAsset(fileName, webpack.sources.CompatSource.from(mfStats));
                     }
                 }
             );

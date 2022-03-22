@@ -8,13 +8,14 @@
   },
   "dependencies": {
     "@loadable/webpack-plugin": "~5.15.2",
+    "alcor-loaders": "~0.0.2",
     "autoprefixer": "~10.4.4",
     "chokidar": "~3.5.3",
     "colorette": "~2.0.16",
     "commander": "~9.1.0",
     "copy-webpack-plugin": "~10.2.4",
     "core-js": "~3.21.1",
-    "cpy": "~8.1.2",
+    "cpy": "~9.0.1",
     "cross-spawn": "~7.0.3",
     "css-loader": "~6.7.1",
     "css-minimizer-webpack-plugin": "~3.4.1",
@@ -29,7 +30,7 @@
     "mini-css-extract-plugin": "~2.6.0",
     "node-notifier": "~10.0.1",
     "node-notifier-cli": "~2.0.0",
-    "ora": "~5.4.1",
+    "ora": "~6.1.0",
     "postcss": "~8.4.12",
     "postcss-loader": "~6.2.1",
     "postcss-preset-env": "~7.4.2",
@@ -95,6 +96,6 @@
     "Test-ProjectBuild": "ts-node tools/ProjectBuild",
     "build": "ts-node ./Build"
   },
-  "type": "commonjs",
-  "version": "0.1.60"
+  "type": "module",
+  "version": "0.1.61"
 }

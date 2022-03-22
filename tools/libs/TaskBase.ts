@@ -1,7 +1,7 @@
 import { cyan, blue, green, red } from "colorette";
 import ora from "ora";
 import path from "path";
-import Logger from "./Logger";
+import Logger from "./Logger.js";
 
 const log = Logger("TaskBase");
 

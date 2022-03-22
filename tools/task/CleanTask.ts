@@ -1,8 +1,8 @@
 import { cyan } from "colorette";
 import fs from "fs-extra";
-import { HelperTask } from "./HelperTask";
-import Logger from "../libs/Logger";
-import TaskBase from "../libs/TaskBase";
+import { HelperTask } from "./HelperTask.js";
+import Logger from "../libs/Logger.js";
+import TaskBase from "../libs/TaskBase.js";
 
 const log = Logger("CleanTask");
 export class CleanTask extends TaskBase {

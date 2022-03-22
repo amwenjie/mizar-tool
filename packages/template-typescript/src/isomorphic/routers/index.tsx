@@ -1,10 +1,10 @@
 import loadable from '@loadable/component';
 import React from "react";
-import NotFound from "../pages/NotFound";
-import ArticleDetail from "../pages/ArticleDetail";
-import VideoDetail from "../pages/VideoDetail";
+import NotFound from "../pages/NotFound/index";
+import ArticleDetail from "../pages/ArticleDetail/index";
+import VideoDetail from "../pages/VideoDetail/index";
 
-const AsyncCom = loadable(() => import("../pages/VideoDetail"));
+const AsyncCom = loadable(() => import("../pages/VideoDetail/index.js"));
 const pageRouter = [
     {
         path: "/detail/iso/:id",

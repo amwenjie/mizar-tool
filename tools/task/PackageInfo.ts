@@ -1,7 +1,7 @@
 import fs from "fs-extra";
-import Logger from "../libs/Logger";
-import TaskBase from "../libs/TaskBase";
-import { HelperTask } from "./HelperTask";
+import Logger from "../libs/Logger.js";
+import TaskBase from "../libs/TaskBase.js";
+import { HelperTask } from "./HelperTask.js";
 
 const log = Logger("PackageInfo");
 

@@ -2,17 +2,17 @@
 import { green } from "colorette";
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
-import { CopyTask } from "./task/CopyTask";
-import { HelperTask } from "./task/HelperTask";
-import { IsomorphicPack } from "./task/IsomorphicPack";
-import { ModuleFederatePack } from "./task/ModuleFederatePack";
-import { PublishTask } from "./task/PublishTask";
-import { PackageInfo } from "./task/PackageInfo";
-import { ServerApiPack } from "./task/ServerApiPack";
-import { ServerPack } from "./task/ServerPack";
-import { StandalonePack } from "./task/StandalonePack";
-import Logger from "./libs/Logger";
-import { ConfigHelper } from "./libs/ConfigHelper";
+import { CopyTask } from "./task/CopyTask.js";
+import { HelperTask } from "./task/HelperTask.js";
+import { IsomorphicPack } from "./task/IsomorphicPack.js";
+import { ModuleFederatePack } from "./task/ModuleFederatePack.js";
+import { PublishTask } from "./task/PublishTask.js";
+import { PackageInfo } from "./task/PackageInfo.js";
+import { ServerApiPack } from "./task/ServerApiPack.js";
+import { ServerPack } from "./task/ServerPack.js";
+import { StandalonePack } from "./task/StandalonePack.js";
+import Logger from "./libs/Logger.js";
+import ConfigHelper from "./libs/ConfigHelper.js";
 
 const log = Logger("ProjectBuild");
 

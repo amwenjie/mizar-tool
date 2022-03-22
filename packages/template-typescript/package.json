@@ -23,13 +23,14 @@
         "react-router-dom": "~6.2.1",
         "redux": "~4.1.2",
         "redux-thunk": "~2.4.1",
+        "typescript": "~4.6.2",
         "tslib": "~2.3.1"
     },
     "devDependencies": {
         "@types/react": "~17.0.34",
         "@types/react-dom": "~17.0.11",
         "@types/react-redux": "~7.1.20",
-        "alcor": "~0.1.60",
+        "alcor": "~0.1.61",
         "postcss-less": "~6.0.0"
     }
 }

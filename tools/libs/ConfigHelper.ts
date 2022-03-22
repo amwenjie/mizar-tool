@@ -3,7 +3,7 @@ import Path from "path";
 import { Options } from "stylelint-webpack-plugin";
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
-import Logger from "../libs/Logger";
+import Logger from "../libs/Logger.js";
 
 const argv:any = yargs(hideBin(process.argv)).argv  as any;
 const log = Logger("ConfigHelper");
@@ -26,7 +26,7 @@ export interface IConfigure {
     stylelint?: boolean | Options | string;
 }
 
-export class ConfigHelper {
+export default class ConfigHelper {
     public static store: any = {};
 
     private static privateGet(node: string, defaultValue = null, configPath = configureJSON): any {
@@ -99,5 +99,3 @@ export class ConfigHelper {
         return `${ConfigHelper.getAssetsPathPrefix()}`; // ${ConfigHelper.getPackageName()}/`;
     }
 }
-
-export default ConfigHelper;

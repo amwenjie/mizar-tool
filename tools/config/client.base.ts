@@ -1,14 +1,13 @@
 import DirectoryNamedWebpackPlugin from "directory-named-webpack-plugin";
 import MiniCssExtractPlugin from "mini-css-extract-plugin";
-import path from "path";
 import { 
     type Configuration,
     type RuleSetRule,
 } from "webpack";
 import { merge } from "webpack-merge";
-import { devLocalIdentName, prodLocalIdentName } from "../libs/getGlobalConfig";
-import { ConfigHelper } from "../libs/ConfigHelper";
-import base from "./base";
+import { devLocalIdentName, prodLocalIdentName } from "../libs/getGlobalConfig.js";
+import ConfigHelper from "../libs/ConfigHelper.js";
+import base from "./base.js";
 
 const cssModuleRegExp = /[\\/]components?[\\/]|[\\/]pages?[\\/]|\.module\.(?:css|less|s[ac]ss)$/i;
 
@@ -65,7 +64,7 @@ function getCssLoaders(isDebugMode: boolean, extraLoaders = []) {
 }
 
 function getRules(isDebugMode: boolean): (RuleSetRule | "...")[] {
-    const rules = [];
+    const rules: RuleSetRule[] = [];
 
     rules.push({
         exclude: /[\\/]node_modules[\\/]|\.d\.ts$/i,
@@ -86,21 +85,8 @@ function getRules(isDebugMode: boolean): (RuleSetRule | "...")[] {
     });
     rules.push({
         exclude: /\.d\.ts$/i,
-        test: /[\\/]src[\\/]isomorphic[\\/]routers(?:[\\/][^\\/]+?){1}\.tsx?$/,
-        use: [
-            {
-                loader: path.resolve(__dirname, "../libs/loaders/router-loadable-loader"),
-            },
-        ],
-    });
-    rules.push({
-        exclude: /\.d\.ts$/i,
         test: /[\\/]src[\\/]isomorphic[\\/].+[\\/][A-Z][^\\/]+[\\/]index\.tsx?$/,
-        use: [
-            {
-                loader: path.resolve(__dirname, "../libs/loaders/connect-default-param-loader"),
-            },
-        ],
+        loader: "alcor-loaders/connect-default-param-loader",
     });
     rules.push({
         test: /\.css$/i,
@@ -169,5 +155,6 @@ export default function clientBase(isDebugMode: boolean): Configuration {
             chunkIds: idMode,
             moduleIds: idMode,
         },
+        target: ['web'],
     });
 }

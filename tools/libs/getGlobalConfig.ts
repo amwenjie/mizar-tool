@@ -1,4 +1,4 @@
-import { ConfigHelper } from "./ConfigHelper";
+import ConfigHelper from "./ConfigHelper.js";
 
 export interface IGlobalConfig {
     assetsMainfest: string;

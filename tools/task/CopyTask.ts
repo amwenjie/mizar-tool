@@ -1,10 +1,10 @@
 import { cyan } from "colorette";
 import fs from "fs-extra";
 import path from "path";
-import getGlobalConfig from "../libs/getGlobalConfig";
-import Logger from "../libs/Logger";
-import TaskBase from "../libs/TaskBase";
-import { HelperTask } from "./HelperTask";
+import getGlobalConfig from "../libs/getGlobalConfig.js";
+import Logger from "../libs/Logger.js";
+import TaskBase from "../libs/TaskBase.js";
+import { HelperTask } from "./HelperTask.js";
 
 const log = Logger("CopyTask");
 export class CopyTask extends TaskBase {

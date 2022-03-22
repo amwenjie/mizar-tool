@@ -1,31 +1,32 @@
 #!/usr/bin/env node
-
 'use strict';
-
+import { execSync } from 'child_process';
 import { blue, bold, cyan, green, red, yellow } from 'colorette';
-import https from 'https';
 import { Command } from 'commander';
 import dns from 'dns';
 import envinfo from 'envinfo';
-import { execSync } from 'child_process';
 import fs from 'fs-extra';
+import https from 'https';
 import path from 'path';
 import semver from 'semver';
 import spawn from 'cross-spawn';
-import url from 'url';
+import url, { fileURLToPath } from 'url';
 import validateProjectName from 'validate-npm-package-name';
-import Logger from "./libs/Logger";
+import Logger from "./libs/Logger.js";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const log = Logger("CreateApp");
 
-const packageJson = require('../package.json');
+const packageJson = fs.readJSONSync(path.resolve(__dirname, '../package.json'));
 
 let projectName;
 
 function getDependencies() {
     return Object.keys({
-        "core-js": "~3.20.3",
-        "mizar": "~0.0.34",
+        "core-js": "~3.21.1",
+        "mizar": "~0.0.49",
         "raf": "~3.4.1",
         "react": "~17.0.2",
         "react-dom": "~17.0.2",

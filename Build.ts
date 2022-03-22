@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
-import { HelperTask } from "./tools/task/HelperTask";
-import { PublishTask } from "./tools/task/PublishTask";
-import { PackageInfo } from "./tools/task/PackageInfo";
-import { ShellTask } from "./tools/task/ShellTask";
-import { CopyTask } from "./tools/task/CopyTask";
-import Logger from "./tools/libs/Logger";
+import { HelperTask } from "./tools/task/HelperTask.js";
+import { PublishTask } from "./tools/task/PublishTask.js";
+import { PackageInfo } from "./tools/task/PackageInfo.js";
+import { ShellTask } from "./tools/task/ShellTask.js";
+import { CopyTask } from "./tools/task/CopyTask.js";
+import Logger from "./tools/libs/Logger.js";
 
 const argv:any = yargs(hideBin(process.argv)).argv as any;
 

@@ -2,22 +2,20 @@ import { cyan, green } from "colorette";
 import ESLintWebpackPlugin from "eslint-webpack-plugin";
 import fs from "fs-extra";
 import path from "path";
-import {
-    container,
-    DefinePlugin,
+import webpack, {
     type Compiler,
     type Configuration,
     type RuleSetRule,
     type WebpackPluginInstance,
 } from "webpack";
 import { merge } from "webpack-merge";
-import serverBase from "../config/server.base";
-import getGlobalConfig, { type IGlobalConfig, devLocalIdentName, prodLocalIdentName } from "../libs/getGlobalConfig";
-import { ConfigHelper } from "../libs/ConfigHelper";
-import Logger from "../libs/Logger";
-import { WebpackTaskBase } from "../libs/WebpackTaskBase";
-import { HelperTask } from "./HelperTask";
-import RunServer from "./RunServer";
+import serverBase from "../config/server.base.js";
+import getGlobalConfig, { type IGlobalConfig, devLocalIdentName, prodLocalIdentName } from "../libs/getGlobalConfig.js";
+import ConfigHelper from "../libs/ConfigHelper.js";
+import Logger from "../libs/Logger.js";
+import { WebpackTaskBase } from "../libs/WebpackTaskBase.js";
+import { HelperTask } from "./HelperTask.js";
+import RunServer from "./RunServer.js";
 const log = Logger("ServerPack");
 
 export class ServerPack extends WebpackTaskBase {
@@ -48,7 +46,7 @@ export class ServerPack extends WebpackTaskBase {
             DEV_PROXY_CONFIG: JSON.stringify(ConfigHelper.get("proxy", false)),
         };
         const plugins = [];
-        plugins.push(new DefinePlugin(defineOption));
+        plugins.push(new webpack.DefinePlugin(defineOption));
         const esLintPluginConfig = ConfigHelper.get("eslint", {
             files: "./src",
             failOnError: !this.isDebugMode,
@@ -58,7 +56,7 @@ export class ServerPack extends WebpackTaskBase {
         }
         const moduleFederationConfig = ConfigHelper.get("federation", false);
         if (moduleFederationConfig && moduleFederationConfig.remotes) {
-            plugins.push(new container.ModuleFederationPlugin({
+            plugins.push(new webpack.container.ModuleFederationPlugin({
                 remotes: moduleFederationConfig.remotes,
             }));
         }
@@ -107,24 +105,8 @@ export class ServerPack extends WebpackTaskBase {
         });
         rules.push({
             exclude: /\.d\.ts$/i,
-            test: /[\\/]src[\\/]isomorphic[\\/]routers(?:[\\/][^\\/]+?){1}\.tsx?$/,
-            use: [
-                {
-                    loader: path.resolve(__dirname, "../libs/loaders/router-loadable-loader"),
-                    options: {
-                        IS_SERVER_RUNTIME: true,
-                    }
-                },
-            ],
-        });
-        rules.push({
-            exclude: /\.d\.ts$/i,
             test: /[\\/]src[\\/]isomorphic[\\/].+[\\/][A-Z][^\\/]+[\\/]index\.tsx?$/,
-            use: [
-                {
-                    loader: path.resolve(__dirname, "../libs/loaders/connect-default-param-loader"),
-                },
-            ],
+            loader: "alcor-loaders/connect-default-param-loader",
         });
         rules.push({
             test: /\.css$/i,
@@ -273,12 +255,12 @@ export class ServerPack extends WebpackTaskBase {
 
     protected async compile(): Promise<void|Error> {
         log.info("->", cyan(this.taskName), HelperTask.taking());
-        const config: Configuration = this.getCompileConfig();
+        const config: Configuration = await this.getCompileConfig();
         log.info("ServerPack.pack", { config: JSON.stringify(config) });
         await super.compile(config);
     }
 
-    protected getCompileConfig(): Configuration  {
+    protected async getCompileConfig(): Promise<Configuration>  {
         const innerConf = merge(serverBase(this.isDebugMode), {
             entry: { "index": this.src, },
             module: {
@@ -297,9 +279,9 @@ export class ServerPack extends WebpackTaskBase {
         });
         const cuzConfigPath = path.resolve("./webpack.config/server.js");
         if (fs.existsSync(cuzConfigPath)) {
-            const cuzConf: () => Configuration = require(cuzConfigPath);
+            const cuzConf: (conf: Configuration) => Configuration = (await import(cuzConfigPath)).default;
             if (typeof cuzConf === "function") {
-                return merge(innerConf, cuzConf());
+                return merge(innerConf, cuzConf(innerConf));
             }
         }
         return innerConf;

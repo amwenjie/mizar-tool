@@ -3,7 +3,7 @@ import {
 } from "webpack";
 import { merge } from "webpack-merge";
 import nodeExternals from "webpack-node-externals";
-import base from "./base";
+import base from "./base.js";
 
 export default function serverBase(isDebugMode: boolean): Configuration {
     return merge(base(isDebugMode), {

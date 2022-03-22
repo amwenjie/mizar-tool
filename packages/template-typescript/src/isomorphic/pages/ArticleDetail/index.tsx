@@ -1,6 +1,6 @@
 import { connect } from "mizar/iso/connect";
 import React from "react";
-import Page from "../../common/components/Page";
+import Page from "../../common/components/Page/index";
 import { IProps } from "./interface";
 import { useNavigate, useLocation, useSearchParams} from "react-router-dom";
 import getLogger from "mizar/iso/utils/logger";

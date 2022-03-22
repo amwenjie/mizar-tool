@@ -9,7 +9,7 @@
 
 import { bold, green } from "colorette";
 import spawn from 'cross-spawn';
-import Logger from "../libs/Logger";
+import Logger from "../libs/Logger.js";
 const log = Logger("RunServer");
 
 // Should match the text string used in `src/server.js/server.listen(...)`

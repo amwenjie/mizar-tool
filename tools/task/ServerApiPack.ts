@@ -2,14 +2,14 @@ import { cyan, green, red } from "colorette";
 import fs from "fs-extra";
 import klaw from "klaw";
 import path from "path";
-import { DefinePlugin, type Configuration, type EntryObject, } from "webpack";
+import webpack, { type Configuration, type EntryObject, } from "webpack";
 import { merge } from "webpack-merge";
-import serverBase from "../config/server.base";
-import getGlobalConfig, { type IGlobalConfig, devLocalIdentName, prodLocalIdentName } from "../libs/getGlobalConfig";
-import { ConfigHelper } from "../libs/ConfigHelper";
-import { WebpackTaskBase } from "../libs/WebpackTaskBase";
-import { HelperTask } from "./HelperTask";
-import Logger from "../libs/Logger";
+import serverBase from "../config/server.base.js";
+import getGlobalConfig, { type IGlobalConfig, devLocalIdentName, prodLocalIdentName } from "../libs/getGlobalConfig.js";
+import ConfigHelper from "../libs/ConfigHelper.js";
+import { WebpackTaskBase } from "../libs/WebpackTaskBase.js";
+import { HelperTask } from "./HelperTask.js";
+import Logger from "../libs/Logger.js";
 const log = Logger("ServerApiPack");
 
 export class ServerApiPack extends WebpackTaskBase {
@@ -66,12 +66,12 @@ export class ServerApiPack extends WebpackTaskBase {
         }
         log.info(cyan(this.taskName), "run.entry", entry);
 
-        const config: Configuration = this.getCompileConfig(entry);
+        const config: Configuration = await this.getCompileConfig(entry);
         log.info("ServerApiPack.pack", { config: JSON.stringify(config) });
         await super.compile(config);
     }
     
-    protected getCompileConfig(entry: EntryObject): Configuration  {
+    protected async getCompileConfig(entry: EntryObject): Promise<Configuration> {
         const tslintPath = path.resolve(`${this.rootPath}tslint.json`);
         const tsConfigPath = path.resolve(`${this.rootPath}tsconfig.json`);
         let localIdentName = prodLocalIdentName;
@@ -128,15 +128,15 @@ export class ServerApiPack extends WebpackTaskBase {
                 path: this.dist,
             },
             plugins: [
-                new DefinePlugin(defineOption),
+                new webpack.DefinePlugin(defineOption),
             ],
         });
 
         const cuzConfigPath = path.resolve("./webpack.config/api.js");
         if (fs.existsSync(cuzConfigPath)) {
-            const cuzConf: () => Configuration = require(cuzConfigPath);
+            const cuzConf: (conf: Configuration) => Configuration = (await import(cuzConfigPath)).default;
             if (typeof cuzConf === "function") {
-                return merge(innerConf, cuzConf());
+                return merge(innerConf, cuzConf(innerConf));
             }
         }
         return innerConf;

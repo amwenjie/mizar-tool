@@ -3,9 +3,9 @@ import { execSync } from "child_process";
 import Notifier from "node-notifier";
 import yargs  from "yargs";
 import { hideBin } from "yargs/helpers";
-import TaskBase from "../libs/TaskBase";
-import Logger from "../libs/Logger";
-import { CleanTask } from "./CleanTask";
+import TaskBase from "../libs/TaskBase.js";
+import Logger from "../libs/Logger.js";
+import { CleanTask } from "./CleanTask.js";
 
 const log = Logger("HelperTask");
 const logColorMap = {

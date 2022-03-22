@@ -1,6 +1,6 @@
-import Logger from "../libs/Logger";
-import TaskBase from "../libs/TaskBase";
-import ShellTask from "./ShellTask";
+import Logger from "../libs/Logger.js";
+import TaskBase from "../libs/TaskBase.js";
+import ShellTask from "./ShellTask.js";
 const log = Logger("TSLint");
 export class TSLint extends TaskBase {
     constructor(taskName = "TSLint") {
