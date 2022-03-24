@@ -1,4 +1,4 @@
-import { cyan } from "colorette";
+import { cyan, red } from "colorette";
 import { exec, execSync } from "child_process";
 import chokidar from "chokidar";
 import Logger from "../libs/Logger.js";
@@ -19,8 +19,8 @@ export class ShellTask extends TaskBase {
             });
             log.info(cyan(this.taskName), "output", output.toString());
         } catch (error) {
-            log.error(cyan(this.taskName), "stdout", error.stdout.toString());
-            log.error(cyan(this.taskName), "stderr", error.stderr.toString());
+            log.error(red(`${cyan(this.taskName)} stdout: ${error.stdout.toString()}`));
+            log.error(red(`${cyan(this.taskName)} stderr: ${error.stderr.toString()}`));
             const msg = cyan(this.taskName) + " 执行失败,请检查代码或命令:" + cli;
             throw new Error(msg);
         }

@@ -1,28 +1,19 @@
 import DirectoryNamedWebpackPlugin from "directory-named-webpack-plugin";
 import MiniCssExtractPlugin from "mini-css-extract-plugin";
-import { 
+import webpack, { 
     type Configuration,
-    type RuleSetRule,
 } from "webpack";
 import { merge } from "webpack-merge";
+import {
+    type webpackPluginsType,
+    type webpackRulesType,
+} from "../interface.js";
 import { devLocalIdentName, prodLocalIdentName } from "../libs/getGlobalConfig.js";
 import ConfigHelper from "../libs/ConfigHelper.js";
+import { getCssModuleMode, shouldSourceModuled, } from "../libs/Utils.js";
 import base from "./base.js";
 
-const cssModuleRegExp = /[\\/]components?[\\/]|[\\/]pages?[\\/]|\.module\.(?:css|less|s[ac]ss)$/i;
-
-function getCssModuleMode(resourcePath: string): "global" | "local" {
-    if (cssModuleRegExp.test(resourcePath)) {
-        return "local";
-    }
-    return "global";
-}
-
-function shouldSourceModuled(resourcePath: string): boolean {
-    return cssModuleRegExp.test(resourcePath);
-}
-
-function getCssLoaders(isDebugMode: boolean, extraLoaders = []) {
+function getCssLoaders(isDebugMode: boolean, extraLoaders = []): webpackRulesType {
     const loaders = [];
     loaders.push({
         loader: MiniCssExtractPlugin.loader,
@@ -63,26 +54,9 @@ function getCssLoaders(isDebugMode: boolean, extraLoaders = []) {
     ], extraLoaders);
 }
 
-function getRules(isDebugMode: boolean): (RuleSetRule | "...")[] {
-    const rules: RuleSetRule[] = [];
+function getRules(isDebugMode: boolean): webpackRulesType {
+    const rules: webpackRulesType = [];
 
-    rules.push({
-        exclude: /[\\/]node_modules[\\/]|\.d\.ts$/i,
-        test: /\.tsx?$/i,
-        use: [
-            {
-                loader: "ts-loader",
-                options: Object.assign(
-                    {
-                        compilerOptions: {
-                            declaration: false,
-                        },
-                    },
-                    ConfigHelper.get("ts-loader", {}),
-                ),
-            },
-        ],
-    });
     rules.push({
         exclude: /\.d\.ts$/i,
         test: /[\\/]src[\\/]isomorphic[\\/].+[\\/][A-Z][^\\/]+[\\/]index\.tsx?$/,
@@ -130,6 +104,15 @@ function getRules(isDebugMode: boolean): (RuleSetRule | "...")[] {
     return rules;
 }
 
+function getPlugins(isDebugMode: boolean): webpackPluginsType {
+    const plugins = [];
+    const defineOption = {
+        IS_SERVER_RUNTIME: JSON.stringify(false),
+        IS_DEBUG_MODE: JSON.stringify(!!isDebugMode),
+    };
+    plugins.push(new webpack.DefinePlugin(defineOption));
+    return plugins;
+}
 
 export default function clientBase(isDebugMode: boolean): Configuration {
     const idMode = isDebugMode ? "named" : "deterministic";
@@ -150,6 +133,7 @@ export default function clientBase(isDebugMode: boolean): Configuration {
                 new DirectoryNamedWebpackPlugin(),
             ],
         },
+        plugins: getPlugins(isDebugMode),
         optimization: {
             minimize: !isDebugMode,
             chunkIds: idMode,

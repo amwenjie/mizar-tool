@@ -153,8 +153,7 @@ function init() {
             }
         })
         .catch(e => {
-            red("Run 'checkForLatestVersion.then' raising an error: ");
-            log.error(e);
+            log.error(red("Run 'checkForLatestVersion.then' raising an error: "), e);
         });
 }
 

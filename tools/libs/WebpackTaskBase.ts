@@ -154,8 +154,7 @@ export class WebpackTaskBase extends TaskBase {
                 compiler.run(async (error?: WebpackError, stats?: Stats): Promise<void> => {
                     compiler.close(error => {
                         if (error) {
-                            log.error(cyan(this.taskName), " compile close error: ");
-                            log.error(error);
+                            log.error(red(`${cyan(this.taskName)} compile close error: `), error);
                             return;
                         }
                         log.info(cyan(this.taskName), " compile closed.");

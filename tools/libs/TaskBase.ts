@@ -55,10 +55,7 @@ export class TaskBase {
             spinner && spinner.succeed(`${this.taskName} compile task end.\r\n`);
         } catch (error) {
             spinner && spinner.fail(`${this.taskName} compile task ${red("fail")}.\r\n`)
-            log.error(cyan(this.taskName), ".error: ", error.message);
-            // if (argv.verbose || argv.debug) {
-            log.error(error);
-            // }
+            log.error(red(`${cyan(this.taskName)}  error: ${error.message}`), error);
         }
     }
 }

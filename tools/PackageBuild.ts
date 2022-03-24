@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { green } from "colorette";
+import { green, red } from "colorette";
 import yargs  from "yargs";
 import { hideBin } from "yargs/helpers";
 import { HelperTask } from "./task/HelperTask.js";
@@ -60,7 +60,7 @@ class PackageBuild {
                 await new PublishTask().run();
             }
         } catch (e) {
-            log.error("PackageBuild", e);
+            log.error(red("PackageBuild"), e);
         }
         task.end();
     }

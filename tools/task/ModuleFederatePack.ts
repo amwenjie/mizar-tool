@@ -1,18 +1,13 @@
 import fs from "fs-extra";
 import MiniCssExtractPlugin from "mini-css-extract-plugin";
 import path from "path";
-import webpack, {
-    type Compiler,
-    type Configuration,
-    type WebpackPluginInstance
-} from "webpack";
-import FederationModuleIdPlugin from "webpack-federation-module-id-plugin";
+import { type Configuration } from "webpack";
 import { merge } from "webpack-merge";
 import clientBase from "../config/client.base.js";
+import sharePlugin from "../config/share.plugin.js";
+import { type webpackPluginsType } from "../interface.js";
 import getGlobalConfig, { type IGlobalConfig } from "../libs/getGlobalConfig.js";
-import ConfigHelper from "../libs/ConfigHelper.js";
 import Logger from "../libs/Logger.js";
-import FederationStatsPlugin from "../libs/plugins/federation-stats-plugin/index.js";
 import { WebpackTaskBase } from "../libs/WebpackTaskBase.js";
 import { HelperTask } from "./HelperTask.js";
 
@@ -36,35 +31,16 @@ export class ModuleFederatePack extends WebpackTaskBase {
         } catch (e) {}
     }
 
-    private getPlugins(): (
-		| ((this: Compiler, compiler: Compiler) => void)
-		| WebpackPluginInstance
-	)[] {
-        const defineOption = {
-            IS_SERVER_RUNTIME: JSON.stringify(false),
-            IS_DEBUG_MODE: JSON.stringify(!!this.isDebugMode),
-        };
-
-        const plugins = [];
-        
+    private getPlugins(): webpackPluginsType {
+        const plugins: webpackPluginsType = [];
         plugins.push(new MiniCssExtractPlugin({
             filename: "[name]_[contenthash:8].css",
             // chunkFilename: "[name]-chunk-[id]_[contenthash:8].css",
         }));
-        plugins.push(new webpack.DefinePlugin(defineOption));
-
         // if (this.isDebugMode) {
         //     plugins.push(new webpack.HotModuleReplacementPlugin());
         // }
-        const moduleFederationConfig = ConfigHelper.get("federation", false);
-        if (moduleFederationConfig && moduleFederationConfig.exposes) {
-            plugins.push(new FederationStatsPlugin());
-            plugins.push(new FederationModuleIdPlugin());
-            plugins.push(new webpack.container.ModuleFederationPlugin(Object.assign({
-                filename: "remoteEntry.js",
-                name: ConfigHelper.getPackageName(),
-            }, moduleFederationConfig)));
-        }
+        plugins.push(...sharePlugin.exposeMfPlugin);
         return plugins;
     }
 

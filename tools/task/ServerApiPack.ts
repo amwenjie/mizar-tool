@@ -2,11 +2,10 @@ import { cyan, green, red } from "colorette";
 import fs from "fs-extra";
 import klaw from "klaw";
 import path from "path";
-import webpack, { type Configuration, type EntryObject, } from "webpack";
+import { type Configuration, type EntryObject, } from "webpack";
 import { merge } from "webpack-merge";
 import serverBase from "../config/server.base.js";
-import getGlobalConfig, { type IGlobalConfig, devLocalIdentName, prodLocalIdentName } from "../libs/getGlobalConfig.js";
-import ConfigHelper from "../libs/ConfigHelper.js";
+import getGlobalConfig, { type IGlobalConfig } from "../libs/getGlobalConfig.js";
 import { WebpackTaskBase } from "../libs/WebpackTaskBase.js";
 import { HelperTask } from "./HelperTask.js";
 import Logger from "../libs/Logger.js";
@@ -46,8 +45,7 @@ export class ServerApiPack extends WebpackTaskBase {
                 resolve(entry);
             });
             walk.on("error", e => {
-                log.error(red("scan entry cause an error: "));
-                log.error(e);
+                log.error(red("scan entry cause an error: "), e);
                 reject(e);
             });
         });
@@ -72,64 +70,12 @@ export class ServerApiPack extends WebpackTaskBase {
     }
     
     protected async getCompileConfig(entry: EntryObject): Promise<Configuration> {
-        const tslintPath = path.resolve(`${this.rootPath}tslint.json`);
-        const tsConfigPath = path.resolve(`${this.rootPath}tsconfig.json`);
-        let localIdentName = prodLocalIdentName;
-        let sourceMap = false;
-        if (this.isDebugMode) {
-            localIdentName = devLocalIdentName;
-            sourceMap = true;
-        }
-        const rules = [];
-        const tslintConfig = ConfigHelper.get("tslint", true);
-        if (tslintConfig) {
-            rules.push({
-                exclude: /node_modules|\.d\.ts$/i,
-                test: /\.ts(x?)$/,
-                enforce: "pre",
-                loader: "tslint-loader",
-                options: {
-                    configFile: fs.existsSync(tslintPath) ? tslintPath : "",
-                    tsConfigFile: fs.existsSync(tsConfigPath) ? tsConfigPath : "",
-                },
-            });
-        }
-
-        const defineOption = {
-            IS_SERVER_RUNTIME: JSON.stringify(true),
-            IS_DEBUG_MODE: JSON.stringify(!!this.isDebugMode),
-        };
-
         const innerConf = merge(serverBase(this.isDebugMode), {
             entry,
-            module: {
-                rules: rules.concat([
-                    {
-                        test: /\.tsx?$/,
-                        exclude: /[\\/]node_modules[\\/]|\.d\.ts$/i,
-                        use: [
-                            {
-                                loader: "ts-loader",
-                                options: Object.assign(
-                                    {
-                                        compilerOptions: {
-                                            declaration: false,
-                                        },
-                                    },
-                                    ConfigHelper.get("ts-loader", {}),
-                                ),
-                            },
-                        ],
-                    },
-                ]),
-            },
             name: this.taskName,
             output: {
                 path: this.dist,
             },
-            plugins: [
-                new webpack.DefinePlugin(defineOption),
-            ],
         });
 
         const cuzConfigPath = path.resolve("./webpack.config/api.js");

@@ -1,24 +1,23 @@
 import { cyan, green, red, yellow } from "colorette";
 import CssMinimizerPlugin from "css-minimizer-webpack-plugin";
-import ESLintWebpackPlugin from "eslint-webpack-plugin";
 import fs from "fs-extra";
 import klaw from "klaw";
 import MiniCssExtractPlugin from "mini-css-extract-plugin";
 import path from "path";
-import StylelintPlugin from "stylelint-webpack-plugin";
 import TerserJSPlugin from "terser-webpack-plugin";
-import webpack, {
-    type Compiler,
+import {
     type Configuration,
     type EntryObject,
-    type WebpackPluginInstance,
 } from "webpack";
 import { BundleAnalyzerPlugin } from "webpack-bundle-analyzer";
 import { merge } from "webpack-merge";
 import clientBase from "../config/client.base.js";
+import sharePlugin from "../config/share.plugin.js";
+import { type webpackPluginsType } from "../interface.js";
 import getGlobalConfig, { type IGlobalConfig } from "../libs/getGlobalConfig.js";
 import ConfigHelper from "../libs/ConfigHelper.js";
 import Logger from "../libs/Logger.js";
+import { checkIsLegalIdentifier } from "../libs/Utils.js";
 import { WebpackTaskBase } from "../libs/WebpackTaskBase.js";
 import { HelperTask } from "./HelperTask.js";
 
@@ -97,8 +96,7 @@ export class StandalonePack extends WebpackTaskBase {
                     resolve(combinedEntries);
                 })
                 .catch(e => {
-                    log.error(red("scan entry cause an error: "));
-                    log.error(e);
+                    log.error(red("scan entry cause an error: "), e);
                     resolve({});
                 });
         });
@@ -120,42 +118,13 @@ export class StandalonePack extends WebpackTaskBase {
         };
     }
 
-    private getPlugins(): (
-		| ((this: Compiler, compiler: Compiler) => void)
-		| WebpackPluginInstance
-	)[] {
-        const defineOption = {
-            IS_SERVER_RUNTIME: JSON.stringify(false),
-            IS_DEBUG_MODE: JSON.stringify(!!this.isDebugMode),
-        };
-
-        const plugins = [];
-        plugins.push(new webpack.DefinePlugin(defineOption));
-        
-        const stylelintConfig = ConfigHelper.get("stylelint", {
-            extensions: ["css", "less", "scss", "sass"],
-            files: "./src",
-        });
-        if (stylelintConfig) {
-            plugins.push(new StylelintPlugin(stylelintConfig));
-        }
-        
-        const esLintPluginConfig = ConfigHelper.get("eslint", {
-            files: "./src",
-        });
-        if (esLintPluginConfig) {
-            plugins.push(new ESLintWebpackPlugin(esLintPluginConfig));
-        }
+    private getPlugins(): webpackPluginsType {
+        const plugins: webpackPluginsType = [];
         plugins.push(new MiniCssExtractPlugin({
             filename: "[name].css",
             // chunkFilename: "[name]-chunk-[id]_[contenthash:8].css",
         }));
-        const moduleFederationConfig = ConfigHelper.get("federation", false);
-        if (moduleFederationConfig && moduleFederationConfig.remotes) {
-            plugins.push(new webpack.container.ModuleFederationPlugin({
-                remotes: moduleFederationConfig.remotes,
-            }));
-        }
+        plugins.push(...sharePlugin.remoteMfPlugin);
         if (this.isAnalyzMode) {
             plugins.push(new BundleAnalyzerPlugin({
                 analyzerMode: this.isDebugMode ? "server" : "disabled",
@@ -169,7 +138,9 @@ export class StandalonePack extends WebpackTaskBase {
     private getEntryAndOutputConfig(entry): any {
         const config = ConfigHelper.get("standalone", false);
         const returnedConfig: any = {
-            entry,
+            entry: {
+                ...entry,
+            },
             output: {
                 filename: "[name].js",
                 path: this.dist,
@@ -192,20 +163,22 @@ export class StandalonePack extends WebpackTaskBase {
         } else if (typeof config === "object") {
             // 进行简单判断，typeof是object就认为是对象
             const entryKeys = Object.keys(entry);
-            const returnedEntry = {};
-            entryKeys.forEach(key => {
+            for (let i = 0, len = entryKeys.length; i < len; i++) {
+                const key = entryKeys[i];
                 if (key in config) {
+                    if (!checkIsLegalIdentifier(config[key]["name"])) {
+                        throw new Error(`standalone config field: 'standalone["${key}"]["name"]' is a illegal js identifier in ./config/configure.json `)
+                    }
                     // 说明自动获取的standalone entry文件在手动配置的config中存在，则替换entry的配置
                     // 暂时配置中不支持配置一个entry入口有多个文件，自动获取的entry[key]指定单个文件
-                    returnedEntry[key] = {
+                    returnedConfig.entry[key] = {
                         import: entry[key],
                         library: config[key],
                     };
                 } else {
-                    returnedEntry[key] = entry[key];
+                    returnedConfig.entry[key] = entry[key];
                 }
-                returnedConfig.entry = returnedEntry;
-            });
+            }
         }
         return returnedConfig;
     }

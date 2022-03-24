@@ -1,21 +1,17 @@
 import LoadablePlugin from "@loadable/webpack-plugin";
 import CopyWebpackPlugin from "copy-webpack-plugin";
 import CssMinimizerPlugin from "css-minimizer-webpack-plugin";
-import ESLintWebpackPlugin from "eslint-webpack-plugin";
 import fs from "fs-extra";
 import MiniCssExtractPlugin from "mini-css-extract-plugin";
 import path from "path";
-import StylelintPlugin from "stylelint-webpack-plugin";
 import TerserJSPlugin from "terser-webpack-plugin";
-import webpack, { 
-    type Configuration,
-    type Compiler,
-    type WebpackPluginInstance,
-} from "webpack";
+import { type Configuration } from "webpack";
 import { merge } from "webpack-merge";
 import { BundleAnalyzerPlugin } from "webpack-bundle-analyzer";
 import clientBase from "../config/client.base.js";
-import getGlobalConfig, { type IGlobalConfig } from "../libs/getGlobalConfig.js";
+import sharePlugin from "../config/share.plugin.js";
+import { type webpackPluginsType } from "../interface.js";
+import getGlobalConfig, { assetModuleFilename, type IGlobalConfig } from "../libs/getGlobalConfig.js";
 import ConfigHelper from "../libs/ConfigHelper.js";
 import Logger from "../libs/Logger.js";
 import { WebpackTaskBase } from "../libs/WebpackTaskBase.js";
@@ -99,35 +95,8 @@ export class IsomorphicPack extends WebpackTaskBase {
         };
     }
 
-    private getPlugins(): (
-		| ((this: Compiler, compiler: Compiler) => void)
-		| WebpackPluginInstance
-	)[] {
-        const defineOption = {
-            IS_SERVER_RUNTIME: JSON.stringify(false),
-            IS_DEBUG_MODE: JSON.stringify(!!this.isDebugMode),
-        };
-
-        const plugins = [];
-        const stylelintConfig = ConfigHelper.get("stylelint", {
-            extensions: ["css", "less", "scss", "sass"],
-            files: "./src",
-        });
-        log.info("stylelintConfig: ", stylelintConfig);
-        if (stylelintConfig) {
-            plugins.push(new StylelintPlugin(stylelintConfig));
-        }
-        plugins.push(new webpack.DefinePlugin(defineOption));
-
-        const esLintConfig = ConfigHelper.get("eslint", {
-            files: "./src",
-            failOnError: !this.isDebugMode,
-        });
-        log.info("esLintConfig: ", esLintConfig);
-        if (esLintConfig) {
-            plugins.push(new ESLintWebpackPlugin(esLintConfig));
-        }
-
+    private getPlugins(): webpackPluginsType {
+        const plugins: webpackPluginsType = [];
         plugins.push(new MiniCssExtractPlugin({
             filename: "[name]_[contenthash:8].css",
             // chunkFilename: "[name]-chunk-[id]_[contenthash:8].css",
@@ -143,12 +112,7 @@ export class IsomorphicPack extends WebpackTaskBase {
         // if (this.isDebugMode) {
         //     plugins.push(new webpack.HotModuleReplacementPlugin());
         // }
-        const moduleFederationConfig = ConfigHelper.get("federation", false);
-        if (moduleFederationConfig && moduleFederationConfig.remotes) {
-            plugins.push(new webpack.container.ModuleFederationPlugin({
-                remotes: moduleFederationConfig.remotes,
-            }));
-        }
+        plugins.push(...sharePlugin.remoteMfPlugin);
         plugins.push(new LoadablePlugin({
             filename: "./loadable-stats.json",
             writeToDisk: true,
@@ -173,25 +137,10 @@ export class IsomorphicPack extends WebpackTaskBase {
     protected async getCompileConfig(): Promise<Configuration>  {
         const baseConf = clientBase(this.isDebugMode);
         if (this.isDebugMode) {
-            baseConf.module.rules.splice(1, 0, {
+            baseConf.module.rules.splice(2, 0, {
                 test: /\.(?:css|less|s[ac]ss)$/i,
                 exclude: /[\\/]node_modules[\\/]/i,
                 loader: "alcor-loaders/typing-for-css-module",
-            });
-        }
-        const tslintPath = path.resolve(`${this.rootPath}tslint.json`);
-        const tsConfigPath = path.resolve(`${this.rootPath}tsconfig.json`);
-        const tslintConfig = ConfigHelper.get("tslint", true);
-        if (tslintConfig) {
-            baseConf.module.rules.unshift({
-                exclude: /[\\/]node_modules[\\/]|\.d\.ts$/i,
-                test: /\.tsx?$/i,
-                enforce: "pre",
-                loader: "tslint-loader",
-                options: {
-                    configFile: fs.existsSync(tslintPath) ? tslintPath : "",
-                    tsConfigFile: fs.existsSync(tsConfigPath) ? tsConfigPath : "",
-                },
             });
         }
 
@@ -202,7 +151,7 @@ export class IsomorphicPack extends WebpackTaskBase {
                 publicPath: this.publicPath,
                 filename: "[name]_[contenthash:8].js",
                 path: this.dist,
-                assetModuleFilename: "assets/[name]_[contenthash:8][ext][query]",
+                assetModuleFilename,
             },
             name: this.taskName,
             plugins: this.getPlugins(),

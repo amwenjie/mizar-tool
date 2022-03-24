@@ -1,16 +1,16 @@
 import { cyan, green } from "colorette";
-import ESLintWebpackPlugin from "eslint-webpack-plugin";
 import fs from "fs-extra";
 import path from "path";
-import webpack, {
-    type Compiler,
-    type Configuration,
-    type RuleSetRule,
-    type WebpackPluginInstance,
-} from "webpack";
+import { type Configuration } from "webpack";
 import { merge } from "webpack-merge";
 import serverBase from "../config/server.base.js";
-import getGlobalConfig, { type IGlobalConfig, devLocalIdentName, prodLocalIdentName } from "../libs/getGlobalConfig.js";
+import sharePlugin from "../config/share.plugin.js";
+import {
+    type webpackPluginsType,
+    type webpackRulesType,
+} from "../interface.js";
+import getGlobalConfig, { assetModuleFilename, type IGlobalConfig, devLocalIdentName, prodLocalIdentName } from "../libs/getGlobalConfig.js";
+import { shouldSourceModuled, } from "../libs/Utils.js";
 import ConfigHelper from "../libs/ConfigHelper.js";
 import Logger from "../libs/Logger.js";
 import { WebpackTaskBase } from "../libs/WebpackTaskBase.js";
@@ -29,80 +29,53 @@ export class ServerPack extends WebpackTaskBase {
         this.src = path.resolve("./src/server/index");
         this.dist = path.resolve(`${this.globalConfig.rootOutput}`);
     }
-    
-    private shouldSourceModuled(resourcePath: string): boolean {
-        // log.warn('!/node_modules/i.test(resourcePath): ', !/node_modules/i.test(resourcePath));
-        // log.warn('/components?|pages?/i.test(resourcePath): ', /components?|pages?/i.test(resourcePath));
-        return /components?|pages?/i.test(resourcePath);
-    }
 
-    private getPlugins(): (
-		| ((this: Compiler, compiler: Compiler) => void)
-		| WebpackPluginInstance
-	)[] {
-        const defineOption = {
-            IS_SERVER_RUNTIME: JSON.stringify(true),
-            IS_DEBUG_MODE: JSON.stringify(!!this.isDebugMode),
-            DEV_PROXY_CONFIG: JSON.stringify(ConfigHelper.get("proxy", false)),
-        };
-        const plugins = [];
-        plugins.push(new webpack.DefinePlugin(defineOption));
-        const esLintPluginConfig = ConfigHelper.get("eslint", {
-            files: "./src",
-            failOnError: !this.isDebugMode,
-        });
-        if (esLintPluginConfig) {
-            plugins.push(new ESLintWebpackPlugin(esLintPluginConfig));
-        }
-        const moduleFederationConfig = ConfigHelper.get("federation", false);
-        if (moduleFederationConfig && moduleFederationConfig.remotes) {
-            plugins.push(new webpack.container.ModuleFederationPlugin({
-                remotes: moduleFederationConfig.remotes,
-            }));
-        }
+    private getPlugins(): webpackPluginsType {
+        const plugins: webpackPluginsType = [];
+        plugins.push(...sharePlugin.remoteMfPlugin);
         return plugins;
     }
-
-    private getRules(): (RuleSetRule | "...")[]  {
+    
+    private getCssLoaders(isDebugMode: boolean, extraLoaders = []): webpackRulesType {
+        const loaders: webpackRulesType = [];
         let localIdentName = prodLocalIdentName;
         let sourceMap = false;
-        if (this.isDebugMode) {
+        if (isDebugMode) {
             localIdentName = devLocalIdentName;
             sourceMap = true;
         }
-        const tslintPath = path.resolve(`${this.rootPath}tslint.json`);
-        const tsConfigPath = path.resolve(`${this.rootPath}tsconfig.json`);
-        let rules = [];
-        const tslintConfig = ConfigHelper.get("tslint", true);
-        if (tslintConfig) {
-            rules.push({
-                exclude: /[\\/]node_modules[\\/]|\.d\.ts$/i,
-                test: /\.ts(x?)$/i,
-                enforce: "pre",
-                loader: "tslint-loader",
+        return loaders.concat([
+            {
+                loader: "css-loader",
                 options: {
-                    configFile: fs.existsSync(tslintPath) ? tslintPath : "",
-                    tsConfigFile: fs.existsSync(tsConfigPath) ? tsConfigPath : "",
+                    importLoaders: 1 + extraLoaders.length,
+                    sourceMap,
+                    modules: {
+                        auto: shouldSourceModuled,
+                        localIdentName: localIdentName,
+                        namedExport: true,
+                        exportOnlyLocals: true
+                    },
                 },
-            });
-        }
-        rules.push({
-            exclude: /[\\/]node_modules[\\/]|\.d\.ts$/i,
-            test: /\.tsx?$/i,
-            use: [
-                {
-                    loader: "ts-loader",
-                    options: Object.assign(
-                        {
-                            compilerOptions: {
-                                declaration: false,
-                            },
+            },
+            {
+                loader: "postcss-loader",
+                options: Object.assign(
+                    {
+                        postcssOptions: {
+                            plugins: [
+                                "postcss-preset-env",
+                            ],
                         },
-                        ConfigHelper.get("ts-loader", {}),
-                    ),
-                },
-            ],
-        });
+                    },
+                    ConfigHelper.get("postcss-loader", {}),
+                ),
+            },
+        ], extraLoaders);
+    }
+
+    private getRules(isDebugMode: boolean): webpackRulesType  {
+        let rules: webpackRulesType = [];
         rules.push({
             exclude: /\.d\.ts$/i,
             test: /[\\/]src[\\/]isomorphic[\\/].+[\\/][A-Z][^\\/]+[\\/]index\.tsx?$/,
@@ -110,117 +83,37 @@ export class ServerPack extends WebpackTaskBase {
         });
         rules.push({
             test: /\.css$/i,
-            use: [
-                {
-                    loader: "css-loader",
-                    options: {
-                        importLoaders: 1,
-                        sourceMap,
-                        // modules: true,
-                        modules: {
-                            auto: this.shouldSourceModuled,
-                            localIdentName: localIdentName,
-                            namedExport: true,
-                            exportOnlyLocals: true
-                        },
-                    },
-                },
-                {
-                    loader: "postcss-loader",
-                    options: Object.assign(
-                        {
-                            postcssOptions: {
-                                plugins: [
-                                    "postcss-preset-env",
-                                ],
-                            },
-                        },
-                        ConfigHelper.get("postcss-loader", {}),
-                    ),
-                },
-            ],
+            use: this.getCssLoaders(isDebugMode),
             type: "javascript/auto",
         });
         rules.push({
             test: /\.less$/i,
-            use: [
-                {
-                    loader: "css-loader",
-                    options: {
-                        importLoaders: 2,
-                        sourceMap,
-                        // modules: true,
-                        modules: {
-                            auto: this.shouldSourceModuled,
-                            localIdentName: localIdentName,
-                            namedExport: true,
-                            exportOnlyLocals: true
-                        },
-                    },
-                },
-                {
-                    loader: "postcss-loader",
-                    options: Object.assign(
-                            {
-                            postcssOptions: {
-                                plugins: [
-                                    "postcss-preset-env",
-                                ],
-                            },
-                        },
-                        ConfigHelper.get("postcss-loader", {}),
-                    ),
-                },
+            use: this.getCssLoaders(isDebugMode, [
                 {
                     loader: "less-loader",
                     options: Object.assign(
                             {
-                            sourceMap,
+                            sourceMap: isDebugMode,
                         },
                         ConfigHelper.get("less-loader", {}),
                     ),
                 },
-            ],
+            ]),
             type: "javascript/auto",
         });
         rules.push({
             test: /\.s[ac]ss$/i,
-            use: [
-                {
-                    loader: "css-loader",
-                    options: {
-                        importLoaders: 2,
-                        sourceMap,
-                        modules: {
-                            auto: this.shouldSourceModuled,
-                            localIdentName: localIdentName,
-                            namedExport: true,
-                        },
-                    },
-                },
-                {
-                    loader: "postcss-loader",
-                    options: Object.assign(
-                        {
-                            postcssOptions: {
-                                plugins: [
-                                    "postcss-preset-env",
-                                ],
-                            },
-                        },
-                        ConfigHelper.get("postcss-loader", {}),
-                    ),
-                },
+            use: this.getCssLoaders(isDebugMode, [
                 {
                     loader: "sass-loader",
                     options: Object.assign(
                         {
-                            sourceMap,
+                            sourceMap: isDebugMode,
                         },
                         ConfigHelper.get("sass-loader", {}),
                     ),
                 },
-            ],
+            ]),
             type: "javascript/auto",
         });
         rules.push({
@@ -228,8 +121,8 @@ export class ServerPack extends WebpackTaskBase {
             type: "asset",
             generator: {
                 filename: path.resolve(
-                    this.globalConfig.clientOutput,
-                    "assets/[name]_[contenthash][ext][query]",
+                    getGlobalConfig().clientOutput,
+                    assetModuleFilename,
                 ),
             },
         });
@@ -269,7 +162,7 @@ export class ServerPack extends WebpackTaskBase {
                         commonjsMagicComments: true,
                     },
                 },
-                rules: this.getRules(),
+                rules: this.getRules(this.isDebugMode),
             },
             name: this.taskName,
             output: {

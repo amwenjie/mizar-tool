@@ -15,7 +15,7 @@
     },
     "dependencies": {
         "@loadable/component": "~5.15.2",
-        "mizar": "~0.0.49",
+        "mizar": "~0.0.51",
         "react": "~17.0.2",
         "react-dom": "~17.0.2",
         "react-redux": "~7.2.6",

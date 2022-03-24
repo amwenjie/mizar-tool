@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { green } from "colorette";
+import { green, red } from "colorette";
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 import { CopyTask } from "./task/CopyTask.js";
@@ -30,7 +30,7 @@ export class ProjectBuild {
                 await this.publish();
             }
         } catch (e) {
-            log.error("ProjectBuild", e);
+            log.error(red("ProjectBuild"), e);
         }
     }
 
@@ -116,7 +116,7 @@ export class ProjectBuild {
             }
             console.log(green("build success"));
         } catch (e) {
-            log.error("ProjectBuild raised an error: ", e);
+            log.error(red("ProjectBuild raised an error: "), e);
         }
         task.end();
     }
