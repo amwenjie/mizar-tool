@@ -1,10 +1,10 @@
-import { cyan, green, red, yellow } from "colorette";
 import { execSync } from "child_process";
+import { cyan, green, red, yellow } from "colorette";
 import Notifier from "node-notifier";
 import yargs  from "yargs";
 import { hideBin } from "yargs/helpers";
-import TaskBase from "../libs/TaskBase.js";
 import Logger from "../libs/Logger.js";
+import TaskBase from "../libs/TaskBase.js";
 import { CleanTask } from "./CleanTask.js";
 
 const log = Logger();

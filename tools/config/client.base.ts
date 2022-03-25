@@ -8,8 +8,8 @@ import {
     type webpackPluginsType,
     type webpackRulesType,
 } from "../interface.js";
-import { devLocalIdentName, prodLocalIdentName } from "../libs/getGlobalConfig.js";
 import ConfigHelper from "../libs/ConfigHelper.js";
+import { devLocalIdentName, prodLocalIdentName } from "../libs/getGlobalConfig.js";
 import { getCssModuleMode, shouldSourceModuled, } from "../libs/Utils.js";
 import base from "./base.js";
 

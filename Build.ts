@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
-import { HelperTask } from "./tools/task/HelperTask.js";
-import { PublishTask } from "./tools/task/PublishTask.js";
-import { PackageInfo } from "./tools/task/PackageInfo.js";
-import { ShellTask } from "./tools/task/ShellTask.js";
 import { CopyTask } from "./tools/task/CopyTask.js";
+import { HelperTask } from "./tools/task/HelperTask.js";
 import Logger from "./tools/libs/Logger.js";
+import { PackageInfo } from "./tools/task/PackageInfo.js";
+import { PublishTask } from "./tools/task/PublishTask.js";
+import { ShellTask } from "./tools/task/ShellTask.js";
 
 const argv:any = yargs(hideBin(process.argv)).argv as any;
 
@@ -19,6 +19,8 @@ class Build {
 
         // 开始编译工作
         try {
+            await new ShellTask("./tools").run("tslint", "-p");
+            await new ShellTask("./bin").run("tslint", "-p");
             await new PackageInfo().run();
             await new ShellTask("./tools").run("tsc", "-p");
             await new ShellTask("./bin").run("tsc", "-p");

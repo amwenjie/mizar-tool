@@ -1,4 +1,3 @@
-import fs from "fs-extra";
 import ESLintWebpackPlugin from "eslint-webpack-plugin";
 import path from "path";
 import StylelintPlugin from "stylelint-webpack-plugin";
@@ -16,41 +15,35 @@ function getEnvDef(isDebugMode: boolean): "development" | "production" {
 function getPlugins(isDebugMode: boolean): webpackPluginsType {
     const plugins: webpackPluginsType = [];
 
-    const stylelintConfig = ConfigHelper.get("stylelint", {
+    const defaultStylelintConf = {
         extensions: ["css", "less", "scss", "sass"],
         files: "./src",
-    });
-    if (stylelintConfig) {
-        plugins.push(new StylelintPlugin(stylelintConfig));
+    };
+    let stylelintConf = ConfigHelper.get("stylelint", true);
+    if (stylelintConf === true) {
+        stylelintConf = defaultStylelintConf;
     }
-    const esLintPluginConfig = ConfigHelper.get("eslint", {
+    if (stylelintConf) {
+        plugins.push(new StylelintPlugin(stylelintConf));
+    }
+
+    const defaultESLintConf = {
         files: "./src",
+        extensions: ["ts", "tsx", "js"],
         failOnError: !isDebugMode,
-    });
-    if (esLintPluginConfig) {
-        plugins.push(new ESLintWebpackPlugin(esLintPluginConfig));
+    }
+    let esLintPluginConf = ConfigHelper.get("eslint", true);
+    if (esLintPluginConf === true) {
+        esLintPluginConf = defaultESLintConf;
+    }
+    if (esLintPluginConf) {
+        plugins.push(new ESLintWebpackPlugin(esLintPluginConf));
     }
     return plugins;
 }
 
 function getRules(): webpackRulesType {
     const rules: webpackRulesType = [];
-
-    const tslintConfig = ConfigHelper.get("tslint", true);
-    if (tslintConfig) {
-        const tslintPath = path.resolve("./tslint.json");
-        const tsConfigPath = path.resolve("./tsconfig.json");
-        rules.push({
-            exclude: /[\\/]node_modules[\\/]|\.d\.ts$/i,
-            test: /\.tsx?$/i,
-            enforce: "pre",
-            loader: "tslint-loader",
-            options: {
-                configFile: fs.existsSync(tslintPath) ? tslintPath : "",
-                tsConfigFile: fs.existsSync(tsConfigPath) ? tsConfigPath : "",
-            },
-        });
-    }
 
     rules.push({
         exclude: /[\\/]node_modules[\\/]|\.d\.ts$/i,

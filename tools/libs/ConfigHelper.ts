@@ -1,11 +1,9 @@
+import { Options as eslintOptions } from "eslint-webpack-plugin";
 import fs from "fs-extra";
 import Path from "path";
-import { Options } from "stylelint-webpack-plugin";
-import yargs from "yargs";
-import { hideBin } from "yargs/helpers";
+import { Options as stylelintOptions } from "stylelint-webpack-plugin";
 import Logger from "../libs/Logger.js";
 
-const argv:any = yargs(hideBin(process.argv)).argv  as any;
 const log = Logger("ConfigHelper");
 const configureJSON = Path.resolve("./config/configure.json");
 const appConfJSON = Path.resolve("./config/app.json");
@@ -15,15 +13,15 @@ export interface IAppConf {
     port: number;
     assetsPathPrefix?: string;
     cdn?: string;
+    [conf: string]: any;
 }
 
 export interface IConfigure {
     debugPort?: number;
     logger?: string;
-    tslint?: {
-        disable: boolean;
-    };
-    stylelint?: boolean | Options | string;
+    eslint?: false | eslintOptions;
+    stylelint?: false | stylelintOptions;
+    [conf: string]: any;
 }
 
 export default class ConfigHelper {

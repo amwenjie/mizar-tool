@@ -1,5 +1,5 @@
-import { cyan } from "colorette";
 import chokidar from "chokidar";
+import { cyan } from "colorette";
 import cpy from "cpy";
 import path from "path";
 import getGlobalConfig from "../libs/getGlobalConfig.js";

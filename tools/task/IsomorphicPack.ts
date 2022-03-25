@@ -6,13 +6,13 @@ import MiniCssExtractPlugin from "mini-css-extract-plugin";
 import path from "path";
 import TerserJSPlugin from "terser-webpack-plugin";
 import { type Configuration } from "webpack";
-import { merge } from "webpack-merge";
 import { BundleAnalyzerPlugin } from "webpack-bundle-analyzer";
+import { merge } from "webpack-merge";
 import clientBase from "../config/client.base.js";
 import sharePlugin from "../config/share.plugin.js";
 import { type webpackPluginsType } from "../interface.js";
-import getGlobalConfig, { assetModuleFilename, type IGlobalConfig } from "../libs/getGlobalConfig.js";
 import ConfigHelper from "../libs/ConfigHelper.js";
+import getGlobalConfig, { assetModuleFilename, type IGlobalConfig } from "../libs/getGlobalConfig.js";
 import Logger from "../libs/Logger.js";
 import { WebpackTaskBase } from "../libs/WebpackTaskBase.js";
 import { HelperTask } from "./HelperTask.js";
@@ -137,7 +137,7 @@ export class IsomorphicPack extends WebpackTaskBase {
     protected async getCompileConfig(): Promise<Configuration>  {
         const baseConf = clientBase(this.isDebugMode);
         if (this.isDebugMode) {
-            baseConf.module.rules.splice(2, 0, {
+            baseConf.module.rules.splice(1, 0, {
                 test: /\.(?:css|less|s[ac]ss)$/i,
                 exclude: /[\\/]node_modules[\\/]/i,
                 loader: "alcor-loaders/typing-for-css-module",

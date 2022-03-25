@@ -1,8 +1,8 @@
 import webpack from "webpack";
 import FederationModuleIdPlugin from "webpack-federation-module-id-plugin";
 import { sharePluginMapType } from "../interface.js";
-import FederationStatsPlugin from "../libs/plugins/federation-stats-plugin/index.js";
 import ConfigHelper from "../libs/ConfigHelper.js";
+import FederationStatsPlugin from "../libs/plugins/federation-stats-plugin/index.js";
 import { checkIsLegalIdentifier } from "../libs/Utils.js";
 
 const pluginMap: sharePluginMapType = {

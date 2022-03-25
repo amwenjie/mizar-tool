@@ -1,5 +1,5 @@
-import { bold, cyan, green, red, yellow, reset, white } from "colorette";
-import webpack, { type WebpackError, type Stats } from "webpack";
+import { bold, cyan, red, white, yellow } from "colorette";
+import webpack, { type Stats, type WebpackError } from "webpack";
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 import HelperTask from "../task/HelperTask.js";
@@ -79,7 +79,11 @@ export class WebpackTaskBase extends TaskBase {
             if (this.isDebugMode === true) {
                 this.helperTask.sendMessage(this.taskName, "代码有警告");
                 info.warnings.forEach(warning => {
-                    log.warn(warning);
+                    log.warn([
+                        warning.moduleName ? white("\n" + warning.moduleName) : "",
+                        yellow("\n  " + warning.message),
+                    ].join(""));
+                    log.info(warning);
                 });
             }
         }

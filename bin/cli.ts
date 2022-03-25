@@ -1,7 +1,7 @@
 #!/usr/bin/env node
+import { cyan, green } from 'colorette';
 import { Command } from 'commander';
 import spawn from 'cross-spawn';
-import { cyan, green } from 'colorette';
 import fs from "fs-extra";
 import path from 'path';
 import { fileURLToPath } from 'url';

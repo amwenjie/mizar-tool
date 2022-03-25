@@ -3,13 +3,10 @@ a mizar-based react project compile cli tool
 
 npm install -g alcor
 
-!!!鉴于typescript的部分能力eslint无法覆盖，且typescript-eslint还待完善，该编译工具对ts/tsx的文件应用tslint，js文件应用eslint，日后将合并两种lint检查。
-
-
 ## alcor辅助mizar应用打包编译。应用目录结构应为：
     -config    用于存放配置文件的目录
        -app.json    用于配置应用的运行时信息，比如该应用的node服务启动端口、cdn地址等
-       -configure.json   用于配置应用的编译时信息，比如是否启用eslint、配置stylelint、配置less-loader等
+       -configure.json   用于配置应用的编译配置，比如配置eslint plugin、配置stylelint plugin、配置less-loader等
     -src    应用代码源文件目录
        -isomorphic     同构内容所在目录，组件会被在客户端或服务端执行，需要注意执行环境特有能力的使用
           -index.ts     客户端启动入口
@@ -33,6 +30,9 @@ npm install -g alcor
           -apis   服务端node api存放目录，规则是请求路径以/api/开头，文件名为方法名
                 -api-name.ts
           -index.ts   服务端启动入口
+    -.eslintignore
+    -.eslintrc.js
+    -.stylelintrc.json
     -package.json
     -tsconfig.json
     -tslint.json
@@ -61,9 +61,8 @@ npm install -g alcor
 ```
    * configure.json用来配置打包编译过程中的一些配置
 ```
-   "tslint": true, #  启用tslint，默认启用
    "stylelint": true, #  启用stylelint，默认启用，默认配置对应用根目录src目录中的.css、.less、.scss、.sass文件生效
-   "eslint": true, #  启用eslint，默认启用，默认配置对应用根目录src目录中的.js文件生效
+   "eslint": true, #  启用eslint，默认启用，默认配置对应用根目录src目录中的.ts\.tsx\.js\.jsx文件生效
    "postcss-loader": {}, #  配置插件option配置
    "less-loader": {}, #  配置插件option配置
    "sass-loader": {}, #  配置插件option配置

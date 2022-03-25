@@ -9,10 +9,15 @@ import {
     type webpackPluginsType,
     type webpackRulesType,
 } from "../interface.js";
-import getGlobalConfig, { assetModuleFilename, type IGlobalConfig, devLocalIdentName, prodLocalIdentName } from "../libs/getGlobalConfig.js";
-import { shouldSourceModuled, } from "../libs/Utils.js";
 import ConfigHelper from "../libs/ConfigHelper.js";
+import getGlobalConfig, {
+    assetModuleFilename,
+    devLocalIdentName,
+    prodLocalIdentName,
+    type IGlobalConfig,
+} from "../libs/getGlobalConfig.js";
 import Logger from "../libs/Logger.js";
+import { shouldSourceModuled, } from "../libs/Utils.js";
 import { WebpackTaskBase } from "../libs/WebpackTaskBase.js";
 import { HelperTask } from "./HelperTask.js";
 import RunServer from "./RunServer.js";

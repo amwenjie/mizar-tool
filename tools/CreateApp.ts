@@ -3,13 +3,13 @@
 import { execSync } from 'child_process';
 import { blue, bold, cyan, green, red, yellow } from 'colorette';
 import { Command } from 'commander';
+import spawn from 'cross-spawn';
 import dns from 'dns';
 import envinfo from 'envinfo';
 import fs from 'fs-extra';
 import https from 'https';
 import path from 'path';
 import semver from 'semver';
-import spawn from 'cross-spawn';
 import url, { fileURLToPath } from 'url';
 import validateProjectName from 'validate-npm-package-name';
 import Logger from "./libs/Logger.js";

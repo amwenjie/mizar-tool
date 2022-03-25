@@ -1,6 +1,6 @@
-import { cyan, red } from "colorette";
-import { exec, execSync } from "child_process";
+import { execSync } from "child_process";
 import chokidar from "chokidar";
+import { cyan, red } from "colorette";
 import Logger from "../libs/Logger.js";
 import TaskBase from "../libs/TaskBase.js";
 import { HelperTask } from "./HelperTask.js";

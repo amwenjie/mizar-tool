@@ -1,6 +1,6 @@
 import { execSync } from "child_process";
-import TaskBase from "../libs/TaskBase.js";
 import Logger from "../libs/Logger.js";
+import TaskBase from "../libs/TaskBase.js";
 import { HelperTask } from "./HelperTask.js";
 
 const log = Logger("PublishTask");

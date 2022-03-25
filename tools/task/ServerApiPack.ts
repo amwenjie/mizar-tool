@@ -6,9 +6,9 @@ import { type Configuration, type EntryObject, } from "webpack";
 import { merge } from "webpack-merge";
 import serverBase from "../config/server.base.js";
 import getGlobalConfig, { type IGlobalConfig } from "../libs/getGlobalConfig.js";
+import Logger from "../libs/Logger.js";
 import { WebpackTaskBase } from "../libs/WebpackTaskBase.js";
 import { HelperTask } from "./HelperTask.js";
-import Logger from "../libs/Logger.js";
 const log = Logger("ServerApiPack");
 
 export class ServerApiPack extends WebpackTaskBase {

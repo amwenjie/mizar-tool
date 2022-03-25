@@ -1,4 +1,4 @@
-import { cyan, blue, green, red } from "colorette";
+import { cyan, green, red } from "colorette";
 import ora from "ora";
 import path from "path";
 import Logger from "./Logger.js";

@@ -1,12 +1,17 @@
 {
-    "ts-node": {
-        "esm": true
-    },
+    "include": [
+        "src/",
+        "webpack.config/",
+    ],
+    "files": [
+        ".eslintrc.js",
+    ],
     "compilerOptions": {
         "target": "es2020",
         "importHelpers": true,
         "downlevelIteration": true,
         "noEmitHelpers": false,
+        "removeComments": true,
         "allowJs": true,
         "baseUrl": "src",
         "outDir": "dist",
