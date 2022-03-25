@@ -81,7 +81,7 @@ export default function base(isDebugMode: boolean): Configuration {
             rules: getRules(),
         },
         resolve: {
-            extensions: [".ts", ".tsx", ".js", ".css", ".png", ".jpg", ".gif", ".less", "sass", "scss", "..."],
+            extensions: [".ts", ".tsx", ".js", ".jsx", ".css", ".png", ".jpg", ".gif", ".less", "sass", "scss", "..."],
             modules: [
                 "node_modules",
                 path.resolve("./src"),

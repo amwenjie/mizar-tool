@@ -7,7 +7,7 @@ import TaskBase from "../libs/TaskBase.js";
 import Logger from "../libs/Logger.js";
 import { CleanTask } from "./CleanTask.js";
 
-const log = Logger("HelperTask");
+const log = Logger();
 const logColorMap = {
     info: green,
     debug: green,

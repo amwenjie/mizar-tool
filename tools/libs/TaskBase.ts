@@ -28,7 +28,7 @@ export class TaskBase {
     }
 
     protected async done(): Promise<void> {
-        console.log(green(`${cyan(this.taskName)}, success`));
+        console.log(green(`${cyan(this.taskName)} task completed.\n`));
     }
     
     public setWatchMode(isWatchMode: boolean): TaskBase {

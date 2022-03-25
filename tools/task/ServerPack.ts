@@ -130,7 +130,7 @@ export class ServerPack extends WebpackTaskBase {
     }
 
     protected async done(): Promise<void> {
-        console.log(green(`${cyan(this.taskName)}, success`));
+        console.log(green(`${cyan(this.taskName)} task completed.\n`));
         this.compileFinishedCallback(async (): Promise<void> => {
             if (this.autoRun === true && this.isDebugMode === true) {
                 let serverEntry = "index";

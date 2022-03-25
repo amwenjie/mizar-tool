@@ -1,4 +1,4 @@
-import { bold, cyan, green, red, yellow } from "colorette";
+import { bold, cyan, green, red, yellow, reset, white } from "colorette";
 import webpack, { type WebpackError, type Stats } from "webpack";
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
@@ -6,7 +6,7 @@ import HelperTask from "../task/HelperTask.js";
 import Logger from "./Logger.js";
 import TaskBase from "./TaskBase.js";
 
-const log = Logger("WebpackTaskBase");
+const log = Logger();
 const argv: any = yargs(hideBin(process.argv)).argv as any;
 const hooksName = "alcor-webpack-task-base";
 
@@ -60,9 +60,12 @@ export class WebpackTaskBase extends TaskBase {
         if (stats.hasErrors()) {
             // 有错误
             this.helperTask.sendMessage(this.taskName, `代码有${info.errors.length}个错误`);
-            log.error(red(`${cyan(this.taskName)} has ${info.errors.length} count errors: `));
             info.errors.forEach(error => {
-                log.error(error);
+                log.error([
+                    error.moduleName ? white("\n" + error.moduleName) : "",
+                    red("\n  " + error.message),
+                ].join(""));
+                log.info(error);
             });
             // 非watch模式直接抛异常
             if (this.isDebugMode === false) {
@@ -75,7 +78,6 @@ export class WebpackTaskBase extends TaskBase {
             // 有警告
             if (this.isDebugMode === true) {
                 this.helperTask.sendMessage(this.taskName, "代码有警告");
-                log.warn(yellow(`${cyan(this.taskName)} has ${info.warnings.length} count warnings: `));
                 info.warnings.forEach(warning => {
                     log.warn(warning);
                 });

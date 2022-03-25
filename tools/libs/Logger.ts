@@ -35,7 +35,9 @@ class Logger {
     private suffix: string = "";
     private supportMethods = ["log", "info", "warn", "error"];
     constructor(suffix) {
-        this.suffix = "[" + suffix + "]";
+        if (suffix) {
+            this.suffix = "[" + suffix + "]";
+        }
     }
 
     public debug(...args: any[]): void {
@@ -61,4 +63,4 @@ class Logger {
     }
 }
 
-export default (category = "mizar-tool") => new Logger(category);
+export default (category?: string) => new Logger(category);
