@@ -30,7 +30,7 @@ export class ProjectBuild {
                 await this.publish();
             }
         } catch (e) {
-            log.error(red("ProjectBuild"), e);
+            log.error(red("ProjectBuild error: "), e);
         }
     }
 

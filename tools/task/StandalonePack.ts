@@ -156,6 +156,10 @@ export class StandalonePack extends WebpackTaskBase {
         // };
         if (config === true) {
             // 需要standalone build，但是没有每个入口的配置，则采用output.library的配置
+            const pkgName = ConfigHelper.getPackageName();
+            if (!checkIsLegalIdentifier(pkgName)) {
+                throw new Error(`the value of 'name' field in package.json can't be a illegal js identifier when set 'standalone' field to true in ./config/configure.json `);
+            }
             returnedConfig.output.library = {
                 name: ConfigHelper.getPackageName(),
                 type: "assign",
@@ -167,7 +171,7 @@ export class StandalonePack extends WebpackTaskBase {
                 const key = entryKeys[i];
                 if (key in config) {
                     if (!checkIsLegalIdentifier(config[key]["name"])) {
-                        throw new Error(`standalone config field: 'standalone["${key}"]["name"]' is a illegal js identifier in ./config/configure.json `)
+                        throw new Error(`the value of 'standalone["${key}"]["name"]' field should be a legal js identifier in ./config/configure.json `)
                     }
                     // 说明自动获取的standalone entry文件在手动配置的config中存在，则替换entry的配置
                     // 暂时配置中不支持配置一个entry入口有多个文件，自动获取的entry[key]指定单个文件

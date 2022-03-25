@@ -4,7 +4,6 @@ import { Options } from "stylelint-webpack-plugin";
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 import Logger from "../libs/Logger.js";
-import { checkIsLegalIdentifier } from "./Utils.js";
 
 const argv:any = yargs(hideBin(process.argv)).argv  as any;
 const log = Logger("ConfigHelper");
@@ -81,11 +80,7 @@ export default class ConfigHelper {
     }
 
     public static getPackageName(): any {
-        const pkgName = ConfigHelper.get("name", null, appConfJSON);
-        if (checkIsLegalIdentifier(pkgName)) {
-            throw new Error("name field's value is not a legal js identifier in package.json.");
-        }
-        return pkgName;
+        return ConfigHelper.get("name", null, appConfJSON);
     }
 
     public static getAssetsPathPrefix(): string {

@@ -12,10 +12,10 @@ const pluginMap: sharePluginMapType = {
 };
 
 const moduleFederationConfig = ConfigHelper.get("federation", false);
-const mfName = moduleFederationConfig.name || ConfigHelper.getPackageName();
 if (moduleFederationConfig && moduleFederationConfig.remotes) {
-    if (!checkIsLegalIdentifier(moduleFederationConfig.name)) {
-        throw new Error("federation config field: 'federation[\"name\"]' is a illegal js identifier in ./config/configure.json.");
+    const mfName = moduleFederationConfig.name;
+    if (mfName && !checkIsLegalIdentifier(mfName)) {
+        throw new Error("the value of 'federation[\"name\"]' should be a legal js identifier in ./config/configure.json.");
     }
     pluginMap.remoteMfPlugin.push(
         new webpack.container.ModuleFederationPlugin({
@@ -26,8 +26,12 @@ if (moduleFederationConfig && moduleFederationConfig.remotes) {
 }
 
 if (moduleFederationConfig && moduleFederationConfig.exposes) {
-    if (!checkIsLegalIdentifier(moduleFederationConfig.name)) {
-        throw new Error("federation config field: 'federation[\"name\"]' is a illegal js identifier in ./config/configure.json.");
+    const mfName = moduleFederationConfig.name;
+    if (!mfName) {
+        throw new Error("the value of 'federation[\"name\"]' can\'t be empty when specified 'federation.exposes' field in ./config/configure.json.");
+    }
+    if (!checkIsLegalIdentifier(mfName)) {
+        throw new Error("the value of 'federation[\"name\"]' should be a legal js identifier in ./config/configure.json.");
     }
     pluginMap.exposeMfPlugin.push(
         new FederationStatsPlugin(),
