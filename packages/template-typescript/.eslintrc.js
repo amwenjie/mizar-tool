@@ -6,9 +6,6 @@ module.exports = {
         project: ["./tsconfig.json"],
     },
     rules: {
-        "@typescript-eslint/tslint/config": ["error", {
-            "lintFile": "./tslint.json",
-        }],
         "@typescript-eslint/no-unused-vars": 0,
         "@typescript-eslint/no-unsafe-argument": 0,
         "@typescript-eslint/no-unsafe-call": 0,
@@ -18,10 +15,11 @@ module.exports = {
     },
     plugins: [
         "@typescript-eslint",
-        "@typescript-eslint/tslint",
     ],
     extends: [
         "eslint:recommended",
+        "plugin:react/recommended",
+        "plugin:react/jsx-runtime",
         "plugin:@typescript-eslint/recommended",
         "plugin:@typescript-eslint/recommended-requiring-type-checking",
     ],
@@ -35,4 +33,9 @@ module.exports = {
             "browser": false,
         },
     }],
+    settings: {
+        "react": {
+            "version": "detect",
+        },
+    },
 };

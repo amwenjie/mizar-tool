@@ -24,11 +24,11 @@ export class TaskBase {
     }
 
     protected async compile(config?): Promise<void|Error> {
-        log.warn(`${cyan(this.taskName)} 未重写compile方法`);
+        return Promise.resolve(log.warn(`${cyan(this.taskName)} 未重写compile方法`));
     }
 
     protected async done(): Promise<void> {
-        console.log(green(`${cyan(this.taskName)} task completed.\n`));
+        return Promise.resolve(console.log(green(`${cyan(this.taskName)} task completed.\n`)));
     }
     
     public setWatchMode(isWatchMode: boolean): TaskBase {

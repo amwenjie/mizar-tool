@@ -11,7 +11,7 @@ const log = Logger("PublicAsset");
 export class PublicAsset extends TaskBase {
     private ext = "{js,css,txt,ico,ttf,gif,png,jpeg,jpg,swf,woff,woff2,webp,mp4,avi,flv}";
 
-    constructor(taskName: string = "PublicAsset") {
+    constructor(taskName = "PublicAsset") {
         super(taskName);
         this.dist = path.resolve(getGlobalConfig().rootOutput);
         this.src = `src/**/*.${this.ext}`;
@@ -22,28 +22,25 @@ export class PublicAsset extends TaskBase {
     }
 
     protected async compile(): Promise<void|Error> {
-        return new Promise(async (resolve, reject) => {
-            log.info("->", cyan(this.taskName), HelperTask.taking());
-            log.info(cyan(this.taskName), " src: ", this.src, " , dist: ", this.dist);
+        log.info("->", cyan(this.taskName), HelperTask.taking());
+        log.info(cyan(this.taskName), " src: ", this.src, " , dist: ", this.dist);
 
-            try {
-                await this.copy();
-                if (this.isWatchMode) {
-                    const watcher = chokidar.watch(this.src, {
-                        interval: 600,
-                    });
-                    watcher.on("change", async (path: string) => {
-                        log.info(cyan(this.taskName), " file " + path + " was has been changed, running PublicAsset task...");
-                        await this.copy();
-                    });
-                }
-                log.info(cyan(this.taskName), " done ", this.count++);
-                resolve();
-            } catch (e) {
-                log.info(cyan(this.taskName), " error ", e);
-                reject(e);
+        try {
+            await this.copy();
+            if (this.isWatchMode) {
+                const watcher = chokidar.watch(this.src, {
+                    interval: 600,
+                });
+                watcher.on("change", (path: string) => {
+                    log.info(cyan(this.taskName), " file " + path + " was has been changed, running PublicAsset task...");
+                    this.copy();
+                });
             }
-        });
+            log.info(cyan(this.taskName), " done ", this.count++);
+        } catch (e) {
+            log.info(cyan(this.taskName), " error ", e);
+            return e;
+        }
     }
 }
 

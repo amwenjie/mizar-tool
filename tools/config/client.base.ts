@@ -14,7 +14,7 @@ import { getCssModuleMode, shouldSourceModuled, } from "../libs/Utils.js";
 import base from "./base.js";
 
 function getCssLoaders(isDebugMode: boolean, extraLoaders = []): webpackRulesType {
-    const loaders = [];
+    const loaders: webpackRulesType = [];
     loaders.push({
         loader: MiniCssExtractPlugin.loader,
     });
@@ -105,7 +105,7 @@ function getRules(isDebugMode: boolean): webpackRulesType {
 }
 
 function getPlugins(isDebugMode: boolean): webpackPluginsType {
-    const plugins = [];
+    const plugins: webpackPluginsType = [];
     const defineOption = {
         IS_SERVER_RUNTIME: JSON.stringify(false),
         IS_DEBUG_MODE: JSON.stringify(!!isDebugMode),

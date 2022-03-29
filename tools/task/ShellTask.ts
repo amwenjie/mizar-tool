@@ -7,7 +7,7 @@ import { HelperTask } from "./HelperTask.js";
 
 const log = Logger("ShellTask");
 export class ShellTask extends TaskBase {
-    constructor(src: string = ".", taskName = "ShellTask") {
+    constructor(src = ".", taskName = "ShellTask") {
         super(taskName);
         this.src = src;
     }
@@ -47,6 +47,7 @@ export class ShellTask extends TaskBase {
                 });
             log.info(cyan(this.taskName), "start watching ", this.src);
         }
+        return Promise.resolve();
     }
 }
 

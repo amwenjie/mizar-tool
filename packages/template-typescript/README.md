@@ -25,7 +25,6 @@
     -.eslintrc.js
     -.stylelintrc.json
     -package.json
-    -tslint.json
     -tsconfig.json
 
 * 框架的应用参考https://github.com/amwenjie/mizar#readme

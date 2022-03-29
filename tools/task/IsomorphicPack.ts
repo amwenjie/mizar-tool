@@ -59,7 +59,7 @@ export class IsomorphicPack extends WebpackTaskBase {
                 // chunks: "all",
                 cacheGroups: {
                     libBase: {
-                        test: /[\\/](?:core\-js|raf|react(?:\-[^\\/]+)?|redux(?:\-[^\\/]+)?)[\\/]/,
+                        test: /[\\/](?:core-js|raf|react(?:-[^\\/]+)?|redux(?:-[^\\/]+)?)[\\/]/,
                         name: "lib",
                         priority: 30,
                         chunks: "all",

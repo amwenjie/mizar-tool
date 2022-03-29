@@ -25,8 +25,8 @@ const log = Logger("ServerPack");
 
 export class ServerPack extends WebpackTaskBase {
     private globalConfig: IGlobalConfig;
-    private autoRun: boolean = false;
-    private debugPort: number = 0;
+    private autoRun = false;
+    private debugPort = 0;
 
     constructor(taskName = "ServerPack") {
         super(taskName);
@@ -80,7 +80,7 @@ export class ServerPack extends WebpackTaskBase {
     }
 
     private getRules(isDebugMode: boolean): webpackRulesType  {
-        let rules: webpackRulesType = [];
+        const rules: webpackRulesType = [];
         rules.push({
             exclude: /\.d\.ts$/i,
             test: /[\\/]src[\\/]isomorphic[\\/].+[\\/][A-Z][^\\/]+[\\/]index\.tsx?$/,
@@ -138,13 +138,13 @@ export class ServerPack extends WebpackTaskBase {
         console.log(green(`${cyan(this.taskName)} task completed.\n`));
         this.compileFinishedCallback(async (): Promise<void> => {
             if (this.autoRun === true && this.isDebugMode === true) {
-                let serverEntry = "index";
+                const serverEntry = "index";
                 await RunServer(serverEntry, this.debugPort);
             }
         });
     }
 
-    public setAutoRun(autoRun: boolean = true): ServerPack {
+    public setAutoRun(autoRun = true): ServerPack {
         this.autoRun = autoRun;
         this.debugPort = ConfigHelper.get("debugPort", 0);
         log.info("debugPort", this.debugPort);

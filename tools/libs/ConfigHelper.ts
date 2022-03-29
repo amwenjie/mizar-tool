@@ -40,7 +40,7 @@ export default class ConfigHelper {
             let store = fs.readJSONSync(configPath);
             const info = node.split(".");
             log.info("ConfigHelper.get.info", info);
-            for (let item of info) {
+            for (const item of info) {
                 log.info("item", item);
                 log.info("store !== null", store !== null);
                 log.info("store[item]", store[item]);
@@ -82,7 +82,7 @@ export default class ConfigHelper {
     }
 
     public static getAssetsPathPrefix(): string {
-        let prefix = ConfigHelper.get("assetsPathPrefix", "", appConfJSON);
+        let prefix = ConfigHelper.get("assetsPathPrefix", "", appConfJSON) as string;
         if (prefix && !prefix.endsWith("/")) {
             prefix += "/";
         }
@@ -90,7 +90,7 @@ export default class ConfigHelper {
     }
 
     public static getCDN(): string {
-        return ConfigHelper.get("cdn", "", appConfJSON);
+        return ConfigHelper.get("cdn", "", appConfJSON) as string;
     }
 
     public static getPublicPath(): string {

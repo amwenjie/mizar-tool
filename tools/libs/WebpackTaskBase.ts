@@ -14,7 +14,7 @@ export class WebpackTaskBase extends TaskBase {
     private helperTask: HelperTask;
     private static compileQueue = [];
     private static compileDoneCallback = [];
-    protected index: number = 0;
+    protected index = 0;
 
     constructor(taskName = "WebpackTaskBase") {
         super(taskName);
@@ -104,8 +104,8 @@ export class WebpackTaskBase extends TaskBase {
     }
 
     protected async compile(config: webpack.Configuration): Promise<void|Error> {
-        return new Promise(async (resolve, reject) => {
-            const callback = async (error: WebpackError|null|undefined, stats: Stats): Promise<void> => {
+        return new Promise((resolve, reject) => {
+            const compileCallback = async (error: WebpackError|null|undefined, stats: Stats): Promise<void> => {
                 if (error) {
                     this.helperTask.sendMessage(this.taskName, "webpack执行出错");
                     log.error(cyan(this.taskName), ` > ${red(bold("webpack error:"))}`);
@@ -155,7 +155,7 @@ export class WebpackTaskBase extends TaskBase {
                 this.watcher = compiler.watch({
                     ignored: /[\\/]node_modules[\\/]|[\\/]dist[\\/]|\.d\.ts$|\.js\.map$|\.css\.map$/i,
                     aggregateTimeout: 600,
-                }, callback);
+                }, compileCallback);
             } else {
                 compiler.run(async (error?: WebpackError, stats?: Stats): Promise<void> => {
                     compiler.close(error => {
@@ -165,7 +165,7 @@ export class WebpackTaskBase extends TaskBase {
                         }
                         log.info(cyan(this.taskName), " compile closed.");
                     });
-                    callback(error, stats);
+                    compileCallback(error, stats);
                 });
             }
         });

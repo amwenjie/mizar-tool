@@ -26,9 +26,7 @@ export class ModuleFederatePack extends WebpackTaskBase {
         log.info("->", "ModuleFederatePack", HelperTask.taking());
         const config: Configuration = await this.getCompileConfig();
         log.info("pack", { config: JSON.stringify(config) });
-        try {
-            await super.compile(config);
-        } catch (e) {}
+        await super.compile(config);
     }
 
     private getPlugins(): webpackPluginsType {

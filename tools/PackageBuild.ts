@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { green, red } from "colorette";
-import yargs  from "yargs";
+import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 import ConfigHelper from "./libs/ConfigHelper.js";
 import Logger from "./libs/Logger.js";

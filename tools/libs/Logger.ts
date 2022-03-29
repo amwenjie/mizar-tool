@@ -32,7 +32,7 @@ const argv = yargs(hideBin(process.argv)).argv as any;
 // export default (category = "default") => log4js.getLogger(category);
 
 class Logger {
-    private suffix: string = "";
+    private suffix = "";
     private supportMethods = ["log", "info", "warn", "error"];
     constructor(suffix) {
         if (suffix) {

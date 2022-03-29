@@ -566,7 +566,7 @@ function getProxy() {
     } else {
         try {
             // Trying to read https-proxy from .npmrc
-            let httpsProxy = execSync('npm config get https-proxy').toString().trim();
+            const httpsProxy = execSync('npm config get https-proxy').toString().trim();
             return httpsProxy !== 'null' ? httpsProxy : undefined;
         } catch (e) {
             return;

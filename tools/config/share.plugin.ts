@@ -28,7 +28,7 @@ if (moduleFederationConfig && moduleFederationConfig.remotes) {
 if (moduleFederationConfig && moduleFederationConfig.exposes) {
     const mfName = moduleFederationConfig.name;
     if (!mfName) {
-        throw new Error("the value of 'federation[\"name\"]' can\'t be empty when specified 'federation.exposes' field in ./config/configure.json.");
+        throw new Error("the value of 'federation[\"name\"]' can't be empty when specified 'federation.exposes' field in ./config/configure.json.");
     }
     if (!checkIsLegalIdentifier(mfName)) {
         throw new Error("the value of 'federation[\"name\"]' should be a legal js identifier in ./config/configure.json.");

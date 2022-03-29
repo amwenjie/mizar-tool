@@ -8,7 +8,7 @@ import { HelperTask } from "./HelperTask.js";
 
 const log = Logger("CopyTask");
 export class CopyTask extends TaskBase {
-    constructor(src: string, dist: string = "", taskName: string = "CopyTask") {
+    constructor(src: string, dist = "", taskName = "CopyTask") {
         super(taskName);
         this.src = path.resolve(this.rootPath, src);
         this.dist = path.resolve(getGlobalConfig().rootOutput, dist);

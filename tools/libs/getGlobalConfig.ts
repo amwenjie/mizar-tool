@@ -20,6 +20,6 @@ export default (): IGlobalConfig  => {
     };
 };
 
-export const devLocalIdentName: string = "[path][name]__[local]_[contenthash:8]";
-export const prodLocalIdentName: string = "_[contenthash:8]";
-export const assetModuleFilename: string = "assets/[name]_[contenthash][ext][query]";
+export const devLocalIdentName = "[path][name]__[local]_[contenthash:8]";
+export const prodLocalIdentName = "_[contenthash:8]";
+export const assetModuleFilename = "assets/[name]_[contenthash][ext][query]";

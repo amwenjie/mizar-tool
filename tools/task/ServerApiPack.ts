@@ -54,10 +54,7 @@ export class ServerApiPack extends WebpackTaskBase {
     protected async compile(): Promise<void|Error> {
         log.info("->", cyan(this.taskName), HelperTask.taking());
         
-        let entry: EntryObject;
-        try {
-            entry = await this.scan();
-        } catch (e) {}
+        const entry: EntryObject = await this.scan();
         if (!entry || Object.keys(entry).length === 0) {
             log.warn(cyan(this.taskName), " scan emtpy entry");
             return;

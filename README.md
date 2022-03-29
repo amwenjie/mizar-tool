@@ -35,7 +35,6 @@ npm install -g alcor
     -.stylelintrc.json
     -package.json
     -tsconfig.json
-    -tslint.json
 
 ### 1. 利用cli创建一个应用，包含文件、目录、配置
    * alcor create your-project-directory-path，在your-project-directory-path目录中创建一个应用，包含必要的文件、配置

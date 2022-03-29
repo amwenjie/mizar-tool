@@ -19,8 +19,8 @@ class Build {
 
         // 开始编译工作
         try {
-            await new ShellTask("./tools").run("tslint", "-p");
-            await new ShellTask("./bin").run("tslint", "-p");
+            await new ShellTask("./tools").run("eslint");
+            await new ShellTask("./bin").run("eslint");
             await new PackageInfo().run();
             await new ShellTask("./tools").run("tsc", "-p");
             await new ShellTask("./bin").run("tsc", "-p");

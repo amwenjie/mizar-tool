@@ -45,7 +45,7 @@ export default class FederationStatsPlugin {
                     const chunksReducer = (chunksArr, current) => {
                         current.siblings.forEach(s => {
                             const chunk = stats.chunks.find((c) => c.id === s);
-                            chunk.files.forEach((f) => chunksArr.push(f));
+                            chunk.files.forEach(f => chunksArr.push(f));
                         })
                         current.files.forEach(f => chunksArr.push(f));
                         return chunksArr;

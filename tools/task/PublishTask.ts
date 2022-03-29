@@ -16,6 +16,7 @@ export class PublishTask extends TaskBase {
             cwd: this.dist,
         });
         log.warn("PublishTask.output", output.toString());
+        return Promise.resolve();
     }
 }
 export default PublishTask;

@@ -6,7 +6,7 @@ import ConfigHelper from "../libs/ConfigHelper.js";
 import base from "./base.js";
 
 function getPlugins(isDebugMode: boolean): webpackPluginsType {
-    const plugins = [];
+    const plugins: webpackPluginsType = [];
     const defineOption = {
         IS_SERVER_RUNTIME: JSON.stringify(true),
         IS_DEBUG_MODE: JSON.stringify(!!isDebugMode),

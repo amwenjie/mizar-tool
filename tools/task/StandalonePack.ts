@@ -49,9 +49,9 @@ export class StandalonePack extends WebpackTaskBase {
         await super.compile(config);
     }
 
-    private entryScan() {
+    private scan(): Promise<EntryObject> {
         return new Promise((resolve, reject) => {
-            const entries: any = {};
+            const entries: EntryObject = {};
             if (!fs.existsSync(this.src)) {
                 log.warn(yellow(`standalone pack build 入口目录不存在：, ${this.src}`));
                 resolve({});
@@ -78,27 +78,6 @@ export class StandalonePack extends WebpackTaskBase {
             walk.on("error", (error) => {
                 reject(error);
             });
-        });
-    }
-
-    /**
-     * 入口文件搜寻
-     */
-    private async scan(): Promise<EntryObject> {
-        return new Promise(async resolve => {
-            Promise
-                .all([this.entryScan()])
-                .then((entries: [object]) => {
-                    const combinedEntries = {
-                        ...entries[0]
-                    };
-                    log.info("StandalonePack.pack.keys", Object.keys(combinedEntries).join(","));
-                    resolve(combinedEntries);
-                })
-                .catch(e => {
-                    log.error(red("scan entry cause an error: "), e);
-                    resolve({});
-                });
         });
     }
 

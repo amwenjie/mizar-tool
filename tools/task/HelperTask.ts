@@ -25,7 +25,7 @@ export class HelperTask extends TaskBase {
         return `${taking / 1000} s`;
     }
 
-    constructor(taskName: string = "HelperTask") {
+    constructor(taskName = "HelperTask") {
         super(taskName);
         this.showVersion();
         process.once("SIGINT", () => {
@@ -49,7 +49,7 @@ export class HelperTask extends TaskBase {
     public async sendMessage(titleStr: string, messageStr: string): Promise<void> {
         const argv = yargs(hideBin(process.argv)).argv  as any;
         if (argv["no-notify"]) {
-            return;
+            return Promise.resolve();
         }
         let logMethod = "info";
         if (/错误|error/.test(messageStr)) {
@@ -64,6 +64,7 @@ export class HelperTask extends TaskBase {
             wait: false,
         };
         Notifier.notify(msg);
+        Promise.resolve();
     }
 
     public start(): void {
