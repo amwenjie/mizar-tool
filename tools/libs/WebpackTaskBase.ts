@@ -78,7 +78,13 @@ export class WebpackTaskBase extends TaskBase {
             // 有警告
             if (this.isDebugMode === true) {
                 this.helperTask.sendMessage(this.taskName, "代码有警告");
-                info.warnings.forEach(warning => {
+                info.warnings.filter(warning => {
+                    return !(warning.moduleName
+                        && /mizar\/server\/utils\/getApis\.js/.test(warning.moduleName)
+                        && warning.message.indexOf('Critical dependency: the request of a dependency is an expression') > -1
+                    );
+                })
+                .forEach(warning => {
                     log.warn([
                         warning.moduleName ? white("\n" + warning.moduleName) : "",
                         yellow("\n  " + warning.message),
