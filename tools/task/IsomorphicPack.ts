@@ -113,8 +113,9 @@ export class IsomorphicPack extends WebpackTaskBase {
         //     plugins.push(new webpack.HotModuleReplacementPlugin());
         // }
         plugins.push(...sharePlugin.remoteMfPlugin);
+        const relativePath = path.relative(this.globalConfig.clientOutput, this.globalConfig.rootOutput);
         plugins.push(new LoadablePlugin({
-            filename: "./loadable-stats.json",
+            filename: `${relativePath}/loadable-stats.json`,
             writeToDisk: true,
         }));
         if (this.isAnalyzMode) {

@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { green, red } from "colorette";
+import { type ModuleFederationPluginOptions } from "webpack/lib/container/ModuleFederationPlugin.js";
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 import ConfigHelper from "./libs/ConfigHelper.js";
@@ -106,7 +107,7 @@ export class ProjectBuild {
                     .setWatchMode(this.isWatchMode);
                 await standalonePack.run();
             }
-            const shouldModuleFederateBuild = ConfigHelper.get("federation", false);
+            const shouldModuleFederateBuild = ConfigHelper.get("federation", false) as ModuleFederationPluginOptions;
             if (shouldModuleFederateBuild && shouldModuleFederateBuild.exposes) {
                 const moduleFederatePack = new ModuleFederatePack();
                 moduleFederatePack

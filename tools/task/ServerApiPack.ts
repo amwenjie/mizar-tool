@@ -1,4 +1,4 @@
-import { cyan, green, red } from "colorette";
+import { cyan, red } from "colorette";
 import fs from "fs-extra";
 import klaw from "klaw";
 import path from "path";

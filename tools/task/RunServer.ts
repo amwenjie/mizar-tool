@@ -18,7 +18,7 @@ const RUNNING_REGEXP = /server start successful, listening at port: (\d+)/;
 let server;
 
 // Launch or restart the Node.js server
-export default async function RunServer(serverPath, debug, cb: any = false): Promise<void> {
+export default async function RunServer(serverPath: string, debug: number, cb: ((debugPort: number) => void) | false = false): Promise<void> {
     return new Promise(resolve => {
         let cbIsPending = !!cb;
 
@@ -35,9 +35,9 @@ export default async function RunServer(serverPath, debug, cb: any = false): Pro
                 console.log(bold(green("server start successful, listen at port: " + match[1])));
                 console.log();
                 server.stdout.on("data", data => process.stdout.write(data));
-                if (cb) {
+                if (typeof cb === "function") {
                     cbIsPending = false;
-                    cb(null, match[1]);
+                    cb(parseInt(match[1], 10));
                 }
                 resolve();
             } else {

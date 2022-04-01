@@ -1,4 +1,4 @@
-import { cyan, green, red, yellow } from "colorette";
+import { cyan, yellow } from "colorette";
 import CssMinimizerPlugin from "css-minimizer-webpack-plugin";
 import fs from "fs-extra";
 import klaw from "klaw";
@@ -21,7 +21,27 @@ import { checkIsLegalIdentifier } from "../libs/Utils.js";
 import { WebpackTaskBase } from "../libs/WebpackTaskBase.js";
 import { HelperTask } from "./HelperTask.js";
 
+export interface IPartialConf {
+    entry: EntryObject;
+    output: {
+        filename: string;
+        path: string;
+        assetModuleFilename: string;
+        library?: unknown;
+    };
+}
+
 const log = Logger("StandalonePack");
+
+const esDepends = [
+    "core-js/features/object",
+    "core-js/features/array",
+    "core-js/features/map",
+    "core-js/features/set",
+    "core-js/features/promise",
+    "raf/polyfill",
+];
+
 export class StandalonePack extends WebpackTaskBase {
     private globalConfig: IGlobalConfig;
 
@@ -51,7 +71,12 @@ export class StandalonePack extends WebpackTaskBase {
 
     private scan(): Promise<EntryObject> {
         return new Promise((resolve, reject) => {
-            const entries: EntryObject = {};
+            const dependOn = esDepends.concat(["react", "react-dom"]);
+            const entries: EntryObject = {
+                "polyfill-react": {
+                    import: dependOn,
+                },
+            };
             if (!fs.existsSync(this.src)) {
                 log.warn(yellow(`standalone pack build 入口目录不存在：, ${this.src}`));
                 resolve({});
@@ -67,7 +92,10 @@ export class StandalonePack extends WebpackTaskBase {
                         .replace(".ts", "")
                         .replace(".js", "")
                         .replace(/\\/g, "/");
-                    entries[entryKey.slice(1)] = src;
+                    entries[entryKey.slice(1)] = {
+                        import: src,
+                        dependOn: "polyfill-react",
+                    };
                 }
             });
             walk.on("end", () => {
@@ -114,9 +142,9 @@ export class StandalonePack extends WebpackTaskBase {
         return plugins;
     }
 
-    private getEntryAndOutputConfig(entry): any {
+    private getEntryAndOutputConfig(entry): IPartialConf {
         const config = ConfigHelper.get("standalone", false);
-        const returnedConfig: any = {
+        const returnedConfig: IPartialConf = {
             entry: {
                 ...entry,
             },
@@ -154,12 +182,7 @@ export class StandalonePack extends WebpackTaskBase {
                     }
                     // 说明自动获取的standalone entry文件在手动配置的config中存在，则替换entry的配置
                     // 暂时配置中不支持配置一个entry入口有多个文件，自动获取的entry[key]指定单个文件
-                    returnedConfig.entry[key] = {
-                        import: entry[key],
-                        library: config[key],
-                    };
-                } else {
-                    returnedConfig.entry[key] = entry[key];
+                    (returnedConfig.entry[key] as any).library = config[key];
                 }
             }
         }

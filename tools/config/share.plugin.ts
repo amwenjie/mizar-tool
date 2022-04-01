@@ -1,4 +1,5 @@
 import webpack from "webpack";
+import { type ModuleFederationPluginOptions } from "webpack/lib/container/ModuleFederationPlugin.js";
 import FederationModuleIdPlugin from "webpack-federation-module-id-plugin";
 import { sharePluginMapType } from "../interface.js";
 import ConfigHelper from "../libs/ConfigHelper.js";
@@ -11,11 +12,14 @@ const pluginMap: sharePluginMapType = {
     styleLintPlugin: [],
 };
 
-const moduleFederationConfig = ConfigHelper.get("federation", false);
+const identifierIllegalErrMsg = "the value of 'federation[\"name\"]' should be a legal js identifier in ./config/configure.json.";
+const mfNameEmptypErrMsg = "the value of 'federation[\"name\"]' can't be empty when specified 'federation.exposes' field in ./config/configure.json.";
+
+const moduleFederationConfig: ModuleFederationPluginOptions = ConfigHelper.get("federation", false);
 if (moduleFederationConfig && moduleFederationConfig.remotes) {
     const mfName = moduleFederationConfig.name;
     if (mfName && !checkIsLegalIdentifier(mfName)) {
-        throw new Error("the value of 'federation[\"name\"]' should be a legal js identifier in ./config/configure.json.");
+        throw new Error(identifierIllegalErrMsg);
     }
     pluginMap.remoteMfPlugin.push(
         new webpack.container.ModuleFederationPlugin({
@@ -28,10 +32,10 @@ if (moduleFederationConfig && moduleFederationConfig.remotes) {
 if (moduleFederationConfig && moduleFederationConfig.exposes) {
     const mfName = moduleFederationConfig.name;
     if (!mfName) {
-        throw new Error("the value of 'federation[\"name\"]' can't be empty when specified 'federation.exposes' field in ./config/configure.json.");
+        throw new Error(mfNameEmptypErrMsg);
     }
     if (!checkIsLegalIdentifier(mfName)) {
-        throw new Error("the value of 'federation[\"name\"]' should be a legal js identifier in ./config/configure.json.");
+        throw new Error(identifierIllegalErrMsg);
     }
     pluginMap.exposeMfPlugin.push(
         new FederationStatsPlugin(),

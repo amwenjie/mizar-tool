@@ -1,4 +1,4 @@
-import { bold, cyan, green, red, yellow } from "colorette";
+import { red } from "colorette";
 import fs from "fs-extra";
 import Logger from "../libs/Logger.js";
 import TaskBase from "../libs/TaskBase.js";

@@ -7,7 +7,7 @@ import Logger from "./Logger.js";
 import TaskBase from "./TaskBase.js";
 
 const log = Logger();
-const argv: any = yargs(hideBin(process.argv)).argv as any;
+const argv = yargs(hideBin(process.argv)).argv as any;
 const hooksName = "alcor-webpack-task-base";
 
 export class WebpackTaskBase extends TaskBase {

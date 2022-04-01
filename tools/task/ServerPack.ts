@@ -146,7 +146,7 @@ export class ServerPack extends WebpackTaskBase {
 
     public setAutoRun(autoRun = true): ServerPack {
         this.autoRun = autoRun;
-        this.debugPort = ConfigHelper.get("debugPort", 0);
+        this.debugPort = ConfigHelper.get("debugPort", 0) as number;
         log.info("debugPort", this.debugPort);
         return this;
     }

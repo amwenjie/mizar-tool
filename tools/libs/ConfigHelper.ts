@@ -1,7 +1,7 @@
-import { Options as eslintOptions } from "eslint-webpack-plugin";
+import { type Options as eslintOptions } from "eslint-webpack-plugin";
 import fs from "fs-extra";
 import Path from "path";
-import { Options as stylelintOptions } from "stylelint-webpack-plugin";
+import { type Options as stylelintOptions } from "stylelint-webpack-plugin";
 import Logger from "../libs/Logger.js";
 
 const log = Logger("ConfigHelper");
@@ -13,7 +13,7 @@ export interface IAppConf {
     port: number;
     assetsPathPrefix?: string;
     cdn?: string;
-    [conf: string]: any;
+    [conf: string]: unknown;
 }
 
 export interface IConfigure {
@@ -21,13 +21,15 @@ export interface IConfigure {
     logger?: string;
     eslint?: false | eslintOptions;
     stylelint?: false | stylelintOptions;
-    [conf: string]: any;
+    [conf: string]: unknown;
 }
 
 export default class ConfigHelper {
-    public static store: any = {};
+    public static store: {
+        [key: string]: boolean | string | number | RegExp | object | null | undefined;
+    } = {};
 
-    private static privateGet(node: string, defaultValue = null, configPath = configureJSON): any {
+    private static privateGet(node: string, defaultValue = null, configPath = configureJSON): unknown {
         let result = defaultValue;
         const key = `${configPath}->${node}`;
         log.info("ConfigHelper privateGet key: ", key);
@@ -73,12 +75,12 @@ export default class ConfigHelper {
         ConfigHelper.store[`${configPath}-${node}`] = value;
     }
 
-    public static get(node: string, defaultValue = null, configPath = configureJSON): any {
+    public static get(node: string, defaultValue = null, configPath = configureJSON): unknown {
         return ConfigHelper.privateGet(node, defaultValue, configPath);
     }
 
-    public static getPackageName(): any {
-        return ConfigHelper.get("name", null, appConfJSON);
+    public static getPackageName(): string | null {
+        return ConfigHelper.get("name", null, appConfJSON) as (string | null);
     }
 
     public static getAssetsPathPrefix(): string {

@@ -69,8 +69,7 @@ npm install -g alcor
    "proxy": [{}], #  配置debug模式的接口代理转发规则
    "standalone": {
       "externals": {
-         "react": "React",
-         "react-dom": "ReactDOM"
+         "jquery": "jQuery"
       }
    } #  配置独立打包信息，参见下面第6点
 ```
@@ -121,8 +120,6 @@ npm install -g alcor
             "type": "assign"
          },
          "externals": {
-            "react": "React",
-            "react-dom": "ReactDOM",
             "jquery": "jQuery"
          }
       }
@@ -133,7 +130,7 @@ npm install -g alcor
    4. component/login配置了type:this，login的导出会挂载到运行时环境的this上，形式为this['login'],如果在浏览器端this就是window即window['login']，
    5. logic/ui/component/render配置了type:assign，render的导出会挂载到一个叫做adRender的变量上，
    6. 而logic/ui/component/loading没有standalone的配置，因此loading的导出的内容在最后的产出文件中不会有导出语句导出，此形式可用来编译web项目(即ProjectBuild）的standalone，因为web项目只需要被引用后执行内容，可以不具有导出。
-   7. 同时因为存在externals，会影响所有standalone的入口文件，编译过程中引用的react、jquery都会被排除，不会打进最终文件中，react、jquery需要在html中直接引入，否则standalone的产出文件在运行时会报错。
+   7. 同时因为存在externals，会影响所有standalone的入口文件，编译过程中引用的jquery都会被排除，不会打进最终文件中，jquery需要在html中直接引入，否则standalone的产出文件在运行时会报错。
 
 
 ### 7. 支持css module

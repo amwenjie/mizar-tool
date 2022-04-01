@@ -40,25 +40,25 @@ class Logger {
         }
     }
 
-    public debug(...args: any[]): void {
+    public debug(...args: unknown[]): void {
         if (argv.debug) {
             console.debug(this.suffix, ...args);
         }
     }
-    public log(...args: any[]): void {
+    public log(...args: unknown[]): void {
         if (argv.verbose || argv.debug) {
             console.log(this.suffix, ...args);
         }
     }
-    public info(...args: any[]): void {
+    public info(...args: unknown[]): void {
         if (argv.verbose) {
             this.log(...args);
         }
     }
-    public warn(...args: any[]): void {
+    public warn(...args: unknown[]): void {
         console.warn(this.suffix, ...args);
     }
-    public error(...args: any[]): void {
+    public error(...args: unknown[]): void {
         console.error(this.suffix, ...args);
     }
 }
