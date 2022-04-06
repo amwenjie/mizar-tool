@@ -5,7 +5,7 @@ import { type Configuration } from "webpack";
 import {
     type webpackPluginsType,
     type webpackRulesType,
- } from "../interface.js";
+} from "../interface.js";
 import ConfigHelper from "../libs/ConfigHelper.js";
 
 function getEnvDef(isDebugMode: boolean): "development" | "production" {

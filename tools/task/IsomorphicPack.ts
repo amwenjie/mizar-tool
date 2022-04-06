@@ -1,7 +1,6 @@
 import LoadablePlugin from "@loadable/webpack-plugin";
 import CopyWebpackPlugin from "copy-webpack-plugin";
 import CssMinimizerPlugin from "css-minimizer-webpack-plugin";
-import fs from "fs-extra";
 import MiniCssExtractPlugin from "mini-css-extract-plugin";
 import path from "path";
 import TerserJSPlugin from "terser-webpack-plugin";
@@ -130,22 +129,7 @@ export class IsomorphicPack extends WebpackTaskBase {
 
     protected async compile(): Promise<void|Error> {
         log.info("->", "IsomorphicPack", HelperTask.taking());
-        const config: Configuration = await this.getCompileConfig();
-        log.info("pack", { config: JSON.stringify(config), });
-        await super.compile(config);
-    }
-
-    protected async getCompileConfig(): Promise<Configuration>  {
-        const baseConf = clientBase(this.isDebugMode);
-        if (this.isDebugMode) {
-            baseConf.module.rules.splice(1, 0, {
-                test: /\.(?:css|less|s[ac]ss)$/i,
-                exclude: /[\\/]node_modules[\\/]/i,
-                loader: "alcor-loaders/typing-for-css-module",
-            });
-        }
-
-        const innerConf = merge(baseConf, {
+        const config: Configuration = this.getCompileConfig({
             entry: { "index": esDepends.concat(this.src), },
             output: {
                 chunkFilename: "[name]_[contenthash:8].js",
@@ -158,14 +142,21 @@ export class IsomorphicPack extends WebpackTaskBase {
             plugins: this.getPlugins(),
             optimization: this.getOptimization() as any,
         });
-        
-        const cuzConfigPath = path.resolve("./webpack.config/client.js");
-        if (fs.existsSync(cuzConfigPath)) {
-            const cuzConf: (conf: Configuration) => Configuration = (await import(cuzConfigPath)).default;
-            if (typeof cuzConf === "function") {
-                return merge(innerConf, cuzConf(innerConf));
-            }
+        log.info("pack", { config: JSON.stringify(config) });
+        await super.compile(config);
+    }
+
+    protected getCompileConfig(conf: Configuration): Configuration  {
+        const baseConf = clientBase(this.isDebugMode);
+        if (this.isDebugMode) {
+            baseConf.module.rules.splice(1, 0, {
+                test: /\.(?:css|less|s[ac]ss)$/i,
+                exclude: /[\\/]node_modules[\\/]/i,
+                loader: "alcor-loaders/typing-for-css-module",
+            });
         }
+
+        const innerConf = merge(baseConf, conf);
         return innerConf;
     }
 }

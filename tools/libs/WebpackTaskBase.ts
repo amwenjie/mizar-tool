@@ -1,7 +1,16 @@
 import { bold, cyan, red, white, yellow } from "colorette";
-import webpack, { type Stats, type WebpackError } from "webpack";
+import fs from "fs-extra";
+import path from "path";
+import webpack, {
+    type Configuration,
+    type Stats,
+    type WebpackError,
+} from "webpack";
+import { merge } from "webpack-merge";
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
+import clientBase from "../config/client.base.js";
+import serverBase from "../config/server.base.js";
 import HelperTask from "../task/HelperTask.js";
 import Logger from "./Logger.js";
 import TaskBase from "./TaskBase.js";
@@ -9,6 +18,14 @@ import TaskBase from "./TaskBase.js";
 const log = Logger();
 const argv = yargs(hideBin(process.argv)).argv as any;
 const hooksName = "alcor-webpack-task-base";
+
+const taskCuzConfFileNameMap = {
+    "IsomorphicPack": "client",
+    "ModuleFederatePack": "mf",
+    "StandalonePack": "standalone",
+    "ServerApiPack": "api",
+    "ServerPack": "server",
+}
 
 export class WebpackTaskBase extends TaskBase {
     private helperTask: HelperTask;
@@ -77,20 +94,21 @@ export class WebpackTaskBase extends TaskBase {
         if (stats.hasWarnings()) {
             // 有警告
             if (this.isDebugMode === true) {
-                this.helperTask.sendMessage(this.taskName, "代码有警告");
-                info.warnings.filter(warning => {
-                    return !(warning.moduleName
+                const showWarnList = info.warnings.filter(warning => {
+                    return !(
+                        warning.moduleName
                         && /mizar\/server\/utils\/getApis\.js/.test(warning.moduleName)
                         && warning.message.indexOf('Critical dependency: the request of a dependency is an expression') > -1
                     );
-                })
-                .forEach(warning => {
+                });
+                showWarnList.forEach(warning => {
                     log.warn([
                         warning.moduleName ? white("\n" + warning.moduleName) : "",
                         yellow("\n  " + warning.message),
                     ].join(""));
                     log.info(warning);
                 });
+                (info.warnings.length - showWarnList.length) > 0 && this.helperTask.sendMessage(this.taskName, "代码有警告");
             }
         }
 
@@ -108,8 +126,25 @@ export class WebpackTaskBase extends TaskBase {
     protected compileFinishedCallback(fn) {
         WebpackTaskBase.compileDoneCallback.push(fn);
     }
+    
+    protected getCompileConfig(config: Configuration): Configuration  {
+        const innerConf = merge((/server/i.test(this.taskName) ? serverBase : clientBase)(this.isDebugMode), config);
+        return innerConf;
+    }
 
-    protected async compile(config: webpack.Configuration): Promise<void|Error> {
+    protected async compile(innerConf: webpack.Configuration): Promise<void|Error> {
+        let finalConf = this.getCompileConfig(innerConf);
+
+        const cuzConfigPath = path.resolve(`./webpack.config/${taskCuzConfFileNameMap[this.taskName]}.js`);
+        if (fs.existsSync(cuzConfigPath)) {
+            const cuzConf: (conf: Configuration) => Configuration = (await import(cuzConfigPath)).default;
+            if (typeof cuzConf === "function") {
+                finalConf = merge(innerConf, cuzConf(innerConf));
+            }
+        }
+
+        log.info("compile", { config: JSON.stringify(finalConf) });
+
         return new Promise((resolve, reject) => {
             const compileCallback = async (error: WebpackError|null|undefined, stats: Stats): Promise<void> => {
                 if (error) {
@@ -130,7 +165,7 @@ export class WebpackTaskBase extends TaskBase {
                 }
                 resolve();
             };
-            const compiler = webpack(config);
+            const compiler = webpack(finalConf);
             // this.compileContext.compiler = compiler;
             compiler.hooks.invalid.tap(hooksName, (fileName, changeTime) => {
                 this.compileInvalid(fileName, changeTime);

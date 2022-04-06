@@ -1,9 +1,6 @@
 import { cyan, green } from "colorette";
-import fs from "fs-extra";
 import path from "path";
 import { type Configuration } from "webpack";
-import { merge } from "webpack-merge";
-import serverBase from "../config/server.base.js";
 import sharePlugin from "../config/share.plugin.js";
 import {
     type webpackPluginsType,
@@ -153,13 +150,7 @@ export class ServerPack extends WebpackTaskBase {
 
     protected async compile(): Promise<void|Error> {
         log.info("->", cyan(this.taskName), HelperTask.taking());
-        const config: Configuration = await this.getCompileConfig();
-        log.info("ServerPack.pack", { config: JSON.stringify(config) });
-        await super.compile(config);
-    }
-
-    protected async getCompileConfig(): Promise<Configuration>  {
-        const innerConf = merge(serverBase(this.isDebugMode), {
+        const config: Configuration = {
             entry: { "index": this.src, },
             module: {
                 parser: {
@@ -174,15 +165,9 @@ export class ServerPack extends WebpackTaskBase {
                 path: this.dist,
             },
             plugins: this.getPlugins(),
-        });
-        const cuzConfigPath = path.resolve("./webpack.config/server.js");
-        if (fs.existsSync(cuzConfigPath)) {
-            const cuzConf: (conf: Configuration) => Configuration = (await import(cuzConfigPath)).default;
-            if (typeof cuzConf === "function") {
-                return merge(innerConf, cuzConf(innerConf));
-            }
-        }
-        return innerConf;
+        };
+        log.info("ServerPack.pack", { config: JSON.stringify(config) });
+        await super.compile(config);
     }
 }
 

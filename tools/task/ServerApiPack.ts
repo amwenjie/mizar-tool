@@ -3,8 +3,6 @@ import fs from "fs-extra";
 import klaw from "klaw";
 import path from "path";
 import { type Configuration, type EntryObject, } from "webpack";
-import { merge } from "webpack-merge";
-import serverBase from "../config/server.base.js";
 import getGlobalConfig, { type IGlobalConfig } from "../libs/getGlobalConfig.js";
 import Logger from "../libs/Logger.js";
 import { WebpackTaskBase } from "../libs/WebpackTaskBase.js";
@@ -61,28 +59,15 @@ export class ServerApiPack extends WebpackTaskBase {
         }
         log.info(cyan(this.taskName), "run.entry", entry);
 
-        const config: Configuration = await this.getCompileConfig(entry);
-        log.info("ServerApiPack.pack", { config: JSON.stringify(config) });
-        await super.compile(config);
-    }
-    
-    protected async getCompileConfig(entry: EntryObject): Promise<Configuration> {
-        const innerConf = merge(serverBase(this.isDebugMode), {
+        const config: Configuration = {
             entry,
             name: this.taskName,
             output: {
                 path: this.dist,
             },
-        });
-
-        const cuzConfigPath = path.resolve("./webpack.config/api.js");
-        if (fs.existsSync(cuzConfigPath)) {
-            const cuzConf: (conf: Configuration) => Configuration = (await import(cuzConfigPath)).default;
-            if (typeof cuzConf === "function") {
-                return merge(innerConf, cuzConf(innerConf));
-            }
-        }
-        return innerConf;
+        };
+        log.info("ServerApiPack.pack", { config: JSON.stringify(config) });
+        await super.compile(config);
     }
 }
 

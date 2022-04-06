@@ -10,8 +10,6 @@ import {
     type EntryObject,
 } from "webpack";
 import { BundleAnalyzerPlugin } from "webpack-bundle-analyzer";
-import { merge } from "webpack-merge";
-import clientBase from "../config/client.base.js";
 import sharePlugin from "../config/share.plugin.js";
 import { type webpackPluginsType } from "../interface.js";
 import ConfigHelper from "../libs/ConfigHelper.js";
@@ -50,23 +48,6 @@ export class StandalonePack extends WebpackTaskBase {
         this.globalConfig = getGlobalConfig();
         this.src = path.resolve("./src/standalone");
         this.dist = path.resolve(`${this.rootPath}${this.globalConfig.staticOutput}/standalone`);
-    }
-
-    protected async compile(): Promise<void|Error> {
-        const shouldStandaloneBuild = ConfigHelper.get("standalone", false);
-        if (!shouldStandaloneBuild) {
-            return;
-        }
-        log.info("->", "StandalonePack", HelperTask.taking());
-        const entry: EntryObject = await this.scan();
-        if (!entry || Object.keys(entry).length === 0) {
-            log.warn(yellow(`${cyan(this.taskName)}, scan emtpy entry`));
-            return;
-        }
-        log.info(cyan(this.taskName), "run.entry", entry);
-        const config: Configuration = await this.getCompileConfig(entry);
-        log.info(cyan(this.taskName), "pack", config);
-        await super.compile(config);
     }
 
     private scan(): Promise<EntryObject> {
@@ -198,24 +179,28 @@ export class StandalonePack extends WebpackTaskBase {
         }
         return [];
     }
-
-    protected async getCompileConfig(entry: EntryObject): Promise<Configuration>  {
-        const innerConf = merge(clientBase(this.isDebugMode), {
+    
+    protected async compile(): Promise<void|Error> {
+        const shouldStandaloneBuild = ConfigHelper.get("standalone", false);
+        if (!shouldStandaloneBuild) {
+            return;
+        }
+        log.info("->", "StandalonePack", HelperTask.taking());
+        const entry: EntryObject = await this.scan();
+        if (!entry || Object.keys(entry).length === 0) {
+            log.warn(yellow(`${cyan(this.taskName)}, scan emtpy entry`));
+            return;
+        }
+        log.info(cyan(this.taskName), "run.entry", entry);
+        const config: Configuration = {
             ...this.getEntryAndOutputConfig(entry),
             externals: this.getExternalConfig(),
             name: this.taskName,
             plugins: this.getPlugins(),
             optimization: this.getOptimization(),
-        });
-        
-        const cuzConfigPath = path.resolve("./webpack.config/standalone.js");
-        if (fs.existsSync(cuzConfigPath)) {
-            const cuzConf: (conf: Configuration) => Configuration = (await import(cuzConfigPath)).default;
-            if (typeof cuzConf === "function") {
-                return merge(innerConf, cuzConf(innerConf));
-            }
-        }
-        return innerConf;
+        };
+        log.info(cyan(this.taskName), "pack", config);
+        await super.compile(config);
     }
 }
 export default StandalonePack;

@@ -1,9 +1,6 @@
-import fs from "fs-extra";
 import MiniCssExtractPlugin from "mini-css-extract-plugin";
 import path from "path";
 import { type Configuration } from "webpack";
-import { merge } from "webpack-merge";
-import clientBase from "../config/client.base.js";
 import sharePlugin from "../config/share.plugin.js";
 import { type webpackPluginsType } from "../interface.js";
 import getGlobalConfig, { type IGlobalConfig } from "../libs/getGlobalConfig.js";
@@ -24,7 +21,18 @@ export class ModuleFederatePack extends WebpackTaskBase {
 
     protected async compile(): Promise<void|Error> {
         log.info("->", "ModuleFederatePack", HelperTask.taking());
-        const config: Configuration = await this.getCompileConfig();
+        const config: Configuration = {
+            entry: { "index": ["raf/polyfill"], },
+            output: {
+                publicPath: "auto",
+                path: this.dist,
+            },
+            name: this.taskName,
+            plugins: this.getPlugins(),
+            optimization: {
+                splitChunks: false,
+            },
+        };
         log.info("pack", { config: JSON.stringify(config) });
         await super.compile(config);
     }
@@ -40,30 +48,6 @@ export class ModuleFederatePack extends WebpackTaskBase {
         // }
         plugins.push(...sharePlugin.exposeMfPlugin);
         return plugins;
-    }
-
-    protected async getCompileConfig(): Promise<Configuration>  {
-        const innerConf = merge(clientBase(this.isDebugMode), {
-            entry: { "index": ["raf/polyfill"], },
-            output: {
-                publicPath: "auto",
-                path: this.dist,
-            },
-            name: this.taskName,
-            plugins: this.getPlugins(),
-            optimization: {
-                splitChunks: false,
-            },
-        });
-        
-        const cuzConfigPath = path.resolve("./webpack.config/mf.js");
-        if (fs.existsSync(cuzConfigPath)) {
-            const cuzConf: (conf: Configuration) => Configuration = (await import(cuzConfigPath)).default;
-            if (typeof cuzConf === "function") {
-                return merge(innerConf, cuzConf(innerConf));
-            }
-        }
-        return innerConf;
     }
 }
 
