@@ -51,14 +51,6 @@ function getRules(): webpackRulesType {
         use: [
             {
                 loader: "ts-loader",
-                options: Object.assign(
-                    {
-                        compilerOptions: {
-                            declaration: false,
-                        },
-                    },
-                    ConfigHelper.get("ts-loader", {}),
-                ),
             },
         ],
     });
