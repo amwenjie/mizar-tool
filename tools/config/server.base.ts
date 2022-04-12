@@ -5,8 +5,8 @@ import { type webpackPluginsType } from "../interface.js";
 import ConfigHelper from "../libs/ConfigHelper.js";
 import base from "./base.js";
 
-function getPlugins(isDebugMode: boolean, isHotReload = false): webpackPluginsType {
-    const plugins: webpackPluginsType = [];
+function getPlugins(isDebugMode: boolean, isHotReload = false): webpackPluginsType[] {
+    const plugins: webpackPluginsType[] = [];
     const devServer = Object.assign({
         host: "http://localhost",
         port: 9000,

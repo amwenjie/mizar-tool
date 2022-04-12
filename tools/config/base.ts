@@ -12,8 +12,8 @@ function getEnvDef(isDebugMode: boolean): "development" | "production" {
     return isDebugMode ? "development" : "production";
 }
 
-function getPlugins(isDebugMode: boolean): webpackPluginsType {
-    const plugins: webpackPluginsType = [];
+function getPlugins(isDebugMode: boolean): webpackPluginsType[] {
+    const plugins: webpackPluginsType[] = [];
 
     const defaultStylelintConf = {
         extensions: ["css", "less", "scss", "sass"],
@@ -42,8 +42,8 @@ function getPlugins(isDebugMode: boolean): webpackPluginsType {
     return plugins;
 }
 
-function getRules(): webpackRulesType {
-    const rules: webpackRulesType = [];
+function getRules(): webpackRulesType[] {
+    const rules: webpackRulesType[] = [];
 
     rules.push({
         exclude: /[\\/]node_modules[\\/]|\.d\.ts$/i,

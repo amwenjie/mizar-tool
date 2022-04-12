@@ -32,14 +32,14 @@ export class ServerPack extends WebpackTaskBase {
         this.dist = path.resolve(`${this.globalConfig.rootOutput}`);
     }
 
-    private getPlugins(): webpackPluginsType {
-        const plugins: webpackPluginsType = [];
+    private getPlugins(): webpackPluginsType[] {
+        const plugins: webpackPluginsType[] = [];
         plugins.push(...sharePlugin.remoteMfPlugin);
         return plugins;
     }
     
-    private getCssLoaders(isDebugMode: boolean, extraLoaders = []): webpackRulesType {
-        const loaders: webpackRulesType = [];
+    private getCssLoaders(isDebugMode: boolean, extraLoaders = []): webpackRulesType[] {
+        const loaders: webpackRulesType[] = [];
         let localIdentName = prodLocalIdentName;
         let sourceMap = false;
         if (isDebugMode) {
@@ -76,8 +76,8 @@ export class ServerPack extends WebpackTaskBase {
         ], extraLoaders);
     }
 
-    private getRules(isDebugMode: boolean): webpackRulesType  {
-        const rules: webpackRulesType = [];
+    private getRules(isDebugMode: boolean): webpackRulesType[] {
+        const rules: webpackRulesType[] = [];
         rules.push({
             exclude: /\.d\.ts$/i,
             test: /[\\/]src[\\/]isomorphic[\\/].+[\\/][A-Z][^\\/]+[\\/]index\.tsx?$/,

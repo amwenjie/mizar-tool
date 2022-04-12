@@ -68,6 +68,10 @@ npm install -g alcor
    "less-loader": {}, #  配置插件option配置
    "sass-loader": {}, #  配置插件option配置
    "serverapi": true, #  配置是否产出/src/server/apis目录的服务端api内容
+   "hotReload": {
+        "host": "http://localhost",
+        "port": 9911
+   }, #  配置客户端热更新
    "proxy": [{}], #  配置debug模式的接口代理转发规则
    "standalone": {
       "externals": {

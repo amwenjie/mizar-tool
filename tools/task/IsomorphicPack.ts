@@ -82,8 +82,8 @@ export class IsomorphicPack extends WebpackTaskBase {
         };
     }
 
-    private getPlugins(): webpackPluginsType {
-        const plugins: webpackPluginsType = [];
+    private getPlugins(): webpackPluginsType[] {
+        const plugins: webpackPluginsType[] = [];
         plugins.push(new MiniCssExtractPlugin({
             filename: this.isDebugMode ? "[name]_bundle.css" : "[name]_[contenthash:8].css",
             // chunkFilename: "[name]-chunk-[id]_[contenthash:8].css",
@@ -137,14 +137,13 @@ export class IsomorphicPack extends WebpackTaskBase {
             config.devServer = ConfigHelper.get("hotReload", {});
         }
         log.info("pack", { config: JSON.stringify(config) });
-        await super.compile(config);
+        await super.compile(config, true);
     }
 
     protected getCompileConfig(conf: Configuration): Configuration  {
-        const baseConf = Object.assign({}, clientBase(this.isDebugMode));
+        const baseConf = merge({}, clientBase(this.isDebugMode));
         if (this.isDebugMode) {
-            baseConf.module.rules = baseConf.module.rules.slice(0);
-            baseConf.module.rules.splice(1, 0, {
+            baseConf.module.rules.splice(2, 0, {
                 test: /\.(?:css|less|s[ac]ss)$/i,
                 exclude: /[\\/]node_modules[\\/]/i,
                 loader: "alcor-loaders/typing-for-css-module",

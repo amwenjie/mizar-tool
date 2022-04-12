@@ -13,8 +13,8 @@ import { devLocalIdentName, prodLocalIdentName } from "../libs/getGlobalConfig.j
 import { getCssModuleMode, shouldSourceModuled, } from "../libs/Utils.js";
 import base from "./base.js";
 
-function getCssLoaders(isDebugMode: boolean, extraLoaders = []): webpackRulesType {
-    const loaders: webpackRulesType = [];
+function getCssLoaders(isDebugMode: boolean, extraLoaders = []): webpackRulesType[] {
+    const loaders: webpackRulesType[] = [];
     loaders.push({
         loader: MiniCssExtractPlugin.loader,
     });
@@ -54,8 +54,8 @@ function getCssLoaders(isDebugMode: boolean, extraLoaders = []): webpackRulesTyp
     ], extraLoaders);
 }
 
-function getRules(isDebugMode: boolean): webpackRulesType {
-    const rules: webpackRulesType = [];
+function getRules(isDebugMode: boolean): webpackRulesType[] {
+    const rules: webpackRulesType[] = [];
 
     rules.push({
         exclude: /\.d\.ts$/i,
@@ -104,8 +104,8 @@ function getRules(isDebugMode: boolean): webpackRulesType {
     return rules;
 }
 
-function getPlugins(isDebugMode: boolean): webpackPluginsType {
-    const plugins: webpackPluginsType = [];
+function getPlugins(isDebugMode: boolean): webpackPluginsType[] {
+    const plugins: webpackPluginsType[] = [];
     const defineOption = {
         IS_SERVER_RUNTIME: JSON.stringify(false),
         IS_DEBUG_MODE: JSON.stringify(!!isDebugMode),

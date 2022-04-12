@@ -37,8 +37,8 @@ export class ModuleFederatePack extends WebpackTaskBase {
         await super.compile(config);
     }
 
-    private getPlugins(): webpackPluginsType {
-        const plugins: webpackPluginsType = [];
+    private getPlugins(): webpackPluginsType[] {
+        const plugins: webpackPluginsType[] = [];
         plugins.push(new MiniCssExtractPlugin({
             filename: "[name]_[contenthash:8].css",
             // chunkFilename: "[name]-chunk-[id]_[contenthash:8].css",

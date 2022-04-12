@@ -9,7 +9,6 @@ import { checkIsLegalIdentifier } from "../libs/Utils.js";
 const pluginMap: sharePluginMapType = {
     remoteMfPlugin: [],
     exposeMfPlugin: [],
-    styleLintPlugin: [],
 };
 
 const identifierIllegalErrMsg = "the value of 'federation[\"name\"]' should be a legal js identifier in ./config/configure.json.";
@@ -21,12 +20,12 @@ if (moduleFederationConfig && moduleFederationConfig.remotes) {
     if (mfName && !checkIsLegalIdentifier(mfName)) {
         throw new Error(identifierIllegalErrMsg);
     }
-    pluginMap.remoteMfPlugin.push(
+    pluginMap.remoteMfPlugin = [
         new webpack.container.ModuleFederationPlugin({
             name: mfName,
             remotes: moduleFederationConfig.remotes,
-        })
-    );
+        }),
+    ];
 }
 
 if (moduleFederationConfig && moduleFederationConfig.exposes) {
@@ -37,7 +36,7 @@ if (moduleFederationConfig && moduleFederationConfig.exposes) {
     if (!checkIsLegalIdentifier(mfName)) {
         throw new Error(identifierIllegalErrMsg);
     }
-    pluginMap.exposeMfPlugin.push(
+    pluginMap.exposeMfPlugin = [
         new FederationStatsPlugin(),
         new FederationModuleIdPlugin(),
         new webpack.container.ModuleFederationPlugin(
@@ -49,7 +48,7 @@ if (moduleFederationConfig && moduleFederationConfig.exposes) {
                 moduleFederationConfig,
             )
         ),
-    );
+    ];
 }
 
 export default pluginMap;

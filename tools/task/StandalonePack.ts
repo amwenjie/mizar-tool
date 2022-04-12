@@ -106,8 +106,8 @@ export class StandalonePack extends WebpackTaskBase {
         };
     }
 
-    private getPlugins(): webpackPluginsType {
-        const plugins: webpackPluginsType = [];
+    private getPlugins(): webpackPluginsType[] {
+        const plugins: webpackPluginsType[] = [];
         plugins.push(new MiniCssExtractPlugin({
             filename: "[name].css",
             // chunkFilename: "[name]-chunk-[id]_[contenthash:8].css",
