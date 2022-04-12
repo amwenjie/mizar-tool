@@ -133,7 +133,7 @@ export class StandalonePack extends WebpackTaskBase {
                 filename: "[name].js",
                 path: this.dist,
                 assetModuleFilename: "assets/[name][ext][query]",
-            }
+            },
         };
         if (!config) {
             return returnedConfig;
@@ -197,7 +197,10 @@ export class StandalonePack extends WebpackTaskBase {
             externals: this.getExternalConfig(),
             name: this.taskName,
             plugins: this.getPlugins(),
-            optimization: this.getOptimization(),
+            optimization: {
+                splitChunks: false,
+                ...this.getOptimization(),
+            },
         };
         log.info(cyan(this.taskName), "pack", config);
         await super.compile(config);

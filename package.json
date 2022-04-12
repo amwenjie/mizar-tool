@@ -99,5 +99,5 @@
     "build": "ts-node ./Build"
   },
   "type": "module",
-  "version": "0.1.66"
+  "version": "0.1.67"
 }

@@ -14,6 +14,7 @@ function getPlugins(isDebugMode: boolean, isHotReload = false): webpackPluginsTy
     const defineOption: {[key: string]: any} = {
         IS_SERVER_RUNTIME: JSON.stringify(true),
         IS_DEBUG_MODE: JSON.stringify(!!isDebugMode),
+        DEV_STATIC_HR_SERVE: JSON.stringify(!!isHotReload),
     };
     if (isDebugMode) {
         defineOption.DEV_PROXY_CONFIG = JSON.stringify((isHotReload ? [
@@ -25,7 +26,6 @@ function getPlugins(isDebugMode: boolean, isHotReload = false): webpackPluginsTy
             }
         ] : []).concat(ConfigHelper.get("proxy", []) as any));
 
-        defineOption.DEV_STATIC_HR_SERVE = JSON.stringify(!!isHotReload);
     }
     plugins.push(new webpack.DefinePlugin(defineOption));
     return plugins;
