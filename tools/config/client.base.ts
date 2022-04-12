@@ -114,7 +114,7 @@ function getPlugins(isDebugMode: boolean): webpackPluginsType {
     return plugins;
 }
 
-export default function clientBase(isDebugMode: boolean): Configuration {
+export default function clientBase(isDebugMode: boolean, isHotReload = false): Configuration {
     const idMode = isDebugMode ? "named" : "deterministic";
     return merge(base(isDebugMode), {
         externals: [({ context, request }, callback) => {

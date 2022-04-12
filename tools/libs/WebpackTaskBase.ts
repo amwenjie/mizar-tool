@@ -118,7 +118,7 @@ export class WebpackTaskBase extends TaskBase {
 
         // 完成
         this.helperTask.sendMessage(this.taskName, "编译结束:" + this.count++);
-        
+
         if (stats) {
             log.info(stats.toString({
                 chunks: argv.verbose,  
@@ -132,7 +132,7 @@ export class WebpackTaskBase extends TaskBase {
     }
     
     protected getCompileConfig(config: Configuration): Configuration  {
-        const innerConf = merge((/server/i.test(this.taskName) ? serverBase : clientBase)(this.isDebugMode), config);
+        const innerConf = merge((/server/i.test(this.taskName) ? serverBase : clientBase)(this.isDebugMode, this.isHotReload), config);
         return innerConf;
     }
 
@@ -145,24 +145,7 @@ export class WebpackTaskBase extends TaskBase {
                 finalConf = merge(innerConf, cuzConf(innerConf));
             }
         }
-
         log.info("compile", { config: JSON.stringify(finalConf) });
-        
-        if (this.isHotReload) {
-            const compiler = webpack(finalConf);
-            const wds = new WebpackDevServer({
-                headers: {
-                    "Access-Control-Allow-Origin": "*",
-                },
-                hot: true,
-                liveReload: true,
-                port: 9000,
-                static: "/static/client",
-                ...(finalConf.devServer || {})
-            }, compiler);
-            return wds.start();
-        }
-
         return new Promise((resolve, reject) => {
             const compiler = webpack(finalConf);
             // this.compileContext.compiler = compiler;
@@ -198,6 +181,21 @@ export class WebpackTaskBase extends TaskBase {
                 }
                 log.info(cyan(this.taskName), " compile closed.");
             });
+
+            if (this.taskName === "IsomorphicPack" && this.isHotReload) {
+                const wds = new WebpackDevServer({
+                    headers: {
+                        "Access-Control-Allow-Origin": "*",
+                    },
+                    hot: true,
+                    liveReload: true,
+                    port: 9000,
+                    static: "/static/client",
+                    ...(finalConf.devServer || {})
+                }, compiler);
+                wds.start().then(resolve).catch(reject);
+                return;
+            }
 
             const compileCallback = async (error: WebpackError|null|undefined, stats: Stats): Promise<void> => {
                 if (error) {

@@ -88,7 +88,7 @@ export class ProjectBuild {
                 await copyTask.run();
                 // 2. 编译./src/isomorphic 代码
                 const isomorphicClientPack = new IsomorphicPack();
-                isomorphicClientPack.setHotReloadMode(this.isHotReload)
+                isomorphicClientPack.setHotReloadMode(this.isHotReload);
                 isomorphicClientPack
                     .setDebugMode(this.isDebugMode)
                     .setWatchMode(this.isWatchMode)
@@ -105,6 +105,7 @@ export class ProjectBuild {
                 }
                 // 4. 编译./src/server 服务端代码
                 const serverPack = new ServerPack();
+                serverPack.setHotReloadMode(this.isHotReload);
                 serverPack
                     .setAutoRun(this.isRunServerMode)
                     .setDebugMode(this.isDebugMode)

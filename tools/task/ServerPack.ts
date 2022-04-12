@@ -169,6 +169,11 @@ export class ServerPack extends WebpackTaskBase {
         log.info("ServerPack.pack", { config: JSON.stringify(config) });
         await super.compile(config);
     }
+    
+    public setHotReloadMode(isHotReload) {
+        this.isHotReload = isHotReload;
+        return this;
+    }
 }
 
 export default ServerPack;

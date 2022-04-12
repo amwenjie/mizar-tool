@@ -112,11 +112,6 @@ export class IsomorphicPack extends WebpackTaskBase {
         return plugins;
     }
 
-    public setHotReloadMode(isHotReload) {
-        this.isHotReload = isHotReload;
-        return this;
-    }
-
     protected async compile(): Promise<void|Error> {
         log.info("->", "IsomorphicPack", HelperTask.taking());
         const config: Configuration = this.getCompileConfig({
@@ -139,7 +134,7 @@ export class IsomorphicPack extends WebpackTaskBase {
             optimization: this.getOptimization() as any,
         });
         if (this.isHotReload) {
-            config.devServer = ConfigHelper.get("devServer", {});
+            config.devServer = ConfigHelper.get("hotReload", {});
         }
         log.info("pack", { config: JSON.stringify(config) });
         await super.compile(config);
@@ -158,6 +153,11 @@ export class IsomorphicPack extends WebpackTaskBase {
 
         const innerConf = merge(baseConf, conf);
         return innerConf;
+    }
+
+    public setHotReloadMode(isHotReload) {
+        this.isHotReload = isHotReload;
+        return this;
     }
 }
 
