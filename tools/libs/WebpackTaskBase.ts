@@ -184,6 +184,9 @@ export class WebpackTaskBase extends TaskBase {
 
             if (this.taskName === "IsomorphicPack" && this.isHotReload) {
                 const wds = new WebpackDevServer({
+                    devMiddleware: {
+                        stats: false,
+                    },
                     headers: {
                         "Access-Control-Allow-Origin": "*",
                     },

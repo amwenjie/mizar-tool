@@ -19,6 +19,7 @@ import { WebpackTaskBase } from "../libs/WebpackTaskBase.js";
 import { HelperTask } from "./HelperTask.js";
 import RunServer from "./RunServer.js";
 const log = Logger("ServerPack");
+let timeout;
 
 export class ServerPack extends WebpackTaskBase {
     private globalConfig: IGlobalConfig;
@@ -136,7 +137,12 @@ export class ServerPack extends WebpackTaskBase {
         this.compileFinishedCallback(async (): Promise<void> => {
             if (this.autoRun === true && this.isDebugMode === true) {
                 const serverEntry = "index";
-                await RunServer(serverEntry, this.debugPort);
+                if (timeout) {
+                    clearTimeout(timeout);
+                }
+                timeout = setTimeout(async () => {
+                    await RunServer(serverEntry, this.debugPort);
+                }, 800);
             }
         });
     }
