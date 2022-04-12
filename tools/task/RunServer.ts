@@ -10,11 +10,10 @@
 import { bold, green } from "colorette";
 import spawn from 'cross-spawn';
 import Logger from "../libs/Logger.js";
-const log = Logger("RunServer");
 
+const log = Logger("RunServer");
 // Should match the text string used in `src/server.js/server.listen(...)`
 const RUNNING_REGEXP = /server start successful, listening at port: (\d+)/;
-
 let server;
 
 // Launch or restart the Node.js server
@@ -46,8 +45,8 @@ export default async function RunServer(serverPath: string, debug: number, cb: (
         }
 
         if (server) {
-            log.warn("进程退出");
-            server.kill("SIGTERM");
+            log.warn("server 进程即将 退出并重启...");
+            server.kill("SIGINT");
         }
         const params = [];
         if (debug > 0) {
@@ -80,7 +79,8 @@ export default async function RunServer(serverPath: string, debug: number, cb: (
 
 process.on("exit", () => {
     if (server) {
-        log.warn("进程退出");
-        server.kill("SIGTERM");
+        log.warn("server进程退出");
+        server.kill("SIGINT");
+        server = null;
     }
 });

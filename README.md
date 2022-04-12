@@ -44,8 +44,10 @@ npm install -g alcor
    * alcor build --debug  产出development环境的编译产出
    * alcor build --verbose  编译过程在终端中打印出详细的编译过程、编译状态的信息
    * alcor build --server  会启动开发调试服务器，启动并连接node inspector用于调试node端代码
+   * alcor build --hotReload   在同时指定--debug时，会启用客户端资源在浏览器中的热更新
    * alcor build --analyz  产出webpack stats模块分析文件，如果联合--debug使用，会启动分析服务器并自动用默认浏览器打开分析页面
    * alcor build --watch  启动watch进程监听文件变更重新编译
+   * alcor build --ost   传递该参数会忽略其他所有参数，该参数表示仅做standalone的编译：从./config/configure.json中读取standalone配置用于编译./src/standalone目录的文件
    * 可以组合使用比如 alcor build -ds 表示编译开发环境编译并启动开发调试服务器，
    * 0.1.39开始将debug能力拆解，debug不在默认监听文件变化，新增watch用于监听文件变化
    * 仅debug、watch、server可使用缩写，其他选项不可缩写，必须使用--的形式

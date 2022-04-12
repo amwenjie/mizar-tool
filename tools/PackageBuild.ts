@@ -60,7 +60,7 @@ class PackageBuild {
                 await new PublishTask().run();
             }
         } catch (e) {
-            log.error(red("PackageBuild"), e);
+            log.error(red("PackageBuild has error: "), e);
         }
         task.end();
     }

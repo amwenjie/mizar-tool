@@ -2,16 +2,19 @@ import { bold, cyan, red, white, yellow } from "colorette";
 import fs from "fs-extra";
 import path from "path";
 import webpack, {
+    type Compiler,
     type Configuration,
     type Stats,
     type WebpackError,
 } from "webpack";
 import { merge } from "webpack-merge";
+import WebpackDevServer from "webpack-dev-server";
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 import clientBase from "../config/client.base.js";
 import serverBase from "../config/server.base.js";
 import HelperTask from "../task/HelperTask.js";
+
 import Logger from "./Logger.js";
 import TaskBase from "./TaskBase.js";
 
@@ -32,6 +35,7 @@ export class WebpackTaskBase extends TaskBase {
     private static compileQueue = [];
     private static compileDoneCallback = [];
     protected index = 0;
+    public isHotReload = false;
 
     constructor(taskName = "WebpackTaskBase") {
         super(taskName);
@@ -134,7 +138,6 @@ export class WebpackTaskBase extends TaskBase {
 
     protected async compile(innerConf: webpack.Configuration): Promise<void|Error> {
         let finalConf = this.getCompileConfig(innerConf);
-
         const cuzConfigPath = path.resolve(`./webpack.config/${taskCuzConfFileNameMap[this.taskName]}.js`);
         if (fs.existsSync(cuzConfigPath)) {
             const cuzConf: (conf: Configuration) => Configuration = (await import(cuzConfigPath)).default;
@@ -144,27 +147,23 @@ export class WebpackTaskBase extends TaskBase {
         }
 
         log.info("compile", { config: JSON.stringify(finalConf) });
+        
+        if (this.isHotReload) {
+            const compiler = webpack(finalConf);
+            const wds = new WebpackDevServer({
+                headers: {
+                    "Access-Control-Allow-Origin": "*",
+                },
+                hot: true,
+                liveReload: true,
+                port: 9000,
+                static: "/static/client",
+                ...(finalConf.devServer || {})
+            }, compiler);
+            return wds.start();
+        }
 
         return new Promise((resolve, reject) => {
-            const compileCallback = async (error: WebpackError|null|undefined, stats: Stats): Promise<void> => {
-                if (error) {
-                    this.helperTask.sendMessage(this.taskName, "webpack执行出错");
-                    log.error(cyan(this.taskName), ` > ${red(bold("webpack error:"))}`);
-                    log.error(error.stack || error);
-                    if (error.details) {
-                        log.error(error.details);
-                    }
-                    reject(error);
-                    throw new Error(cyan(this.taskName) + " 运行有错误");
-                }
-                this.printCompileResult(stats);
-                if (this.isAllCompileDone()) {
-                    while (WebpackTaskBase.compileDoneCallback.length) {
-                        await WebpackTaskBase.compileDoneCallback.shift()();
-                    }
-                }
-                resolve();
-            };
             const compiler = webpack(finalConf);
             // this.compileContext.compiler = compiler;
             compiler.hooks.invalid.tap(hooksName, (fileName, changeTime) => {
@@ -192,6 +191,34 @@ export class WebpackTaskBase extends TaskBase {
             //     log.info("++++++", cyan(this.taskName), "watchClose");
             //     // this.compileDone(stats);
             // });
+            compiler.close(error => {
+                if (error) {
+                    log.error(red(`${cyan(this.taskName)} compile close error: `), error);
+                    return;
+                }
+                log.info(cyan(this.taskName), " compile closed.");
+            });
+
+            const compileCallback = async (error: WebpackError|null|undefined, stats: Stats): Promise<void> => {
+                if (error) {
+                    this.helperTask.sendMessage(this.taskName, "webpack执行出错");
+                    log.error(cyan(this.taskName), ` > ${red(bold("webpack error:"))}`);
+                    log.error(error.stack || error);
+                    if (error.details) {
+                        log.error(error.details);
+                    }
+                    reject(error);
+                    throw new Error(cyan(this.taskName) + " 运行有错误");
+                }
+                this.printCompileResult(stats);
+                if (this.isAllCompileDone()) {
+                    while (WebpackTaskBase.compileDoneCallback.length) {
+                        await WebpackTaskBase.compileDoneCallback.shift()();
+                    }
+                }
+                resolve();
+            };
+
             if (this.isWatchMode) {
                 this.watcher = compiler.watch({
                     ignored: /[\\/]node_modules[\\/]|[\\/]dist[\\/]|\.d\.ts$|\.js\.map$|\.css\.map$/i,
@@ -199,13 +226,6 @@ export class WebpackTaskBase extends TaskBase {
                 }, compileCallback);
             } else {
                 compiler.run(async (error?: WebpackError, stats?: Stats): Promise<void> => {
-                    compiler.close(error => {
-                        if (error) {
-                            log.error(red(`${cyan(this.taskName)} compile close error: `), error);
-                            return;
-                        }
-                        log.info(cyan(this.taskName), " compile closed.");
-                    });
                     compileCallback(error, stats);
                 });
             }

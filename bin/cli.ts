@@ -33,7 +33,8 @@ alcor
     .option('-d, --debug', 'development mode')
     .option('-w, --watch', 'watch files change')
     .option('-s, --server', 'run a development server')
-    // .option('-p, --publish', 'publish the package')
+    .option('-hr, --hotReload', 'hot reload web page in development mode')
+    .option('--ost', 'only compile ./src/standalone/* files out as independent IIFE files')
     .option('--verbose', 'print additional logs')
     .option('--analyz', 'generate stats file, open analyz server on debug mode')
     .allowUnknownOption()
@@ -51,9 +52,12 @@ alcor
         if (options.server) {
             args.push('--runServer');
         }
-        // if (options.publish) {
-        //     args.push('--publish');
-        // }
+        if (options.hotReload) {
+            args.push('--hotReload');
+        }
+        if (options.ost) {
+            args.push('--onlystandalone');
+        }
         if (options.analyz) {
             args.push('--analyz');
         }

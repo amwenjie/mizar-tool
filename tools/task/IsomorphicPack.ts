@@ -29,24 +29,12 @@ const esDepends = [
 export class IsomorphicPack extends WebpackTaskBase {
     private clientEntrySrc = "src/isomorphic/index";
     private globalConfig: IGlobalConfig;
-    private publicPath = "";
 
     constructor(taskName = "IsomorphicPack") {
         super(taskName);
         this.globalConfig = getGlobalConfig();
         this.src = path.resolve(`${this.rootPath}${this.clientEntrySrc}`);
         this.dist = path.resolve(`${this.rootPath}${this.globalConfig.clientOutput}`);
-        this.publicPath = this.getPublicPath();
-    }
-
-    private getPublicPath() {
-        const path = [
-            this.isDebugMode ? "/" : ConfigHelper.getCDN(),
-            this.globalConfig.publicPath,
-            'client/'
-        ].join("");
-        log.info("isomorphicPack getPublicPath: ", path);
-        return path;
     }
 
     private getOptimization() {
@@ -97,7 +85,7 @@ export class IsomorphicPack extends WebpackTaskBase {
     private getPlugins(): webpackPluginsType {
         const plugins: webpackPluginsType = [];
         plugins.push(new MiniCssExtractPlugin({
-            filename: "[name]_[contenthash:8].css",
+            filename: this.isDebugMode ? "[name]_bundle.css" : "[name]_[contenthash:8].css",
             // chunkFilename: "[name]-chunk-[id]_[contenthash:8].css",
         }));
         plugins.push(new CopyWebpackPlugin({
@@ -108,9 +96,6 @@ export class IsomorphicPack extends WebpackTaskBase {
                 },
             ],
         }));
-        // if (this.isDebugMode) {
-        //     plugins.push(new webpack.HotModuleReplacementPlugin());
-        // }
         plugins.push(...sharePlugin.remoteMfPlugin);
         const relativePath = path.relative(this.globalConfig.clientOutput, this.globalConfig.rootOutput);
         plugins.push(new LoadablePlugin({
@@ -127,14 +112,25 @@ export class IsomorphicPack extends WebpackTaskBase {
         return plugins;
     }
 
+    public setHotReloadMode(isHotReload) {
+        this.isHotReload = isHotReload;
+        return this;
+    }
+
     protected async compile(): Promise<void|Error> {
         log.info("->", "IsomorphicPack", HelperTask.taking());
         const config: Configuration = this.getCompileConfig({
-            entry: { "index": esDepends.concat(this.src), },
+            entry: {
+                "index": esDepends.concat(this.src),
+            },
             output: {
-                chunkFilename: "[name]_[contenthash:8].js",
-                publicPath: this.publicPath,
-                filename: "[name]_[contenthash:8].js",
+                chunkFilename: this.isDebugMode ? "[name]_chunk.js" : "[name]_[contenthash:8].js",
+                publicPath: [
+                    this.isDebugMode ? "/" : ConfigHelper.getCDN(),
+                    this.globalConfig.publicPath,
+                    "client/"
+                ].join(""),
+                filename: this.isDebugMode ? "[name]_bundle.js" : "[name]_[contenthash:8].js",
                 path: this.dist,
                 assetModuleFilename,
             },
@@ -142,13 +138,17 @@ export class IsomorphicPack extends WebpackTaskBase {
             plugins: this.getPlugins(),
             optimization: this.getOptimization() as any,
         });
+        if (this.isHotReload) {
+            config.devServer = ConfigHelper.get("devServer", {});
+        }
         log.info("pack", { config: JSON.stringify(config) });
         await super.compile(config);
     }
 
     protected getCompileConfig(conf: Configuration): Configuration  {
-        const baseConf = clientBase(this.isDebugMode);
+        const baseConf = Object.assign({}, clientBase(this.isDebugMode));
         if (this.isDebugMode) {
+            baseConf.module.rules = baseConf.module.rules.slice(0);
             baseConf.module.rules.splice(1, 0, {
                 test: /\.(?:css|less|s[ac]ss)$/i,
                 exclude: /[\\/]node_modules[\\/]/i,

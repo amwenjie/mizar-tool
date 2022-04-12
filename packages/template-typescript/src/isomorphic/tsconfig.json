@@ -2,7 +2,5 @@
     "extends": "../tsconfig.json",
     "compilerOptions": {
         "target": "es3",
-        "module": "es2020",
-        "moduleResolution": "node"
     }
 }

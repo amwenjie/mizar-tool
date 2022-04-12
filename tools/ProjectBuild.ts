@@ -23,6 +23,8 @@ export class ProjectBuild {
     private isRunServerMode = false;
     private isPublishMode = false;
     private isAnalyzMode = false;
+    private isOnlyStandalone = false;
+    private isHotReload = false;
 
     public async start() {
         try {
@@ -55,6 +57,14 @@ export class ProjectBuild {
         this.isRunServerMode = isRunServerMode;
     }
 
+    public setOnlyStandalone(isOnlyStandalone) {
+        this.isOnlyStandalone = isOnlyStandalone;
+    }
+
+    public setHotReloadMode(isHotReload) {
+        this.isHotReload = isHotReload;
+    }
+
     private async publish() {
         await new PublishTask().run();
     }
@@ -67,57 +77,63 @@ export class ProjectBuild {
         try {
             // 1 clean
             await task.cleanAsync();
-            const packageInfo = new PackageInfo();
-            packageInfo
-                .setDebugMode(this.isDebugMode)
-                .setWatchMode(this.isWatchMode);
-            await packageInfo.run();
-            const copyTask = new CopyTask("./config", "./config");
-            copyTask.setDebugMode(this.isDebugMode);
-            await copyTask.run();
-            // 2. 生成同构下的ClientPack
-            const isomorphicClientPack = new IsomorphicPack();
-            isomorphicClientPack
-                .setDebugMode(this.isDebugMode)
-                .setWatchMode(this.isWatchMode)
-                .setAnalyzMode(this.isAnalyzMode);
-            await isomorphicClientPack.run();
-            const shouldServerApiBuild = ConfigHelper.get("serverapi", false);
-            if (shouldServerApiBuild) {
-                // 3. 生成ServerApiPack
-                const serverApiPack = new ServerApiPack();
-                serverApiPack
+            if (!this.isOnlyStandalone) {
+                const packageInfo = new PackageInfo();
+                packageInfo
+                    .setDebugMode(this.isDebugMode)
+                    .setWatchMode(this.isWatchMode);
+                await packageInfo.run();
+                const copyTask = new CopyTask("./config", "./config");
+                copyTask.setDebugMode(this.isDebugMode);
+                await copyTask.run();
+                // 2. 编译./src/isomorphic 代码
+                const isomorphicClientPack = new IsomorphicPack();
+                isomorphicClientPack.setHotReloadMode(this.isHotReload)
+                isomorphicClientPack
+                    .setDebugMode(this.isDebugMode)
                     .setWatchMode(this.isWatchMode)
-                    .setDebugMode(this.isDebugMode);
-                await serverApiPack.run();
+                    .setAnalyzMode(this.isAnalyzMode);
+                await isomorphicClientPack.run();
+                const shouldServerApiBuild = ConfigHelper.get("serverapi", false);
+                if (shouldServerApiBuild) {
+                    // 3. 编译./src/server/apis 服务端api代码
+                    const serverApiPack = new ServerApiPack();
+                    serverApiPack
+                        .setWatchMode(this.isWatchMode)
+                        .setDebugMode(this.isDebugMode);
+                    await serverApiPack.run();
+                }
+                // 4. 编译./src/server 服务端代码
+                const serverPack = new ServerPack();
+                serverPack
+                    .setAutoRun(this.isRunServerMode)
+                    .setDebugMode(this.isDebugMode)
+                    .setWatchMode(this.isWatchMode);
+                await serverPack.run();
+                // 5. 编译module federation 代码
+                const shouldModuleFederateBuild = ConfigHelper.get("federation", false) as ModuleFederationPluginOptions;
+                if (shouldModuleFederateBuild && shouldModuleFederateBuild.exposes) {
+                    const moduleFederatePack = new ModuleFederatePack();
+                    moduleFederatePack
+                        .setDebugMode(this.isDebugMode)
+                        .setWatchMode(this.isWatchMode)
+                    await moduleFederatePack.run();
+                }
             }
-            // 4. 生成ServerPack
-            const serverPack = new ServerPack();
-            serverPack
-                .setAutoRun(this.isRunServerMode)
-                .setDebugMode(this.isDebugMode)
-                .setWatchMode(this.isWatchMode);
-            await serverPack.run();
             const shouldStandaloneBuild = ConfigHelper.get("standalone", false);
             if (shouldStandaloneBuild) {
-                // 5. 生成standalone文件
+                // 6. 编译./src/standalone 代码 
                 const standalonePack = new StandalonePack();
                 standalonePack
                     .setDebugMode(this.isDebugMode)
                     .setWatchMode(this.isWatchMode);
                 await standalonePack.run();
-            }
-            const shouldModuleFederateBuild = ConfigHelper.get("federation", false) as ModuleFederationPluginOptions;
-            if (shouldModuleFederateBuild && shouldModuleFederateBuild.exposes) {
-                const moduleFederatePack = new ModuleFederatePack();
-                moduleFederatePack
-                    .setDebugMode(this.isDebugMode)
-                    .setWatchMode(this.isWatchMode)
-                await moduleFederatePack.run();
+            } else if (this.isOnlyStandalone) {
+                throw new Error(`the value of 'standalone' field must be an object in ./config/configure.json while build with --ost argument`)
             }
             console.log(green("build success"));
         } catch (e) {
-            log.error(red("ProjectBuild raised an error: "), e);
+            log.error(red("ProjectBuild has error: "), e);
         }
         task.end();
     }
@@ -135,8 +151,14 @@ export class ProjectBuild {
     if (argv.runServer) {
         projectBuild.setRunServerMode(true);
     }
+    if (argv.hotReload) {
+        projectBuild.setHotReloadMode(true);
+    }
     if (argv.analyz) {
         projectBuild.setAnalyzMode(true);
+    }
+    if (argv.onlystandalone) {
+        projectBuild.setOnlyStandalone(true);
     }
     // if (argv.publish) {
     //     projectBuild.setPublishModel(true);
