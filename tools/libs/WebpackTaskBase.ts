@@ -132,12 +132,12 @@ export class WebpackTaskBase extends TaskBase {
     }
     
     protected getCompileConfig(config: Configuration): Configuration  {
-        const innerConf = merge((/server/i.test(this.taskName) ? serverBase : clientBase)(this.isDebugMode, this.isHotReload), config);
+        const innerConf = merge({}, (/server/i.test(this.taskName) ? serverBase : clientBase)(this.isDebugMode, this.isHotReload), config);
         return innerConf;
     }
 
-    protected async compile(innerConf: webpack.Configuration, isBaseConfigUsed = false): Promise<void|Error> {
-        let finalConf = isBaseConfigUsed ? innerConf : this.getCompileConfig(innerConf);
+    protected async compile(innerConf: webpack.Configuration): Promise<void|Error> {
+        let finalConf = this.getCompileConfig(innerConf);
         const cuzConfigPath = path.resolve(`./webpack.config/${taskCuzConfFileNameMap[this.taskName]}.js`);
         if (fs.existsSync(cuzConfigPath)) {
             const cuzConf: (conf: Configuration) => Configuration = (await import(cuzConfigPath)).default;

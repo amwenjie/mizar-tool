@@ -114,7 +114,7 @@ export class IsomorphicPack extends WebpackTaskBase {
 
     protected async compile(): Promise<void|Error> {
         log.info("->", "IsomorphicPack", HelperTask.taking());
-        const config: Configuration = this.getCompileConfig({
+        const config: Configuration = {
             entry: {
                 "index": esDepends.concat(this.src),
             },
@@ -132,17 +132,18 @@ export class IsomorphicPack extends WebpackTaskBase {
             name: this.taskName,
             plugins: this.getPlugins(),
             optimization: this.getOptimization() as any,
-        });
+        };
         if (this.isHotReload) {
             config.devServer = ConfigHelper.get("hotReload", {});
         }
         log.info("pack", { config: JSON.stringify(config) });
-        await super.compile(config, true);
+        await super.compile(config);
     }
 
     protected getCompileConfig(conf: Configuration): Configuration  {
         const baseConf = merge({}, clientBase(this.isDebugMode));
         if (this.isDebugMode) {
+            baseConf.module.rules = baseConf.module.rules.slice(0);
             baseConf.module.rules.splice(2, 0, {
                 test: /\.(?:css|less|s[ac]ss)$/i,
                 exclude: /[\\/]node_modules[\\/]/i,
