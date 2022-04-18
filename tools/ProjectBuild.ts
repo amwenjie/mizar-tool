@@ -88,11 +88,11 @@ export class ProjectBuild {
                 await copyTask.run();
                 // 2. 编译./src/isomorphic 代码
                 const isomorphicClientPack = new IsomorphicPack();
-                isomorphicClientPack.setHotReloadMode(this.isHotReload);
                 isomorphicClientPack
                     .setDebugMode(this.isDebugMode)
                     .setWatchMode(this.isWatchMode)
                     .setAnalyzMode(this.isAnalyzMode);
+                isomorphicClientPack.setHotReloadMode(this.isDebugMode && this.isHotReload);
                 await isomorphicClientPack.run();
                 const shouldServerApiBuild = ConfigHelper.get("serverapi", false);
                 if (shouldServerApiBuild) {
@@ -105,11 +105,11 @@ export class ProjectBuild {
                 }
                 // 4. 编译./src/server 服务端代码
                 const serverPack = new ServerPack();
-                serverPack.setHotReloadMode(this.isHotReload);
                 serverPack
                     .setAutoRun(this.isRunServerMode)
                     .setDebugMode(this.isDebugMode)
                     .setWatchMode(this.isWatchMode);
+                serverPack.setHotReloadMode(this.isDebugMode && this.isHotReload);
                 await serverPack.run();
                 // 5. 编译module federation 代码
                 const shouldModuleFederateBuild = ConfigHelper.get("federation", false) as ModuleFederationPluginOptions;

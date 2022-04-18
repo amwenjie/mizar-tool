@@ -1,5 +1,8 @@
 {
-    "plugins": ["@loadable/babel-plugin"],
+    "plugins": [
+        "@loadable/babel-plugin",
+        "@babel/plugin-transform-runtime"
+    ],
     "presets": [
         "@babel/preset-env",
         "@babel/preset-react"

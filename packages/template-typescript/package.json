@@ -14,21 +14,24 @@
         "report": "webpack-bundle-analyzer --port 8888 dist/static/client/stats.json"
     },
     "dependencies": {
+        "@babel/runtime-corejs3": "~7.17.9",
         "@loadable/component": "~5.15.2",
-        "mizar": "~0.0.53",
-        "react": "~17.0.2",
-        "react-dom": "~17.0.2",
-        "react-redux": "~7.2.6",
-        "react-router": "~6.2.1",
-        "react-router-dom": "~6.2.1",
+        "mizar": "~1.0.0",
+        "react": "~18.0.0",
+        "react-dom": "~18.0.0",
+        "react-redux": "~8.0.0",
+        "react-router": "~6.3.0",
+        "react-router-dom": "~6.3.0",
         "redux": "~4.1.2",
         "redux-thunk": "~2.4.1"
     },
     "devDependencies": {
-        "@types/react": "~17.0.34",
-        "@types/react-dom": "~17.0.11",
-        "@types/react-redux": "~7.1.20",
-        "alcor": "~0.1.69",
+        "@babel/plugin-transform-runtime": "~7.17.0",
+        "@types/react": "~18.0.5",
+        "@types/react-dom": "~18.0.1",
+        "alcor": "~1.0.0",
+        "eslint-plugin-react": "~7.29.4",
+        "eslint-plugin-react-hooks": "~4.4.0",
         "postcss-less": "~6.0.0"
     },
     "type": "commonjs"

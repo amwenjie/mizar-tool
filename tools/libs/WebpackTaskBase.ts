@@ -142,7 +142,7 @@ export class WebpackTaskBase extends TaskBase {
         if (fs.existsSync(cuzConfigPath)) {
             const cuzConf: (conf: Configuration) => Configuration = (await import(cuzConfigPath)).default;
             if (typeof cuzConf === "function") {
-                finalConf = merge(innerConf, cuzConf(innerConf));
+                finalConf = merge(finalConf, cuzConf(finalConf));
             }
         }
         log.info("compile", { config: JSON.stringify(finalConf) });

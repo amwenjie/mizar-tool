@@ -14,7 +14,7 @@ function getPlugins(isDebugMode: boolean, isHotReload = false): webpackPluginsTy
     const defineOption: {[key: string]: any} = {
         IS_SERVER_RUNTIME: JSON.stringify(true),
         IS_DEBUG_MODE: JSON.stringify(!!isDebugMode),
-        DEV_STATIC_HR_SERVE: JSON.stringify(!!isHotReload),
+        DEV_STATIC_HR_SERVE: JSON.stringify(!!(isDebugMode && isHotReload)),
     };
     if (isDebugMode) {
         defineOption.DEV_PROXY_CONFIG = JSON.stringify((isHotReload ? [

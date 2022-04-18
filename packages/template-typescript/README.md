@@ -21,6 +21,7 @@
              -api-function.ts
           -index.ts   服务端启动入口
        -tsconfig.json
+    -.babelrc
     -.eslintignore
     -.eslintrc.js
     -.stylelintrc.json

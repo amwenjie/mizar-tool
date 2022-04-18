@@ -26,13 +26,13 @@ let projectName;
 function getDependencies() {
     return Object.keys({
         "core-js": "~3.21.1",
-        "mizar": "~0.0.49",
+        "mizar": "~1.0.0",
         "raf": "~3.4.1",
-        "react": "~17.0.2",
-        "react-dom": "~17.0.2",
-        "react-redux": "~7.2.6",
-        "react-router": "~6.2.1",
-        "react-router-dom": "~6.210",
+        "react": "~18.0.0",
+        "react-dom": "~18.0.0",
+        "react-redux": "~8.0.0",
+        "react-router": "~6.3.0",
+        "react-router-dom": "~6.3.0",
         "redux": "~4.1.2",
         "redux-thunk": "~2.4.1",
         "tslib": "~2.3.1"

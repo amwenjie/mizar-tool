@@ -11,6 +11,9 @@
     "sass-loader": {
         
     },
+    "hotReload": {
+        "port": 9911
+    },
     "serverapi": true,
     "standalone": {
         "externals": {
