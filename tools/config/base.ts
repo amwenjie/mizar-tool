@@ -50,9 +50,6 @@ function getRules(): webpackRulesType[] {
         test: /\.tsx?$/i,
         use: [
             {
-                loader: "babel-loader",
-            },
-            {
                 loader: "ts-loader",
             },
         ],
