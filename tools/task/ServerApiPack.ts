@@ -31,7 +31,7 @@ export class ServerApiPack extends WebpackTaskBase {
             walk.on("data", (state) => {
                 const src = state.path;
                 if (/\.ts?/.test(src)) {
-                    const dirName = src.replace(this.src + "/", "")
+                    const dirName = src.replace(this.src + path.sep, "")
                         .replace(".tsx", "")
                         .replace(".ts", "")
                         .replace(/\\/g, "/");

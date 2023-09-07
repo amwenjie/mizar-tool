@@ -21,7 +21,7 @@ function ShowParam () {
     const {id} = useParams();
     return (<h4 className={style.title}>这是video detail {id} 页面</h4>)
 }
-class VideoDetail extends Component<IProps, {}> {
+class VideoDetail extends Component<IProps, null> {
     public static async getInitialData(serverFetch, query, params) {
         logger.log("videodetail page server data okokokok. loader done");
 

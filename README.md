@@ -23,7 +23,7 @@ npm install -g alcor
              -pageB
                 - ...
           -typings
-             -*.d.ts   额外需要的类型声明
+             -externals.d.ts   额外需要的类型声明
           -tsconfig.json
        -public   存放一些非模块化的的内容，每个文件会被直接用link或script引入
        -server   应用的服务端代码

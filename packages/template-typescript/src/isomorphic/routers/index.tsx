@@ -1,14 +1,15 @@
-import loadable from '@loadable/component';
-import React from "react";
+import loadable, { DefaultComponent, LoadableComponent } from '@loadable/component';
+import React, { ReactNode } from "react";
 import NotFound from "../pages/NotFound/index";
 import ArticleDetail from "../pages/ArticleDetail/index";
 import VideoDetail from "../pages/VideoDetail/index";
+import Component from 'mizar/iso/Component';
 
-const AsyncCom = loadable(() => import("../pages/VideoDetail/index.js"));
+const AsyncCom = loadable(() => import("../pages/VideoDetail/index") as any);
 const pageRouter = [
     {
         path: "/detail/iso/:id",
-        element: <VideoDetail />,
+        element: <AsyncCom />,
     },
     {
         path: "/detail/article/:id",
@@ -16,7 +17,7 @@ const pageRouter = [
     },
     {
         path: "/detail/video/:id",
-        element: AsyncCom,
+        element: (AsyncCom as unknown) as React.ReactNode,
     },
     {
         path: "*",

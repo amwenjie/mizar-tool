@@ -7,9 +7,8 @@
         ".eslintrc.js",
     ],
     "compilerOptions": {
-        "target": "es3",
+        "target": "es5",
         "lib": [
-            "es5",
             "ES2015",
             "ES2016",
             "ES2017",

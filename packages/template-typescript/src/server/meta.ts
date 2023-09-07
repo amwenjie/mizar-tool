@@ -6,13 +6,11 @@ export default {
     description: "",
     favicon: "favicon.ico",
     styles: [
-    ],
-    scripts: [
         "public/index.css",
     ],
-    metas: [
+    scripts: [
     ],
-    links: [
+    metas: [
     ],
     calcRootFontSize: 1242,
     loading: {

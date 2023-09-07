@@ -20,6 +20,14 @@ function Jump ({text}) {
     }}>{text}</a>);
 }
 
+function JumpToIso ({text}) {
+    const navigate = useNavigate();
+    return (<a href="#" onClick={(e) => {
+        e.preventDefault();
+        navigate("/detail/iso/111221?ad=iso"+ 66666);
+    }}>{text}</a>);
+}
+
 function JumpToNowhere({text}) {
     const navigate = useNavigate();
     return (<a href="#" onClick={(e) => {
@@ -38,17 +46,24 @@ function ChangeSearch() {
 
 function ArticleDetail(props: IProps) {
     const navigate = useNavigate();
-    const id = props.match ? props.match.params.id  : "null";
+    const id = props.params ? props.params.id  : "null";
     return (<Page>
         {/* <Counting data={{count: props.data.count}}></Counting> */}
         <h5 className={css.articleName}>这是aritcle detail 页面{id}</h5>
-        <i>{props.data.text}: id is: {id}</i>
+        <i>{JSON.stringify(props.data)}: id is: {id}</i>
         <p>
             <a className="hh-aa" href="#" onClick={(e) => {
                 e.preventDefault();
                 addCounting(props);
             }}>增加counting</a>
         </p>
+        <p>
+            <a className="hh-aa" href="#" onClick={(e) => {
+                e.preventDefault();
+                addCounting(props);
+            }}>增加counting</a>
+        </p>
+        <p><JumpToIso text="去往iso 666" /></p>
         <Jump text="去往video detail " />
         <p>
             <a href="#" onClick={(e) => {
@@ -68,7 +83,7 @@ function ArticleDetail(props: IProps) {
 ArticleDetail.getInitialData = async function getInitialData(initFetch, options) {
     initFetch({
         method: "POST",
-        url: "/api/anypath/method/hahah",
+        url: "/api/costm/method/hahah",
         params: { articleId: options.params.id, query: 2 },
         data: {
             key: 1,

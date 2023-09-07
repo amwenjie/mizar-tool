@@ -1,6 +1,6 @@
 export interface IProps {
-    data: unknown;
-    dispatch: unknown;
+    data: any;
+    dispatch: any;
     match?;
     history;
 }

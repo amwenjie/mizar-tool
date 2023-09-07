@@ -15,7 +15,8 @@
     },
     "dependencies": {
         "@loadable/component": "~5.15.2",
-        "mizar": "~1.0.1",
+        "@reduxjs/toolkit": "~1.9.5",
+        "mizar": "~1.1.0",
         "react": "~18.0.0",
         "react-dom": "~18.0.0",
         "react-redux": "~8.0.0",
@@ -27,7 +28,7 @@
     "devDependencies": {
         "@types/react": "~18.0.5",
         "@types/react-dom": "~18.0.1",
-        "alcor": "~1.0.1",
+        "alcor": "~1.1.1",
         "eslint-plugin-react": "~7.29.4",
         "eslint-plugin-react-hooks": "~4.4.0",
         "postcss-less": "~6.0.0"
