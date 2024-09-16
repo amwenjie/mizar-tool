@@ -15,7 +15,7 @@ export class CopyTask extends TaskBase {
     }
 
     protected async compile(): Promise<void> {
-        log.info("->", cyan(this.taskName), HelperTask.taking());
+        log.info("->", cyan(this.getCmdName()), HelperTask.taking());
         await fs.copy(this.src, this.dist);
     }
 }

@@ -1,5 +1,5 @@
 import webpack from "webpack";
-import { type ModuleFederationPluginOptions } from "webpack/lib/container/ModuleFederationPlugin.js";
+import type { ModuleFederationPluginOptions } from "webpack/lib/container/ModuleFederationPlugin.js";
 import FederationModuleIdPlugin from "webpack-federation-module-id-plugin";
 import { sharePluginMapType } from "../interface.js";
 import ConfigHelper from "../libs/ConfigHelper.js";

@@ -1,12 +1,14 @@
 import ESLintWebpackPlugin from "eslint-webpack-plugin";
 import path from "path";
 import StylelintPlugin from "stylelint-webpack-plugin";
-import { type Configuration } from "webpack";
-import {
-    type webpackPluginsType,
-    type webpackRulesType,
+import { fileURLToPath } from "url";
+import type { Configuration } from "webpack";
+import type {
+    webpackPluginsType,webpackRulesType,
 } from "../interface.js";
 import ConfigHelper from "../libs/ConfigHelper.js";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 function getEnvDef(isDebugMode: boolean): "development" | "production" {
     return isDebugMode ? "development" : "production";
@@ -29,9 +31,10 @@ function getPlugins(isDebugMode: boolean): webpackPluginsType[] {
 
     const defaultESLintConf = {
         files: "./src",
-        extensions: ["ts", "tsx", "js"],
+        extensions: ["ts", "tsx", "js", "jsx", "mjs", "cjs"],
         failOnError: !isDebugMode,
-    }
+        configType: "flat",
+    };
     let esLintPluginConf = ConfigHelper.get("eslint", true);
     if (esLintPluginConf === true) {
         esLintPluginConf = defaultESLintConf;
@@ -75,6 +78,7 @@ export default function base(isDebugMode: boolean): Configuration {
         resolveLoader: {
             modules: [
                 "node_modules",
+                path.resolve(__dirname, "../libs/loaders"),
             ],
         },
     };

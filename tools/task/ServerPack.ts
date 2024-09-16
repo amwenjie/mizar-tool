@@ -1,6 +1,6 @@
 import { cyan, green } from "colorette";
 import path from "path";
-import { type Configuration } from "webpack";
+import type { Configuration } from "webpack";
 import sharePlugin from "../config/share.plugin.js";
 import {
     type webpackPluginsType,
@@ -51,11 +51,13 @@ export class ServerPack extends WebpackTaskBase {
             {
                 loader: "css-loader",
                 options: {
+                    esModule: true,
                     importLoaders: 1 + extraLoaders.length,
                     sourceMap,
                     modules: {
                         auto: shouldSourceModuled,
                         localIdentName: localIdentName,
+                        exportLocalsConvention: "camel-case-only",
                         namedExport: true,
                         exportOnlyLocals: true
                     },
@@ -82,7 +84,7 @@ export class ServerPack extends WebpackTaskBase {
         rules.push({
             exclude: /\.d\.ts$/i,
             test: /[\\/]src[\\/]isomorphic[\\/].+[\\/][A-Z][^\\/]+[\\/]index\.tsx?$/,
-            loader: "alcor-loaders/connect-default-param-loader",
+            loader: "connect-param-inject-loader",
         });
         rules.push({
             test: /\.css$/i,
@@ -133,10 +135,10 @@ export class ServerPack extends WebpackTaskBase {
     }
 
     protected async done(): Promise<void> {
-        console.log(green(`${cyan(this.taskName)} task completed.\n`));
+        // console.log(green(`${cyan(this.getCmdName())} task completed.\n`));
         this.compileFinishedCallback(async (): Promise<void> => {
             if (this.autoRun === true && this.isDebugMode === true) {
-                const serverEntry = "index";
+                const serverEntry = "index.cjs";
                 if (timeout) {
                     clearTimeout(timeout);
                 }
@@ -155,7 +157,7 @@ export class ServerPack extends WebpackTaskBase {
     }
 
     protected async compile(): Promise<void|Error> {
-        log.info("->", cyan(this.taskName), HelperTask.taking());
+        log.info("->", cyan(this.getCmdName()), HelperTask.taking());
         const config: Configuration = {
             entry: { "index": this.src, },
             module: {

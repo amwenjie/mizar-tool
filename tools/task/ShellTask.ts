@@ -17,23 +17,23 @@ export class ShellTask extends TaskBase {
             const output = execSync(cli, {
                 cwd: this.rootPath,
             });
-            log.info(cyan(this.taskName), "output", output.toString());
+            log.info(cyan(this.getCmdName()), "output", output.toString());
         } catch (error) {
-            log.error(red(`${cyan(this.taskName)} stdout: ${error.stdout.toString()}`));
-            log.error(red(`${cyan(this.taskName)} stderr: ${error.stderr.toString()}`));
-            const msg = cyan(this.taskName) + " 执行失败,请检查代码或命令:" + cli;
+            log.error(red(`${cyan(this.getCmdName())} stdout: ${error.stdout.toString()}`));
+            // log.error(red(`${cyan(this.getCmdName())} stderr: ${error.stderr.toString()}`));
+            const msg = cyan(this.getCmdName()) + " 执行失败,请检查代码或命令:" + cli;
             throw new Error(msg);
         }
     }
 
     protected async compile(cmd: string, ...args): Promise<void> {
-        log.info("->", cyan(this.taskName), HelperTask.taking());
+        log.info("->", cyan(this.getCmdName()), HelperTask.taking());
         const cli = [
             cmd,
             ...args,
             this.src
         ].join(" ");
-        log.info(cyan(this.taskName), "start", "cwd:", this.rootPath, "cli:", cli);
+        log.info(cyan(this.getCmdName()), "start", "cwd:", this.rootPath, "cli:", cli);
         this.exec(cli);
         
         if (this.isWatchMode) {
@@ -42,10 +42,10 @@ export class ShellTask extends TaskBase {
                     interval: 600,
                 })
                 .on('change', path => {
-                    log.info(cyan(this.taskName), " file change: ", path, " re-run shell");
+                    log.info(cyan(this.getCmdName()), " file change: ", path, " re-run shell");
                     this.exec(cli);
                 });
-            log.info(cyan(this.taskName), "start watching ", this.src);
+            log.info(cyan(this.getCmdName()), "start watching ", this.src);
         }
         return Promise.resolve();
     }

@@ -1,6 +1,7 @@
 export interface IProps {
-    data: any;
-    dispatch: any;
+    data;
+    dispatch;
     match?;
     history;
+    params;
 }

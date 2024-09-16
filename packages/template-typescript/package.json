@@ -1,5 +1,5 @@
 {
-    "name": "alcor-template-app",
+    "name": "mizar-app-template",
     "version": "0.1.0",
     "repository": {
         "type": "git",
@@ -14,24 +14,16 @@
         "report": "webpack-bundle-analyzer --port 8888 dist/static/client/stats.json"
     },
     "dependencies": {
-        "@loadable/component": "~5.15.2",
-        "@reduxjs/toolkit": "~1.9.5",
-        "mizar": "~1.1.0",
-        "react": "~18.2.0",
-        "react-dom": "~18.2.0",
-        "react-redux": "~8.1.2",
-        "react-router": "~6.15.0",
-        "react-router-dom": "~6.15.0",
-        "redux": "~4.2.1",
-        "redux-thunk": "~2.4.1"
+        "@loadable/component": "~5.16.4",
+        "@reduxjs/toolkit": "~2.2.7",
+        "mizar": "~1.1.1",
+        "react": "~18.3.1",
+        "react-dom": "~18.3.1"
     },
     "devDependencies": {
-        "@types/react": "~18.2.21",
-        "@types/react-dom": "~18.2.7",
-        "alcor": "~1.1.1",
-        "eslint-plugin-react": "~7.33.2",
-        "eslint-plugin-react-hooks": "~4.6.0",
-        "postcss-less": "~6.0.0"
+        "@types/react": "~18.3.5",
+        "@types/react-dom": "~18.3.0",
+        "alcor": "~1.1.3"
     },
-    "type": "commonjs"
+    "type": "module"
 }

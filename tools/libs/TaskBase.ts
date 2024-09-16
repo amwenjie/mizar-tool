@@ -16,8 +16,9 @@ export class TaskBase {
     protected src: string;
     protected dist: string;
     protected state = false;
+    protected cmdName: string;
 
-    constructor(name) {
+    constructor(name: string) {
         this.taskName = name;
         this.src = path.resolve("./src");
         this.dist = path.resolve("./dist");
@@ -30,7 +31,18 @@ export class TaskBase {
     protected async done(): Promise<void> {
         return Promise.resolve(console.log(green(`${cyan(this.taskName)} task completed.\n`)));
     }
+
+    public getCmdName(): string {
+        if (this.cmdName) {
+            return this.cmdName;
+        }
+        return this.taskName;
+    }
     
+    protected setCmdName(str: string) {
+        this.cmdName = str;
+    }
+
     public setWatchMode(isWatchMode: boolean): TaskBase {
         this.isWatchMode = isWatchMode;
         return this;
@@ -48,14 +60,18 @@ export class TaskBase {
 
     public async run(...args): Promise<void> {
         const spinner = !this.isDebugMode && ora();
-
+        this.setCmdName(
+            (this.isDebugMode ? [this.taskName] : []).concat(
+                [this.src, ...args]
+            ).join(' '));
         try {
-            spinner && spinner.start(`${this.taskName} compile task begin ...\r\n`);
-            await this.compile(...args);
-            spinner && spinner.succeed(`${this.taskName} compile task end.\r\n`);
-        } catch (error) {
-            spinner && spinner.fail(`${this.taskName} compile task ${red("fail")}.\r\n`)
-            log.error(red(`${cyan(this.taskName)}  error: ${error.message}`), error);
+            spinner && spinner.start(`${this.getCmdName()} compile task running ...\r\n`);
+            const compileArgs = [...args];
+            await this.compile(...compileArgs);
+            spinner && spinner.succeed(`${this.getCmdName()} compile task done.\r\n`);
+        } catch {
+            spinner && spinner.fail(`${this.getCmdName()} compile task ${red("fail")}.\r\n`);
+            // log.error(red(`${cyan(this.getCmdName())}  error: ${error.message}`), error);
         }
     }
 }

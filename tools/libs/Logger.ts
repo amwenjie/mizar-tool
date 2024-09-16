@@ -1,8 +1,9 @@
+import { cliArgv } from "tools/interface";
 import yargs  from "yargs";
 import { hideBin } from "yargs/helpers";
 // import log4js from "log4js";
 
-const argv = yargs(hideBin(process.argv)).argv as any;
+const argv:cliArgv = yargs(hideBin(process.argv)).argv as cliArgv;
 
 // log4js.configure({
 //     appenders: {

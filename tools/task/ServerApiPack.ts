@@ -2,7 +2,7 @@ import { cyan, red } from "colorette";
 import fs from "fs-extra";
 import klaw from "klaw";
 import path from "path";
-import { type Configuration, type EntryObject, } from "webpack";
+import type { Configuration, EntryObject, } from "webpack";
 import getGlobalConfig, { type IGlobalConfig } from "../libs/getGlobalConfig.js";
 import Logger from "../libs/Logger.js";
 import { WebpackTaskBase } from "../libs/WebpackTaskBase.js";
@@ -39,7 +39,7 @@ export class ServerApiPack extends WebpackTaskBase {
                 }
             });
             walk.on("end", () => {
-                log.info(cyan(this.taskName), "scan done ; pack.keys", Object.keys(entry).join(","));
+                log.info(cyan(this.getCmdName()), "scan done ; pack.keys", Object.keys(entry).join(","));
                 resolve(entry);
             });
             walk.on("error", e => {
@@ -50,14 +50,14 @@ export class ServerApiPack extends WebpackTaskBase {
     }
 
     protected async compile(): Promise<void|Error> {
-        log.info("->", cyan(this.taskName), HelperTask.taking());
+        log.info("->", cyan(this.getCmdName()), HelperTask.taking());
         
         const entry: EntryObject = await this.scan();
         if (!entry || Object.keys(entry).length === 0) {
-            log.warn(cyan(this.taskName), " scan emtpy entry");
+            log.warn(cyan(this.getCmdName()), " scan emtpy entry");
             return;
         }
-        log.info(cyan(this.taskName), "run.entry", entry);
+        log.info(cyan(this.getCmdName()), "run.entry", entry);
 
         const config: Configuration = {
             entry,

@@ -18,3 +18,14 @@ export interface sharePluginMapType {
 export interface shareRuleMapType {
     [rule: string]: webpackRulesType[];
 }
+
+export interface cliArgv {
+    debug?: boolean;
+    watch?: boolean;
+    hotReload?: boolean;
+    runServer?: boolean;
+    onlystandalone?: boolean;
+    analyz?: boolean;
+    verbose?: boolean;
+    publish?: boolean;
+};

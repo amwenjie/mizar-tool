@@ -1,6 +1,6 @@
 import DirectoryNamedWebpackPlugin from "directory-named-webpack-plugin";
 import MiniCssExtractPlugin from "mini-css-extract-plugin";
-import webpack, { 
+import webpack, {
     type Configuration,
 } from "webpack";
 import { merge } from "webpack-merge";
@@ -14,10 +14,11 @@ import { getCssModuleMode, shouldSourceModuled, } from "../libs/Utils.js";
 import base from "./base.js";
 
 function getCssLoaders(isDebugMode: boolean, extraLoaders = []): webpackRulesType[] {
-    const loaders: webpackRulesType[] = [];
-    loaders.push({
+    const loaders: webpackRulesType[] = [{
+        loader: "css-module-typing-loader",
+    }, {
         loader: MiniCssExtractPlugin.loader,
-    });
+    }];
     let localIdentName = prodLocalIdentName;
     let sourceMap = false;
     if (isDebugMode) {
@@ -28,11 +29,13 @@ function getCssLoaders(isDebugMode: boolean, extraLoaders = []): webpackRulesTyp
         {
             loader: "css-loader",
             options: {
+                esModule: true,
                 importLoaders: 1 + extraLoaders.length,
                 sourceMap,
                 modules: {
                     auto: shouldSourceModuled,
                     mode: getCssModuleMode,
+                    exportLocalsConvention: "camel-case-only",
                     localIdentName,
                     namedExport: true,
                 },
@@ -60,8 +63,15 @@ function getRules(isDebugMode: boolean): webpackRulesType[] {
     rules.push({
         exclude: /\.d\.ts$/i,
         test: /[\\/]src[\\/]isomorphic[\\/].+[\\/][A-Z][^\\/]+[\\/]index\.tsx?$/,
-        loader: "alcor-loaders/connect-default-param-loader",
+        loader: "connect-param-inject-loader",
     });
+    // if (isDebugMode) {
+    //     rules.push({
+    //         test: /\.(?:css|less|s[ac]ss)$/i,
+    //         exclude: /[\\/]node_modules[\\/]/i,
+    //         loader: "alcor-loaders/typing-for-css-module",
+    //     });
+    // };
     rules.push({
         test: /\.css$/i,
         use: getCssLoaders(isDebugMode),

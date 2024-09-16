@@ -1,5 +1,6 @@
 import { red } from "colorette";
 import fs from "fs-extra";
+import path from "path";
 import Logger from "../libs/Logger.js";
 import TaskBase from "../libs/TaskBase.js";
 import { HelperTask } from "./HelperTask.js";
@@ -19,22 +20,28 @@ export class PackageInfo extends TaskBase {
 
     private outputPackageJson(): PackageInfo {
         try {
-            fs.copySync(this.rootPath + "/package.json", this.dist + "/package.json");
+            const orig = path.resolve(this.rootPath, "package.json");
+            const dist = path.resolve(this.dist, "package.json");
+            fs.copySync(orig, dist);
         } catch (e) {
             log.error(red("copy package.json raise an error"), e);
         }
-        if (fs.existsSync(this.rootPath + "/package-lock.json")) {
+        let orig = path.resolve(this.rootPath, "package-lock.json");
+        let dist = path.resolve(this.dist, "package-lock.json");
+        if (fs.existsSync(orig)) {
             try {
-                fs.copySync(this.rootPath + "/package-lock.json", this.dist + "/package-lock.json");
+                fs.copySync(orig, dist);
             } catch (e) {
                 log.error(red("copy package-lock.json raise an error"), e);
             }
         }
-        if (fs.existsSync(this.rootPath + "/README.md")) {
+        orig = path.resolve(this.rootPath, "README.md");
+        dist = path.resolve(this.dist, "README.md");
+        if (fs.existsSync(orig)) {
             try {
-                fs.copySync(this.rootPath + "/README.md", this.dist + "/README.md");
+                fs.copySync(orig, dist);
             } catch (e) {
-                log.error(red(`copy ${this.rootPath + "/README.md"} raise an error`), e);
+                log.error(red(`copy ${orig} raise an error`), e);
             }
         }
         return this;
@@ -44,7 +51,7 @@ export class PackageInfo extends TaskBase {
         try {
             fs.mkdirpSync(this.dist);
         } catch (error) {
-            log.error(red("PackageInfo.mkdir.CAN_NOT_MKDIR"), this.dist);
+            log.error(red(`PackageInfo${error.message}`), this.dist);
         }
     }
 }

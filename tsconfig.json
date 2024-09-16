@@ -1,7 +1,11 @@
 {
-    "ts-node": {
-        "esm": true
-    },
+    "include": [
+        "bin",
+        "tools",
+        "Build.ts",
+        "typings",
+        "eslint.config.mjs",
+    ],
     "compilerOptions": {
         "target": "ESNext",
         "traceResolution": false,
@@ -14,7 +18,7 @@
         "pretty": false,
         "module": "ESNext",
         "jsx": "react",
-        "moduleResolution": "node",
+        "moduleResolution": "Bundler",
         "declaration": true,
         "sourceMap": false,
         "noImplicitAny": false,

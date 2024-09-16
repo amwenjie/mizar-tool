@@ -7,8 +7,9 @@ import Logger from "./tools/libs/Logger.js";
 import { PackageInfo } from "./tools/task/PackageInfo.js";
 import { PublishTask } from "./tools/task/PublishTask.js";
 import { ShellTask } from "./tools/task/ShellTask.js";
+import { cliArgv } from "./tools/interface.js";
 
-const argv:any = yargs(hideBin(process.argv)).argv as any;
+const argv:cliArgv = yargs(hideBin(process.argv)).argv as cliArgv;
 
 const log = Logger("Build");
 class Build {

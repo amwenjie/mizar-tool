@@ -19,7 +19,7 @@ function JumpTo({url, text}) {
 
 function ShowParam () {
     const {id} = useParams();
-    return (<h4 className={style.title}>这是video detail {id} 页面</h4>)
+    return (<p className={style.title}>这是video detail {id} 页面</p>)
 }
 class VideoDetail extends Component<IProps, null> {
     public static async getInitialData(serverFetch, query, params) {

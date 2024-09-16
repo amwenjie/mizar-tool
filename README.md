@@ -22,16 +22,15 @@ npm install -g alcor
                 -interface.ts    页面组件内所有的ts定义文件
              -pageB
                 - ...
-          -typings
-             -externals.d.ts   额外需要的类型声明
           -tsconfig.json
        -public   存放一些非模块化的的内容，每个文件会被直接用link或script引入
        -server   应用的服务端代码
           -apis   服务端node api存放目录，规则是请求路径以/api/开头，文件名为方法名
                 -api-name.ts
           -index.ts   服务端启动入口
-    -.eslintignore
-    -.eslintrc.js
+    -typings
+       -externals.d.ts   额外需要的类型声明
+    -.eslint.config.js
     -.stylelintrc.json
     -package.json
     -tsconfig.json

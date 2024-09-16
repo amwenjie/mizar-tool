@@ -129,7 +129,7 @@ function init() {
         .catch(() => {
             try {
                 return execSync('npm view alcor version').toString().trim();
-            } catch (e) {
+            } catch {
                 return null;
             }
         })
@@ -256,7 +256,7 @@ function shouldUseYarn() {
     try {
         execSync('yarnpkg --version', { stdio: 'ignore' });
         return true;
-    } catch (e) {
+    } catch {
         return false;
     }
 }
@@ -406,7 +406,7 @@ function checkNpmVersion() {
     try {
         npmVersion = execSync('npm --version').toString().trim();
         hasMinNpm = semver.gte(npmVersion, '6.0.0');
-    } catch (err) {
+    } catch {
         // ignore
     }
     return {
@@ -437,7 +437,7 @@ function checkYarnVersion() {
                 hasMaxYarnPnp = semver.lt(trimmedYarnVersion, maxYarnPnp);
             }
         }
-    } catch (err) {
+    } catch {
         // ignore
     }
     return {
@@ -539,7 +539,7 @@ function isSafeToCreateProjectIn(root, name) {
                 } else {
                     log.info(`  ${file}`);
                 }
-            } catch (e) {
+            } catch {
                 log.info(`  ${file}`);
             }
         }
@@ -568,7 +568,7 @@ function getProxy() {
             // Trying to read https-proxy from .npmrc
             const httpsProxy = execSync('npm config get https-proxy').toString().trim();
             return httpsProxy !== 'null' ? httpsProxy : undefined;
-        } catch (e) {
+        } catch {
             return;
         }
     }
@@ -585,7 +585,7 @@ function checkThatNpmCanReadCwd() {
         // to reproduce the wrong path. Just printing process.cwd()
         // in a Node process was not enough.
         childOutput = spawn.sync('npm', ['config', 'list']).output.join('');
-    } catch (err) {
+    } catch {
         // Something went wrong spawning node.
         // Not great, but it means we can't do this check.
         // We might fail later on, but let's continue.

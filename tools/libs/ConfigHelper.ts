@@ -1,7 +1,7 @@
-import { type Options as eslintOptions } from "eslint-webpack-plugin";
+import type { Options as eslintOptions } from "eslint-webpack-plugin";
 import fs from "fs-extra";
 import Path from "path";
-import { type Options as stylelintOptions } from "stylelint-webpack-plugin";
+import type { Options as stylelintOptions } from "stylelint-webpack-plugin";
 import Logger from "../libs/Logger.js";
 
 const log = Logger("ConfigHelper");
@@ -37,7 +37,6 @@ export default class ConfigHelper {
             log.info("read in store", key + "->" + JSON.stringify(ConfigHelper.store[`${configPath}-${node}`]));
             return ConfigHelper.store[`${configPath}-${node}`];
         }
-        log.info("confighelper privateGet configPath: ", configPath);
         try {
             let store = fs.readJSONSync(configPath);
             const info = node.split(".");

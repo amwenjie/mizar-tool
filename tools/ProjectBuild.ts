@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 import { green, red } from "colorette";
-import { type ModuleFederationPluginOptions } from "webpack/lib/container/ModuleFederationPlugin.js";
+import fs from "fs-extra";
+import path from "path";
+import type { ModuleFederationPluginOptions } from "webpack/lib/container/ModuleFederationPlugin.js";
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 import ConfigHelper from "./libs/ConfigHelper.js";
@@ -14,6 +16,7 @@ import { PublishTask } from "./task/PublishTask.js";
 import { ServerApiPack } from "./task/ServerApiPack.js";
 import { ServerPack } from "./task/ServerPack.js";
 import { StandalonePack } from "./task/StandalonePack.js";
+import { cliArgv } from "./interface.js";
 
 const log = Logger("ProjectBuild");
 
@@ -37,31 +40,31 @@ export class ProjectBuild {
         }
     }
 
-    public setAnalyzMode(isAnalyzMode) {
+    public setAnalyzMode(isAnalyzMode: boolean) {
         this.isAnalyzMode = isAnalyzMode;
     }
 
-    public setDebugMode(isDebugMode) {
+    public setDebugMode(isDebugMode: boolean) {
         this.isDebugMode = isDebugMode;
     }
 
-    public setWatchMode(isWatchMode) {
+    public setWatchMode(isWatchMode: boolean) {
         this.isWatchMode = isWatchMode;
     }
 
-    public setPublishModel(isPublishMode) {
+    public setPublishModel(isPublishMode: boolean) {
         this.isPublishMode = isPublishMode;
     }
 
-    public setRunServerMode(isRunServerMode) {
+    public setRunServerMode(isRunServerMode: boolean) {
         this.isRunServerMode = isRunServerMode;
     }
 
-    public setOnlyStandalone(isOnlyStandalone) {
+    public setOnlyStandalone(isOnlyStandalone: boolean) {
         this.isOnlyStandalone = isOnlyStandalone;
     }
 
-    public setHotReloadMode(isHotReload) {
+    public setHotReloadMode(isHotReload: boolean) {
         this.isHotReload = isHotReload;
     }
 
@@ -96,21 +99,27 @@ export class ProjectBuild {
                 await isomorphicClientPack.run();
                 const shouldServerApiBuild = ConfigHelper.get("serverapi", false);
                 if (shouldServerApiBuild) {
-                    // 3. 编译./src/server/apis 服务端api代码
-                    const serverApiPack = new ServerApiPack();
-                    serverApiPack
-                        .setWatchMode(this.isWatchMode)
-                        .setDebugMode(this.isDebugMode);
-                    await serverApiPack.run();
+                    if (fs.existsSync(path.resolve("./src/server/apis"))) {
+                        // 3. 编译./src/server/apis 服务端api代码
+                        const serverApiPack = new ServerApiPack();
+                        serverApiPack
+                            .setWatchMode(this.isWatchMode)
+                            .setDebugMode(this.isDebugMode);
+                        await serverApiPack.run();
+                    } else {
+                        throw new Error("server apis config is turned on, but server/apis path not exist.");
+                    }
                 }
-                // 4. 编译./src/server 服务端代码
-                const serverPack = new ServerPack();
-                serverPack
-                    .setAutoRun(this.isRunServerMode)
-                    .setDebugMode(this.isDebugMode)
-                    .setWatchMode(this.isWatchMode);
-                serverPack.setHotReloadMode(this.isDebugMode && this.isHotReload);
-                await serverPack.run();
+                if (fs.existsSync(path.resolve("./src/server"))) {
+                    // 4. 编译./src/server 服务端代码
+                    const serverPack = new ServerPack();
+                    serverPack
+                        .setAutoRun(this.isRunServerMode)
+                        .setDebugMode(this.isDebugMode)
+                        .setWatchMode(this.isWatchMode);
+                    serverPack.setHotReloadMode(this.isDebugMode && this.isHotReload);
+                    await serverPack.run();
+                }
                 // 5. 编译module federation 代码
                 const shouldModuleFederateBuild = ConfigHelper.get("federation", false) as ModuleFederationPluginOptions;
                 if (shouldModuleFederateBuild && shouldModuleFederateBuild.exposes) {
@@ -123,14 +132,18 @@ export class ProjectBuild {
             }
             const shouldStandaloneBuild = ConfigHelper.get("standalone", false);
             if (shouldStandaloneBuild) {
-                // 6. 编译./src/standalone 代码 
-                const standalonePack = new StandalonePack();
-                standalonePack
-                    .setDebugMode(this.isDebugMode)
-                    .setWatchMode(this.isWatchMode);
-                await standalonePack.run();
+                if (fs.existsSync(path.resolve("./src/standalone"))) {
+                    // 6. 编译./src/standalone 代码 
+                    const standalonePack = new StandalonePack();
+                    standalonePack
+                        .setDebugMode(this.isDebugMode)
+                        .setWatchMode(this.isWatchMode);
+                    await standalonePack.run();
+                }  else {
+                    throw new Error("standalone config is turned on, but src/standalone path not exist.");
+                }
             } else if (this.isOnlyStandalone) {
-                throw new Error(`the value of 'standalone' field must be an object in ./config/configure.json while build with --ost argument`)
+                throw new Error("the value of 'standalone' field must be an object in ./config/configure.json while build with --ost argument")
             }
             console.log(green("build success"));
         } catch (e) {
@@ -142,7 +155,7 @@ export class ProjectBuild {
 
 (async () => {
     const projectBuild = new ProjectBuild();
-    const argv = yargs(hideBin(process.argv)).argv  as any;
+    const argv:cliArgv = yargs(hideBin(process.argv)).argv as cliArgv;
     if (argv.debug) {
         projectBuild.setDebugMode(true);
     }
@@ -166,7 +179,7 @@ export class ProjectBuild {
     // }
     try {
         await projectBuild.start();
-    } catch (error) {
+    } catch {
         process.exit(1);
     }
 })();

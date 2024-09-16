@@ -1,6 +1,6 @@
 // fork from https://github.com/DanielAmenou/webpack-federation-stats-plugin
 import webpack, { type Compiler } from "webpack";
-import { type ModuleFederationPluginOptions } from "webpack/lib/container/ModuleFederationPlugin";
+import type { ModuleFederationPluginOptions } from "webpack/lib/container/ModuleFederationPlugin";
 
 const PLUGIN_NAME = "FederationStatsPlugin";
 
@@ -13,7 +13,7 @@ export default class FederationStatsPlugin {
     }
 
     apply(compiler: Compiler) {
-        const federationPlugin: any = compiler.options.plugins?.find((plugin) => plugin.constructor.name === "ModuleFederationPlugin")
+        const federationPlugin: any = compiler.options.plugins?.find((plugin) => plugin.constructor.name === "ModuleFederationPlugin");
 
         if (!federationPlugin) {
             throw new Error("No ModuleFederationPlugin found.");

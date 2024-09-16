@@ -1,8 +1,8 @@
 import MiniCssExtractPlugin from "mini-css-extract-plugin";
 import path from "path";
-import { type Configuration } from "webpack";
+import type { Configuration } from "webpack";
 import sharePlugin from "../config/share.plugin.js";
-import { type webpackPluginsType } from "../interface.js";
+import type { webpackPluginsType } from "../interface.js";
 import getGlobalConfig, { type IGlobalConfig } from "../libs/getGlobalConfig.js";
 import Logger from "../libs/Logger.js";
 import { WebpackTaskBase } from "../libs/WebpackTaskBase.js";

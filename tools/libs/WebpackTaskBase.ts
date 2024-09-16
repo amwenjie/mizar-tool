@@ -2,7 +2,6 @@ import { bold, cyan, red, white, yellow } from "colorette";
 import fs from "fs-extra";
 import path from "path";
 import webpack, {
-    type Compiler,
     type Configuration,
     type Stats,
     type WebpackError,
@@ -11,15 +10,16 @@ import { merge } from "webpack-merge";
 import WebpackDevServer from "webpack-dev-server";
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
+import ConfigHelper from "./ConfigHelper.js";
 import clientBase from "../config/client.base.js";
 import serverBase from "../config/server.base.js";
+import { cliArgv } from "../interface.js";
 import HelperTask from "../task/HelperTask.js";
-
 import Logger from "./Logger.js";
 import TaskBase from "./TaskBase.js";
 
 const log = Logger();
-const argv = yargs(hideBin(process.argv)).argv as any;
+const argv:cliArgv = yargs(hideBin(process.argv)).argv as cliArgv;
 const hooksName = "alcor-webpack-task-base";
 
 const taskCuzConfFileNameMap = {
@@ -51,7 +51,7 @@ export class WebpackTaskBase extends TaskBase {
         const context = WebpackTaskBase.compileQueue[this.index];
         if (context) {
             context.state = false;
-            log.info(`${cyan(this.taskName)}, file change: ${fileName}`, Date.now());
+            log.info(`${cyan(this.getCmdName())}, file change: ${fileName}`, Date.now());
         }
     }
     
@@ -80,7 +80,7 @@ export class WebpackTaskBase extends TaskBase {
         const info = stats.toJson();
         if (stats.hasErrors()) {
             // 有错误
-            this.helperTask.sendMessage(this.taskName, `代码有${info.errors.length}个错误`);
+            this.helperTask.sendMessage(this.getCmdName(), `代码有${info.errors.length}个错误`);
             info.errors.forEach(error => {
                 log.error([
                     error.moduleName ? white("\n" + error.moduleName) : "",
@@ -90,7 +90,7 @@ export class WebpackTaskBase extends TaskBase {
             });
             // 非watch模式直接抛异常
             if (this.isDebugMode === false) {
-                const message = cyan(this.taskName) + ".fail";
+                const message = cyan(this.getCmdName()) + ".fail";
                 throw new Error(message);
             }
         }
@@ -112,12 +112,12 @@ export class WebpackTaskBase extends TaskBase {
                     ].join(""));
                     log.info(warning);
                 });
-                (info.warnings.length - showWarnList.length) > 0 && this.helperTask.sendMessage(this.taskName, "代码有警告");
+                (info.warnings.length - showWarnList.length) > 0 && this.helperTask.sendMessage(this.getCmdName(), "代码有警告");
             }
         }
 
         // 完成
-        this.helperTask.sendMessage(this.taskName, "编译结束:" + this.count++);
+        this.helperTask.sendMessage(this.getCmdName(), "编译结束:" + this.count++);
 
         if (stats) {
             log.info(stats.toString({
@@ -157,7 +157,7 @@ export class WebpackTaskBase extends TaskBase {
                 callback();
             });
             compiler.hooks.done.tapAsync(hooksName, async (stats: Stats, callback = () => {}) => {
-                log.info(cyan(this.taskName), "done, newhash: ", stats.hash, " , oldhash: ", WebpackTaskBase.compileQueue[this.index].hash);
+                log.info(cyan(this.getCmdName()), "done, newhash: ", stats.hash, " , oldhash: ", WebpackTaskBase.compileQueue[this.index].hash);
                 // const prevHash = WebpackTaskBase.compileQueue[this.index].hash;
                 // if (prevHash !== stats.hash) {
                 await this.compileDone(stats);
@@ -167,19 +167,19 @@ export class WebpackTaskBase extends TaskBase {
                 callback();
             });
             // compiler.hooks.failed.tap(hooksName, error => {
-            //     log.info("++++++", cyan(this.taskName), "failed", error);
+            //     log.info("++++++", cyan(this.getCmdName()), "failed", error);
             //     // this.compileDone(stats);
             // });
             // compiler.hooks.watchClose.tap(hooksName, () => {
-            //     log.info("++++++", cyan(this.taskName), "watchClose");
+            //     log.info("++++++", cyan(this.getCmdName()), "watchClose");
             //     // this.compileDone(stats);
             // });
             compiler.close(error => {
                 if (error) {
-                    log.error(red(`${cyan(this.taskName)} compile close error: `), error);
+                    log.error(red(`${cyan(this.getCmdName())} compile close error: `), error);
                     return;
                 }
-                log.info(cyan(this.taskName), " compile closed.");
+                log.info(cyan(this.getCmdName()), " compile closed.");
             });
 
             if (this.taskName === "IsomorphicPack" && this.isHotReload) {
@@ -193,7 +193,7 @@ export class WebpackTaskBase extends TaskBase {
                     hot: true,
                     liveReload: true,
                     port: 9000,
-                    static: "/static/client",
+                    static: `/${ConfigHelper.getPublicPath()}client/`,
                     ...(finalConf.devServer || {})
                 }, compiler);
                 wds.start().then(resolve).catch(reject);
@@ -202,14 +202,14 @@ export class WebpackTaskBase extends TaskBase {
 
             const compileCallback = async (error: WebpackError|null|undefined, stats: Stats): Promise<void> => {
                 if (error) {
-                    this.helperTask.sendMessage(this.taskName, "webpack执行出错");
-                    log.error(cyan(this.taskName), ` > ${red(bold("webpack error:"))}`);
+                    this.helperTask.sendMessage(this.getCmdName(), "webpack执行出错");
+                    log.error(cyan(this.getCmdName()), ` > ${red(bold("webpack error:"))}`);
                     log.error(error.stack || error);
                     if (error.details) {
                         log.error(error.details);
                     }
                     reject(error);
-                    throw new Error(cyan(this.taskName) + " 运行有错误");
+                    throw new Error(cyan(this.getCmdName()) + " 运行有错误");
                 }
                 this.printCompileResult(stats);
                 if (this.isAllCompileDone()) {

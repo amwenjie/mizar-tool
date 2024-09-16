@@ -22,7 +22,7 @@ export default async function RunServer(serverPath: string, debug: number, cb: (
         let cbIsPending = !!cb;
 
         function onStdOut(data): void {
-            const time = new Date().toTimeString();
+            // const time = new Date().toTimeString();
             const match = data.toString("utf8").match(RUNNING_REGEXP);
             // process.stdout.write(time.replace(/.*(\d{2}:\d{2}:\d{2}).*/, "[$1]") + " [INFO] server  - ");
             // log.info(time.replace(/.*(\d{2}:\d{2}:\d{2}).*/, "[$1] "))

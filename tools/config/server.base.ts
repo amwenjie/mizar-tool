@@ -1,7 +1,7 @@
 import webpack, { type Configuration } from "webpack";
 import { merge } from "webpack-merge";
 import nodeExternals from "webpack-node-externals";
-import { type webpackPluginsType } from "../interface.js";
+import type { webpackPluginsType } from "../interface.js";
 import ConfigHelper from "../libs/ConfigHelper.js";
 import base from "./base.js";
 
@@ -41,7 +41,7 @@ export default function serverBase(isDebugMode: boolean, isHotReload = false): C
             }),
         ],
         output: {
-            filename: "[name].js",
+            filename: "[name].cjs",
             library: {
                 type: "commonjs2",
             },

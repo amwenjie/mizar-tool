@@ -3,6 +3,7 @@ import { cyan, green, red, yellow } from "colorette";
 import Notifier from "node-notifier";
 import yargs  from "yargs";
 import { hideBin } from "yargs/helpers";
+import { cliArgv } from "../interface.js";
 import Logger from "../libs/Logger.js";
 import TaskBase from "../libs/TaskBase.js";
 import { CleanTask } from "./CleanTask.js";
@@ -47,7 +48,7 @@ export class HelperTask extends TaskBase {
     }
 
     public async sendMessage(titleStr: string, messageStr: string): Promise<void> {
-        const argv = yargs(hideBin(process.argv)).argv  as any;
+        const argv:cliArgv = yargs(hideBin(process.argv)).argv as cliArgv;
         if (argv["no-notify"]) {
             return Promise.resolve();
         }

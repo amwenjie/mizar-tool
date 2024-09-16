@@ -10,6 +10,7 @@ import { PublicAsset } from "./task/PublicAsset.js";
 import { PublishTask } from "./task/PublishTask.js";
 import { ShellTask } from "./task/ShellTask.js";
 import { StandalonePack } from "./task/StandalonePack.js";
+import { cliArgv } from "./interface.js";
 
 const log = Logger("PackageBuild");
 
@@ -18,15 +19,15 @@ class PackageBuild {
     private isWatchMode = false;
     private isPublishMode = false;
 
-    public setDebugMode(isDebugMode) {
+    public setDebugMode(isDebugMode: boolean) {
         this.isDebugMode = isDebugMode;
     }
 
-    public setWatchMode(isWatchMode) {
+    public setWatchMode(isWatchMode: boolean) {
         this.isWatchMode = isWatchMode;
     }
 
-    public setPublishMode(isPublishMode) {
+    public setPublishMode(isPublishMode: boolean) {
         this.isPublishMode = isPublishMode;
     }
 
@@ -69,7 +70,7 @@ class PackageBuild {
 (async () => {
     try {
         const packageBuild = new PackageBuild();
-        const argv = yargs(hideBin(process.argv)).argv as any;
+        const argv:cliArgv = yargs(hideBin(process.argv)).argv as cliArgv;
         if (argv.debug) {
             packageBuild.setDebugMode(true);
         }
@@ -80,7 +81,7 @@ class PackageBuild {
             packageBuild.setPublishMode(true);
         }
         await packageBuild.startup();
-    } catch (error) {
+    } catch {
         process.exit(1);
     }
 })();

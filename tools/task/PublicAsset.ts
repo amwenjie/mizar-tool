@@ -1,6 +1,6 @@
 import chokidar from "chokidar";
 import { cyan } from "colorette";
-import cpy from "cpy";
+import fs from 'fs-extra';
 import path from "path";
 import getGlobalConfig from "../libs/getGlobalConfig.js";
 import Logger from "../libs/Logger.js";
@@ -18,12 +18,12 @@ export class PublicAsset extends TaskBase {
     }
     
     private copy() {
-        return cpy(this.src, this.dist);
+        return fs.copy(this.src, this.dist);
     }
 
     protected async compile(): Promise<void|Error> {
-        log.info("->", cyan(this.taskName), HelperTask.taking());
-        log.info(cyan(this.taskName), " src: ", this.src, " , dist: ", this.dist);
+        log.info("->", cyan(this.getCmdName()), HelperTask.taking());
+        log.info(cyan(this.getCmdName()), " src: ", this.src, " , dist: ", this.dist);
 
         try {
             await this.copy();
@@ -32,13 +32,13 @@ export class PublicAsset extends TaskBase {
                     interval: 600,
                 });
                 watcher.on("change", (path: string) => {
-                    log.info(cyan(this.taskName), " file " + path + " was has been changed, running PublicAsset task...");
+                    log.info(cyan(this.getCmdName()), " file " + path + " was has been changed, running PublicAsset task...");
                     this.copy();
                 });
             }
-            log.info(cyan(this.taskName), " done ", this.count++);
+            log.info(cyan(this.getCmdName()), " done ", this.count++);
         } catch (e) {
-            log.info(cyan(this.taskName), " error ", e);
+            log.info(cyan(this.getCmdName()), " error ", e);
             return e;
         }
     }

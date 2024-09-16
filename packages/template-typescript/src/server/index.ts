@@ -1,4 +1,4 @@
-import WebServer from "mizar/server";
+import WebServer from "mizar/server/index";
 import { bootstrap } from "mizar/server/bootstrap";
 import clientRouter from "../isomorphic/routers/index";
 import meta from "./meta";

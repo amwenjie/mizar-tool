@@ -5,13 +5,14 @@ import klaw from "klaw";
 import MiniCssExtractPlugin from "mini-css-extract-plugin";
 import path from "path";
 import TerserJSPlugin from "terser-webpack-plugin";
-import {
-    type Configuration,
-    type EntryObject,
+import type {
+    EntryOptions,
+    Configuration,
+    EntryObject,
 } from "webpack";
 import { BundleAnalyzerPlugin } from "webpack-bundle-analyzer";
 import sharePlugin from "../config/share.plugin.js";
-import { type webpackPluginsType } from "../interface.js";
+import type { webpackPluginsType } from "../interface.js";
 import ConfigHelper from "../libs/ConfigHelper.js";
 import getGlobalConfig, { type IGlobalConfig } from "../libs/getGlobalConfig.js";
 import Logger from "../libs/Logger.js";
@@ -31,15 +32,6 @@ export interface IPartialConf {
 
 const log = Logger("StandalonePack");
 
-const esDepends = [
-    "core-js/features/object",
-    "core-js/features/array",
-    "core-js/features/map",
-    "core-js/features/set",
-    "core-js/features/promise",
-    "raf/polyfill",
-];
-
 export class StandalonePack extends WebpackTaskBase {
     private globalConfig: IGlobalConfig;
 
@@ -52,7 +44,7 @@ export class StandalonePack extends WebpackTaskBase {
 
     private scan(): Promise<EntryObject> {
         return new Promise((resolve, reject) => {
-            const dependOn = esDepends.concat(["react", "react-dom"]);
+            const dependOn = ["react", "react-dom"];
             const entries: EntryObject = {
                 "polyfill-react": {
                     import: dependOn,
@@ -163,14 +155,14 @@ export class StandalonePack extends WebpackTaskBase {
                     }
                     // 说明自动获取的standalone entry文件在手动配置的config中存在，则替换entry的配置
                     // 暂时配置中不支持配置一个entry入口有多个文件，自动获取的entry[key]指定单个文件
-                    (returnedConfig.entry[key] as any).library = config[key];
+                    (returnedConfig.entry[key] as EntryOptions).library = config[key];
                 }
             }
         }
         return returnedConfig;
     }
 
-    private getExternalConfig(): any {
+    private getExternalConfig() {
         const config = ConfigHelper.get("standalone.externals", false);
         if (typeof config === "object" && !Array.isArray(config)) {
             return [config];
@@ -188,10 +180,10 @@ export class StandalonePack extends WebpackTaskBase {
         log.info("->", "StandalonePack", HelperTask.taking());
         const entry: EntryObject = await this.scan();
         if (!entry || Object.keys(entry).length === 0) {
-            log.warn(yellow(`${cyan(this.taskName)}, scan emtpy entry`));
+            log.warn(yellow(`${cyan(this.getCmdName())}, scan emtpy entry`));
             return;
         }
-        log.info(cyan(this.taskName), "run.entry", entry);
+        log.info(cyan(this.getCmdName()), "run.entry", entry);
         const config: Configuration = {
             ...this.getEntryAndOutputConfig(entry),
             externals: this.getExternalConfig(),
@@ -202,7 +194,7 @@ export class StandalonePack extends WebpackTaskBase {
                 ...this.getOptimization(),
             },
         };
-        log.info(cyan(this.taskName), "pack", config);
+        log.info(cyan(this.getCmdName()), "pack", config);
         await super.compile(config);
     }
 }

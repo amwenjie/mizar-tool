@@ -92,7 +92,7 @@ ArticleDetail.getInitialData = async function getInitialData(initFetch, options)
     }).then(data => {
         console.log("拿到 initial data:", data);
     }).catch(e => {
-        console.log("fetch error出错:", e);
+        console.log("articleDetail initialData fetch error出错:", e);
     })
     // const result = [];
     // try {
