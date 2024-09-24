@@ -1,6 +1,6 @@
 import fs from "fs-extra";
-import path from "path";
-import NativeModule from "module";
+import path from "node:path";
+import NativeModule from "node:module";
 
 function evalModuleCode(code) {
     const reg = /([^}]+\})/;

@@ -4,6 +4,9 @@ import clientRouter from "../isomorphic/routers/index";
 import meta from "./meta";
 
 (async () => {
+
+
+    
     try {
         await bootstrap()(clientRouter, meta);
     } catch (e) {

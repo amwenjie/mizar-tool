@@ -1,6 +1,6 @@
 import { red } from "colorette";
 import fs from "fs-extra";
-import path from "path";
+import path from "node:path";
 import Logger from "../libs/Logger.js";
 import TaskBase from "../libs/TaskBase.js";
 import { HelperTask } from "./HelperTask.js";
@@ -26,17 +26,17 @@ export class PackageInfo extends TaskBase {
         } catch (e) {
             log.error(red("copy package.json raise an error"), e);
         }
-        let orig = path.resolve(this.rootPath, "package-lock.json");
-        let dist = path.resolve(this.dist, "package-lock.json");
-        if (fs.existsSync(orig)) {
-            try {
-                fs.copySync(orig, dist);
-            } catch (e) {
-                log.error(red("copy package-lock.json raise an error"), e);
-            }
-        }
-        orig = path.resolve(this.rootPath, "README.md");
-        dist = path.resolve(this.dist, "README.md");
+        // let orig = path.resolve(this.rootPath, "package-lock.json");
+        // let dist = path.resolve(this.dist, "package-lock.json");
+        // if (fs.existsSync(orig)) {
+        //     try {
+        //         fs.copySync(orig, dist);
+        //     } catch (e) {
+        //         log.error(red("copy package-lock.json raise an error"), e);
+        //     }
+        // }
+        const orig = path.resolve(this.rootPath, "README.md");
+        const dist = path.resolve(this.dist, "README.md");
         if (fs.existsSync(orig)) {
             try {
                 fs.copySync(orig, dist);

@@ -1,0 +1,38 @@
+{
+    "debugPort": 9027,
+    "stylelint": true,
+    "eslint": true,
+    "postcss-loader": {
+
+    },
+    "less-loader": {
+
+    },
+    "sass-loader": {
+        
+    },
+    "hotReload": {
+        "port": 9912
+    },
+    "serverapi": true,
+    "standalone": {
+        "externals": {
+            "react": "React",
+            "react-dom": "ReactDOM"
+        }
+    },
+    "federation": {
+        "name": "micro_1",
+        "filename": "micro_1_remote.js",
+        "exposes": {
+            "./counting": "./src/isomorphic/common/components/Counting",
+            "./PageA": "./src/isomorphic/pages/ArticleDetail",
+            "./PageB": "./src/isomorphic/pages/NotFound"
+        },
+        "shared": [
+            {
+            "react": "~18.3.1",
+            "react-dom": "~18.3.1"
+        }]
+    }
+}

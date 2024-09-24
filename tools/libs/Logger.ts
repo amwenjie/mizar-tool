@@ -1,4 +1,4 @@
-import { cliArgv } from "tools/interface";
+import { cliArgv } from "../interface.js";
 import yargs  from "yargs";
 import { hideBin } from "yargs/helpers";
 // import log4js from "log4js";

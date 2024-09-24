@@ -1,5 +1,5 @@
 import { cyan, green } from "colorette";
-import path from "path";
+import path from "node:path";
 import type { Configuration } from "webpack";
 import sharePlugin from "../config/share.plugin.js";
 import {
@@ -138,7 +138,7 @@ export class ServerPack extends WebpackTaskBase {
         // console.log(green(`${cyan(this.getCmdName())} task completed.\n`));
         this.compileFinishedCallback(async (): Promise<void> => {
             if (this.autoRun === true && this.isDebugMode === true) {
-                const serverEntry = "index.cjs";
+                const serverEntry = "index.js";
                 if (timeout) {
                     clearTimeout(timeout);
                 }

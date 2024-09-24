@@ -11,17 +11,18 @@ function getPlugins(isDebugMode: boolean, isHotReload = false): webpackPluginsTy
         host: "http://localhost",
         port: 9000,
     }, ConfigHelper.get("hotReload", {}));
-    const defineOption: {[key: string]: any} = {
+    const defineOption: { [key: string]: any } = {
         IS_SERVER_RUNTIME: JSON.stringify(true),
         IS_DEBUG_MODE: JSON.stringify(!!isDebugMode),
         DEV_STATIC_HR_SERVE: JSON.stringify(!!(isDebugMode && isHotReload)),
     };
     if (isDebugMode) {
+        const p = `/${ConfigHelper.getPublicPath()}client`;
         defineOption.DEV_PROXY_CONFIG = JSON.stringify((isHotReload ? [
             {
-                "path": `/${ConfigHelper.getPublicPath()}client/`,
+                "path": p,
                 "config": {
-                    "target": `${devServer.host}:${devServer.port}`,
+                    "target": `${devServer.host}:${devServer.port}${p}`,
                 }
             }
         ] : []).concat(ConfigHelper.get("proxy", []) as any));
@@ -35,22 +36,27 @@ export default function serverBase(isDebugMode: boolean, isHotReload = false): C
     return merge(base(isDebugMode), {
         externals: [
             nodeExternals({
+                importType: "module",
                 allowlist: [
                     /^mizar/,
                 ],
             }),
         ],
         output: {
-            filename: "[name].cjs",
+            filename: "[name].js",
             library: {
-                type: "commonjs2",
+                type: "module",
             },
         },
         plugins: getPlugins(isDebugMode, isHotReload),
+        experiments: {
+            outputModule: true,
+        },
+        externalsType: "module",
         externalsPresets: {
             node: true,
         },
-        target: "node",
+        target: "es2020",
         optimization: {
             emitOnErrors: false
         },

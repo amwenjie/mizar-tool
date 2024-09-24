@@ -1,0 +1,30 @@
+{
+    "debugPort": 9026,
+    "stylelint": true,
+    "eslint": true,
+    "postcss-loader": {
+
+    },
+    "less-loader": {
+
+    },
+    "sass-loader": {
+        
+    },
+    "hotReload": {
+        "port": 9911
+    },
+    "serverapi": true,
+    "standalone": {
+        "externals": {
+            "react": "React",
+            "react-dom": "ReactDOM"
+        }
+    },
+    "federation": {
+        "name": "hostapp",
+        "remotes": {
+            "micro_1": "micro_1@http://localhost:8899/static/client/federate/micro_1_remote.js"
+        }
+    }
+}

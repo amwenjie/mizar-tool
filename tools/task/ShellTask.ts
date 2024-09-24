@@ -1,4 +1,4 @@
-import { execSync } from "child_process";
+import { execSync } from "node:child_process";
 import chokidar from "chokidar";
 import { cyan, red } from "colorette";
 import Logger from "../libs/Logger.js";

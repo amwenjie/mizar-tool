@@ -1,0 +1,6 @@
+{
+    "name": "host-app-template",
+    "port": 8891,
+    "cdn": "/",
+    "assetsPathPrefix": "static/"
+}

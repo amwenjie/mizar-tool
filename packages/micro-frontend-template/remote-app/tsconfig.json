@@ -1,0 +1,41 @@
+{
+    "include": [
+        "config",
+        "src",
+        "webpack.config",
+        "typings",
+        "eslint.config.mjs",
+    ],
+    "compilerOptions": {
+        "target": "es2020",
+        "lib": [
+            "ES2021",
+            "ES2022",
+            "ES2023",
+            "ESNext",
+            "DOM",
+            "ScriptHost",
+        ],
+        "importHelpers": true,
+        "downlevelIteration": true,
+        "noEmitHelpers": false,
+        "removeComments": true,
+        "allowJs": true,
+        "rootDir": ".",
+        "outDir": "./dist",
+        "pretty": true,
+        "module": "ESNext",
+        "moduleResolution": "Bundler",
+        "jsx": "react-jsx",
+        "declaration": false,
+        "sourceMap": true,
+        "noImplicitAny": false,
+        "noFallthroughCasesInSwitch": false,
+        "esModuleInterop": true,
+        "allowSyntheticDefaultImports": true,
+        "typeRoots": [
+            "node_modules/@types",
+            "typings"
+        ]
+    }
+}

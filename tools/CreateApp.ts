@@ -1,41 +1,39 @@
-#!/usr/bin/env node
+#! /usr/bin/env node
 'use strict';
-import { execSync } from 'child_process';
+import { execSync } from 'node:child_process';
 import { blue, bold, cyan, green, red, yellow } from 'colorette';
 import { Command } from 'commander';
 import spawn from 'cross-spawn';
-import dns from 'dns';
+import dns from 'node:dns';
 import envinfo from 'envinfo';
 import fs from 'fs-extra';
-import https from 'https';
-import path from 'path';
+import https from 'node:https';
+import path from 'node:path';
 import semver from 'semver';
-import url, { fileURLToPath } from 'url';
+import { fileURLToPath } from 'node:url';
 import validateProjectName from 'validate-npm-package-name';
 import Logger from "./libs/Logger.js";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// const __filename = fileURLToPath(import.meta.url);
+// const __dirname = path.dirname(__filename);
 
 const log = Logger("CreateApp");
 
-const packageJson = fs.readJSONSync(path.resolve(__dirname, '../package.json'));
+import packageJson from '../package.json' with {type: 'json'};
 
 let projectName;
 
 function getDependencies() {
     return Object.keys({
-        "core-js": "~3.21.1",
-        "mizar": "~1.0.0",
-        "raf": "~3.4.1",
-        "react": "~18.0.0",
-        "react-dom": "~18.0.0",
-        "react-redux": "~8.0.0",
-        "react-router": "~6.3.0",
-        "react-router-dom": "~6.3.0",
-        "redux": "~4.1.2",
-        "redux-thunk": "~2.4.1",
-        "tslib": "~2.3.1"
+        "mizar": "~1.1.2",
+        "react": "~18.3.1",
+        "react-dom": "~18.3.1",
+        "react-redux": "~9.1.2",
+        "react-router": "~6.26.2",
+        "react-router-dom": "~6.26.2",
+        "redux": "~5.0.1",
+        "redux-thunk": "~3.1.0",
+        "tslib": "~2.7.0"
     }).sort();
 }
 
@@ -343,7 +341,7 @@ function run(
     log.info('Installing packages. This might take a couple of minutes.');
     checkIfOnline(canUseYarn)
         .then(isOnline => {
-            fs.copySync(path.resolve(__dirname, "../packages/template-typescript"), "./")
+            fs.copySync(path.resolve(import.meta.dirname, "../packages/template-typescript"), "./")
         })
         .then((isOnline) => {
             return install(
@@ -649,7 +647,7 @@ function checkIfOnline(useYarn) {
             if (err != null && (proxy = getProxy())) {
                 // If a proxy is defined, we likely can't resolve external hostnames.
                 // Try to resolve the proxy name as an indication of a connection.
-                dns.lookup(url.parse(proxy).hostname, proxyErr => {
+                dns.lookup(new URL(proxy).hostname, proxyErr => {
                     resolve(proxyErr == null);
                 });
             } else {

@@ -1,15 +1,13 @@
-#!/usr/bin/env node
+#! /usr/bin/env node
 import { cyan, green } from 'colorette';
 import { Command } from 'commander';
 import spawn from 'cross-spawn';
-import fs from "fs-extra";
-import path from 'path';
-import { fileURLToPath } from 'url';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const packageJson = fs.readJSONSync(path.resolve(__dirname, '../package.json'));
+// const __filename = fileURLToPath(import.meta.url);
+// const __dirname = path.dirname(__filename);
+import packageJson from '../package.json' with {type: 'json'};
 const alcor = new Command(packageJson.name);
 
 alcor
@@ -41,7 +39,7 @@ alcor
     .action(options => {
         const command = 'node';
         const args = [
-            path.resolve(__dirname, '../tools/ProjectBuild'),
+            path.resolve(import.meta.dirname, '../tools/ProjectBuild'),
         ];
         if (options.debug) {
             args.push('--debug');
@@ -84,7 +82,7 @@ alcor
     .action(options => {
         const command = 'node';
         const args = [
-            path.resolve(__dirname, '../tools/PackageBuild'),
+            path.resolve(import.meta.dirname, '../tools/PackageBuild'),
         ];
         if (options.debug) {
             args.push('--debug');
@@ -119,7 +117,7 @@ alcor
     .action((name, options) => {
         const command = 'node';
         const args = [
-            path.resolve(__dirname, '../tools/CreateApp'),
+            path.resolve(import.meta.dirname, '../tools/CreateApp'),
         ];
         if (name) {
             args.push(name);

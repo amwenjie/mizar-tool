@@ -5,6 +5,8 @@ import {
 export function showVideoPlayer(data) {
     return {
         type: ShowVideoPlayer,
-        data,
+        data: {
+            ...data,
+        },
     };
 }

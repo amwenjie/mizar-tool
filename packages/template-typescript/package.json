@@ -10,20 +10,20 @@
     "license": "MIT",
     "scripts": {
         "build": "alcor build",
-        "debug": "alcor build -ds --hotReload",
-        "report": "webpack-bundle-analyzer --port 8888 dist/static/client/stats.json"
+        "debug": "alcor build -ds --verbose --hotReload",
+        "report": "webpack-bundle-analyzer --port 8888 dist/static/client/stats.json",
     },
     "dependencies": {
         "@loadable/component": "~5.16.4",
         "@reduxjs/toolkit": "~2.2.7",
-        "mizar": "~1.1.1",
+        "mizar": "~1.1.2",
         "react": "~18.3.1",
         "react-dom": "~18.3.1"
     },
     "devDependencies": {
         "@types/react": "~18.3.5",
         "@types/react-dom": "~18.3.0",
-        "alcor": "~1.1.3"
+        "alcor": "~1.1.4"
     },
     "type": "module"
 }

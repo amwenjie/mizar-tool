@@ -37,7 +37,7 @@ class VideoDetail extends Component<IProps, null> {
 
     componentDidMount() {
         console.log('videodetail did mount');
-        // this.changeText();
+        this.changeText();
     }
 
     public render() {

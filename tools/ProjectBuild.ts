@@ -1,7 +1,7 @@
-#!/usr/bin/env node
+#! /usr/bin/env node
 import { green, red } from "colorette";
 import fs from "fs-extra";
-import path from "path";
+import path from "node:path";
 import type { ModuleFederationPluginOptions } from "webpack/lib/container/ModuleFederationPlugin.js";
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
@@ -110,17 +110,7 @@ export class ProjectBuild {
                         throw new Error("server apis config is turned on, but server/apis path not exist.");
                     }
                 }
-                if (fs.existsSync(path.resolve("./src/server"))) {
-                    // 4. 编译./src/server 服务端代码
-                    const serverPack = new ServerPack();
-                    serverPack
-                        .setAutoRun(this.isRunServerMode)
-                        .setDebugMode(this.isDebugMode)
-                        .setWatchMode(this.isWatchMode);
-                    serverPack.setHotReloadMode(this.isDebugMode && this.isHotReload);
-                    await serverPack.run();
-                }
-                // 5. 编译module federation 代码
+                // 4. 编译module federation 代码
                 const shouldModuleFederateBuild = ConfigHelper.get("federation", false) as ModuleFederationPluginOptions;
                 if (shouldModuleFederateBuild && shouldModuleFederateBuild.exposes) {
                     const moduleFederatePack = new ModuleFederatePack();
@@ -128,6 +118,16 @@ export class ProjectBuild {
                         .setDebugMode(this.isDebugMode)
                         .setWatchMode(this.isWatchMode)
                     await moduleFederatePack.run();
+                }
+                if (fs.existsSync(path.resolve("./src/server"))) {
+                    // 5. 编译./src/server 服务端代码
+                    const serverPack = new ServerPack();
+                    serverPack
+                        .setAutoRun(this.isRunServerMode)
+                        .setDebugMode(this.isDebugMode)
+                        .setWatchMode(this.isWatchMode);
+                    serverPack.setHotReloadMode(this.isDebugMode && this.isHotReload);
+                    await serverPack.run();
                 }
             }
             const shouldStandaloneBuild = ConfigHelper.get("standalone", false);

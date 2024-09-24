@@ -63,6 +63,7 @@ export class HelperTask extends TaskBase {
             message: messageStr.slice(0, 100),
             title: titleStr,
             wait: false,
+            timeout: 3,
         };
         Notifier.notify(msg);
         Promise.resolve();

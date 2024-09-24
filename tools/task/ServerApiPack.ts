@@ -1,7 +1,7 @@
 import { cyan, red } from "colorette";
 import fs from "fs-extra";
 import klaw from "klaw";
-import path from "path";
+import path from "node:path";
 import type { Configuration, EntryObject, } from "webpack";
 import getGlobalConfig, { type IGlobalConfig } from "../libs/getGlobalConfig.js";
 import Logger from "../libs/Logger.js";
@@ -63,6 +63,10 @@ export class ServerApiPack extends WebpackTaskBase {
             entry,
             name: this.taskName,
             output: {
+                module: true,
+                // "library": {
+                //     "type": "module",
+                // },
                 path: this.dist,
             },
         };

@@ -1,6 +1,6 @@
 import { cyan, green, red } from "colorette";
 import ora from "ora";
-import path from "path";
+import path from "node:path";
 import Logger from "./Logger.js";
 
 const log = Logger("TaskBase");
@@ -29,7 +29,8 @@ export class TaskBase {
     }
 
     protected async done(): Promise<void> {
-        return Promise.resolve(console.log(green(`${cyan(this.taskName)} task completed.\n`)));
+        // console.log(green(`${cyan(this.taskName)} task completed.\n`))
+        return Promise.resolve();
     }
 
     public getCmdName(): string {
@@ -69,9 +70,9 @@ export class TaskBase {
             const compileArgs = [...args];
             await this.compile(...compileArgs);
             spinner && spinner.succeed(`${this.getCmdName()} compile task done.\r\n`);
-        } catch {
+        } catch (e) {
             spinner && spinner.fail(`${this.getCmdName()} compile task ${red("fail")}.\r\n`);
-            // log.error(red(`${cyan(this.getCmdName())}  error: ${error.message}`), error);
+            log.error(red(`${cyan(this.getCmdName())}  error: ${e.message}\r\n`), e);
         }
     }
 }

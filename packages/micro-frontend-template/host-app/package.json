@@ -1,0 +1,29 @@
+{
+    "name": "host-app-template",
+    "version": "0.1.0",
+    "repository": {
+        "type": "git",
+        "url": ""
+    },
+    "author": "jaywen",
+    "description": "a typescript template for mizar app",
+    "license": "MIT",
+    "scripts": {
+        "build": "alcor build --verbose",
+        "debug": "alcor build -ds --verbose --hotReload",
+        "report": "webpack-bundle-analyzer --port 8888 dist/static/client/stats.json"
+    },
+    "dependencies": {
+        "@loadable/component": "~5.16.4",
+        "@reduxjs/toolkit": "~2.2.7",
+        "mizar": "~1.2.0",
+        "react": "~18.3.1",
+        "react-dom": "~18.3.1"
+    },
+    "devDependencies": {
+        "@types/react": "~18.3.5",
+        "@types/react-dom": "~18.3.0",
+        "alcor": "~1.2.0"
+    },
+    "type": "module"
+}

@@ -68,7 +68,7 @@ npm install -g alcor
    "sass-loader": {}, #  配置插件option配置
    "serverapi": true, #  配置是否产出/src/server/apis目录的服务端api内容
    "hotReload": {
-        "host": "http://localhost",
+        "host": "http://127.0.0.1",
         "port": 9911
    }, #  配置客户端热更新
    "proxy": [{}], #  配置debug模式的接口代理转发规则
@@ -140,7 +140,7 @@ npm install -g alcor
 
 ### 7. 支持css module
    * 模块化样式文件的支持设计理念是：基于目录的规则，在/components?|pages?/目录内的所有.css|.less|.scss|.sass样式文件都会被当作模块化样式文件。
-   * (基于目录的规则设计是因为上述目录中的组件对应样式都应该是模块化的，如果有不需要模块化的样式，说明是可以不专属于对应组件的，应该放在common或public目录，为了兼容个别特殊需要，文件名包含.module. ，同样视为模块化样式文件。）
+   * 基于目录的规则设计是因为上述目录中的组件对应样式都应该是模块化的，如果有不需要模块化的样式，说明是可以不专属于对应组件的，应该放在common 、非component目录或public目录，为了兼容个别特殊需要，文件名包含.module. ，同样视为模块化样式文件。
 
 
 ### 8. debug模式支持接口代理转发

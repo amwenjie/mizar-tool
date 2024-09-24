@@ -1,6 +1,6 @@
 import { cyan } from "colorette";
 import fs from "fs-extra";
-import path from "path";
+import path from "node:path";
 import getGlobalConfig from "../libs/getGlobalConfig.js";
 import Logger from "../libs/Logger.js";
 import TaskBase from "../libs/TaskBase.js";

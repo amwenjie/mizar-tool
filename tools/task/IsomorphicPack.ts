@@ -3,7 +3,7 @@ import CopyWebpackPlugin from "copy-webpack-plugin";
 import CssMinimizerPlugin from "css-minimizer-webpack-plugin";
 import fs from "fs-extra";
 import MiniCssExtractPlugin from "mini-css-extract-plugin";
-import path from "path";
+import path from "node:path";
 import TerserJSPlugin from "terser-webpack-plugin";
 import type { Configuration } from "webpack";
 import { BundleAnalyzerPlugin } from "webpack-bundle-analyzer";

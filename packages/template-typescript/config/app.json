@@ -1,5 +1,5 @@
 {
-    "name": "mizar-app",
+    "name": "mizar-app-template",
     "port": 8889,
     "cdn": "/",
     "assetsPathPrefix": "static/"

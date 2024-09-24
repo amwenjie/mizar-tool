@@ -1,12 +1,12 @@
 import type { Options as eslintOptions } from "eslint-webpack-plugin";
 import fs from "fs-extra";
-import Path from "path";
+import path from "node:path";
 import type { Options as stylelintOptions } from "stylelint-webpack-plugin";
 import Logger from "../libs/Logger.js";
 
 const log = Logger("ConfigHelper");
-const configureJSON = Path.resolve("./config/configure.json");
-const appConfJSON = Path.resolve("./config/app.json");
+const configureJSON = path.resolve("./config/configure.json");
+const appConfJSON = path.resolve("./config/app.json");
 
 export interface IAppConf {
     name: string;

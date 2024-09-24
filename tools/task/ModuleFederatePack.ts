@@ -1,5 +1,5 @@
 import MiniCssExtractPlugin from "mini-css-extract-plugin";
-import path from "path";
+import path from "node:path";
 import type { Configuration } from "webpack";
 import sharePlugin from "../config/share.plugin.js";
 import type { webpackPluginsType } from "../interface.js";
@@ -16,13 +16,16 @@ export class ModuleFederatePack extends WebpackTaskBase {
     constructor(taskName = "ModuleFederatePack") {
         super(taskName);
         this.globalConfig = getGlobalConfig();
+        this.src = path.resolve(`${this.rootPath}src/federate/index`);
         this.dist = path.resolve(`${this.rootPath}${this.globalConfig.clientOutput}/federate`);
     }
 
     protected async compile(): Promise<void|Error> {
         log.info("->", "ModuleFederatePack", HelperTask.taking());
         const config: Configuration = {
-            entry: { "index": ["raf/polyfill"], },
+            entry: {
+                "index": this.src,
+            },
             output: {
                 publicPath: "auto",
                 path: this.dist,

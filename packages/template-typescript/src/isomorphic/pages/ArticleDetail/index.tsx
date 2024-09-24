@@ -46,6 +46,7 @@ function ChangeSearch() {
 
 function ArticleDetail(props: IProps) {
     const navigate = useNavigate();
+    console.log("***********: ", props.params);
     const id = props.params ? props.params.id  : "null";
     return (<Page>
         {/* <Counting data={{count: props.data.count}}></Counting> */}
@@ -81,10 +82,11 @@ function ArticleDetail(props: IProps) {
 }
 
 ArticleDetail.getInitialData = async function getInitialData(initFetch, options) {
+    console.log(options);
     initFetch({
         method: "POST",
         url: "/api/costm/method/hahah",
-        params: { articleId: options.params.id, query: 2 },
+        params: { articleId: options.params.path, query: 2 },
         data: {
             key: 1,
             key2: 2,

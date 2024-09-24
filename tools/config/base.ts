@@ -1,14 +1,14 @@
 import ESLintWebpackPlugin from "eslint-webpack-plugin";
-import path from "path";
+import path from "node:path";
 import StylelintPlugin from "stylelint-webpack-plugin";
-import { fileURLToPath } from "url";
+import { fileURLToPath } from "node:url";
 import type { Configuration } from "webpack";
 import type {
-    webpackPluginsType,webpackRulesType,
+    webpackPluginsType, webpackRulesType,
 } from "../interface.js";
 import ConfigHelper from "../libs/ConfigHelper.js";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+// const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 function getEnvDef(isDebugMode: boolean): "development" | "production" {
     return isDebugMode ? "development" : "production";
@@ -70,6 +70,12 @@ export default function base(isDebugMode: boolean): Configuration {
         },
         resolve: {
             extensions: [".ts", ".tsx", ".js", ".jsx", ".css", ".png", ".jpg", ".gif", ".less", "sass", "scss", "..."],
+            // Add support for TypeScripts fully qualified ESM imports.
+            extensionAlias: {
+                ".js": [".js", ".ts"],
+                ".cjs": [".cjs", ".cts"],
+                ".mjs": [".mjs", ".mts"],
+            },
             modules: [
                 "node_modules",
                 path.resolve("./src"),
@@ -78,7 +84,7 @@ export default function base(isDebugMode: boolean): Configuration {
         resolveLoader: {
             modules: [
                 "node_modules",
-                path.resolve(__dirname, "../libs/loaders"),
+                path.resolve(import.meta.dirname, "../libs/loaders"),
             ],
         },
     };

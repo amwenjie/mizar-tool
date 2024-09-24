@@ -1,7 +1,8 @@
 import chokidar from "chokidar";
 import { cyan } from "colorette";
-import fs from 'fs-extra';
-import path from "path";
+import fs from "fs-extra";
+import { glob } from "glob";
+import path from "node:path";
 import getGlobalConfig from "../libs/getGlobalConfig.js";
 import Logger from "../libs/Logger.js";
 import TaskBase from "../libs/TaskBase.js";
@@ -14,11 +15,18 @@ export class PublicAsset extends TaskBase {
     constructor(taskName = "PublicAsset") {
         super(taskName);
         this.dist = path.resolve(getGlobalConfig().rootOutput);
-        this.src = `src/**/*.${this.ext}`;
+        this.src = path.resolve("./src");
+        // this.src = `src/**/*.${this.ext}`;
     }
     
-    private copy() {
-        return fs.copy(this.src, this.dist);
+    private async copy() {
+        const files = await glob(`${this.src}/**/*.${this.ext}`,{ ignore: ["node_modules/**", "dist/**", "test/**"] });
+        log.info(cyan(this.getCmdName()), " find filelist: ", files);
+        for (let i = 0, len = files.length; i < len; i++) {
+            const filepath = files[i];
+            const rel = path.relative(this.src, filepath);
+            await fs.copy(filepath, path.resolve(this.dist, rel));
+        }
     }
 
     protected async compile(): Promise<void|Error> {

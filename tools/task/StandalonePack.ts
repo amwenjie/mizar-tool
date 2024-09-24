@@ -3,7 +3,7 @@ import CssMinimizerPlugin from "css-minimizer-webpack-plugin";
 import fs from "fs-extra";
 import klaw from "klaw";
 import MiniCssExtractPlugin from "mini-css-extract-plugin";
-import path from "path";
+import path from "node:path";
 import TerserJSPlugin from "terser-webpack-plugin";
 import type {
     EntryOptions,

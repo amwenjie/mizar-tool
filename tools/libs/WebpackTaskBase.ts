@@ -1,6 +1,7 @@
 import { bold, cyan, red, white, yellow } from "colorette";
 import fs from "fs-extra";
-import path from "path";
+import path from "node:path";
+import os from "node:os";
 import webpack, {
     type Configuration,
     type Stats,
@@ -29,6 +30,7 @@ const taskCuzConfFileNameMap = {
     "ServerApiPack": "api",
     "ServerPack": "server",
 }
+const isWin = /Windows_NT/i.test(os.type());
 
 export class WebpackTaskBase extends TaskBase {
     private helperTask: HelperTask;
@@ -100,9 +102,10 @@ export class WebpackTaskBase extends TaskBase {
             if (this.isDebugMode === true) {
                 const showWarnList = info.warnings.filter(warning => {
                     return !(
-                        warning.moduleName
-                        && /mizar\/server\/utils\/getApis\.js/.test(warning.moduleName)
-                        && warning.message.indexOf('Critical dependency: the request of a dependency is an expression') > -1
+                        // warning.moduleName
+                        // && /mizar\/server\/utils\/getApis\.js/.test(warning.moduleName)
+                        // && \
+                        /dependency\s+is\s+an\s+expression/.test(warning.message)
                     );
                 });
                 showWarnList.forEach(warning => {
@@ -138,8 +141,9 @@ export class WebpackTaskBase extends TaskBase {
 
     protected async compile(innerConf: webpack.Configuration): Promise<void|Error> {
         let finalConf = this.getCompileConfig(innerConf);
-        const cuzConfigPath = path.resolve(`./webpack.config/${taskCuzConfFileNameMap[this.taskName]}.js`);
+        let cuzConfigPath = path.resolve(`./webpack.config/${taskCuzConfFileNameMap[this.taskName]}.js`);
         if (fs.existsSync(cuzConfigPath)) {
+            cuzConfigPath = (isWin ? "file:///" : "") + path.resolve(`./webpack.config/${taskCuzConfFileNameMap[this.taskName]}.js`);
             const cuzConf: (conf: Configuration) => Configuration = (await import(cuzConfigPath)).default;
             if (typeof cuzConf === "function") {
                 finalConf = merge(finalConf, cuzConf(finalConf));
@@ -191,9 +195,9 @@ export class WebpackTaskBase extends TaskBase {
                         "Access-Control-Allow-Origin": "*",
                     },
                     hot: true,
-                    liveReload: true,
+                    // liveReload: true,
                     port: 9000,
-                    static: `/${ConfigHelper.getPublicPath()}client/`,
+                    static: `/${ConfigHelper.getPublicPath()}client`,
                     ...(finalConf.devServer || {})
                 }, compiler);
                 wds.start().then(resolve).catch(reject);

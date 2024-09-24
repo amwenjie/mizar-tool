@@ -1,0 +1,6 @@
+{
+    "name": "remote-app-template",
+    "port": 8899,
+    "cdn": "/",
+    "assetsPathPrefix": "static/"
+}

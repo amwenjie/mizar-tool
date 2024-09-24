@@ -1,5 +1,6 @@
 // fork from https://github.com/DanielAmenou/webpack-federation-stats-plugin
 import webpack, { type Compiler } from "webpack";
+// @ts-expect-error 2307
 import type { ModuleFederationPluginOptions } from "webpack/lib/container/ModuleFederationPlugin";
 
 const PLUGIN_NAME = "FederationStatsPlugin";
