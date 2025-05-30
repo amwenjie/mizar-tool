@@ -49,9 +49,6 @@ export class HelperTask extends TaskBase {
 
     public async sendMessage(titleStr: string, messageStr: string): Promise<void> {
         const argv:cliArgv = yargs(hideBin(process.argv)).argv as cliArgv;
-        if (argv["no-notify"]) {
-            return Promise.resolve();
-        }
         let logMethod = "info";
         if (/错误|error/.test(messageStr)) {
             logMethod = "error";
@@ -59,13 +56,14 @@ export class HelperTask extends TaskBase {
             logMethod = "warn";
         }
         log[logMethod](cyan(titleStr), logColorMap[logMethod](messageStr));
-        const msg = {
-            message: messageStr.slice(0, 100),
-            title: titleStr,
-            wait: false,
-            timeout: 3,
-        };
-        Notifier.notify(msg);
+        if (argv["notify"]) {
+            Notifier.notify({
+                message: messageStr.slice(0, 100),
+                title: titleStr,
+                wait: false,
+                timeout: 3,
+            });
+        }
         Promise.resolve();
     }
 

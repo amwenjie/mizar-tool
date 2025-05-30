@@ -31,10 +31,11 @@ alcor
     .option('-d, --debug', 'development mode')
     .option('-w, --watch', 'watch files change')
     .option('-s, --server', 'run a development server')
-    .option('-hr, --hotReload', 'hot reload web page in development mode')
+    .option('-h, --hotReload', 'hot reload web page in development mode')
     .option('--ost', 'only compile ./src/standalone/* files out as independent IIFE files')
     .option('--verbose', 'print additional logs')
     .option('--analyz', 'generate stats file, open analyz server on debug mode')
+    .option('--notify', 'show a native notification on macOS, Windows, Linux')
     .allowUnknownOption()
     .action(options => {
         const command = 'node';
@@ -61,6 +62,9 @@ alcor
         }
         if (options.verbose) {
             args.push('--verbose')
+        }
+        if (options.notify) {
+            args.push('--notify')
         }
         const child = spawn(command, args, { stdio: 'inherit' });
         child.on('close', code => {

@@ -47,6 +47,7 @@ npm install -g alcor
    * alcor build --analyz  产出webpack stats模块分析文件，如果联合--debug使用，会启动分析服务器并自动用默认浏览器打开分析页面
    * alcor build --watch  启动watch进程监听文件变更重新编译
    * alcor build --ost  传递该参数不会编译产出isomorphic、server等内容，该参数表示仅做standalone的编译：从./config/configure.json中读取standalone配置用于编译./src/standalone目录的文件
+   * alcor build --notify  开启编译过程中关键信息系统级提示框的提示功能
    * 可以组合使用比如 alcor build -ds 表示编译开发环境编译并启动开发调试服务器，
    * 0.1.39开始将debug能力拆解，debug不在默认监听文件变化，新增watch用于监听文件变化
    * 仅debug、watch、server可使用缩写，其他选项不可缩写，必须使用--的形式
@@ -63,6 +64,7 @@ npm install -g alcor
 ```
    "stylelint": true, #  启用stylelint，默认启用，默认配置对应用根目录src目录中的.css、.less、.scss、.sass文件生效
    "eslint": true, #  启用eslint，默认启用，默认配置对应用根目录src目录中的.ts\.tsx\.js\.jsx文件生效
+   "isPrefixProjectName": true, #  将app.json中配置的name用于css module样式名前缀
    "postcss-loader": {}, #  配置插件option配置
    "less-loader": {}, #  配置插件option配置
    "sass-loader": {}, #  配置插件option配置
